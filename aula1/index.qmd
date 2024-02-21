@@ -1,0 +1,335 @@
+---
+title: "FUNDAMENTOS DE ANÁLISES DE DADOS"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: visual
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+<hr>
+
+# A CIÊNCIA DE DADOS
+
+O avanço da informática e das telecomunicações possibilitou o armazenamento e a distribuição de conjuntos de dados cada vez mais complexos. Lidar com essas bases de dados exigiu a **sistematização** de diversas técnicas de
+
+  - **Coleta e armazenamento**;
+  - **Tratamento**;
+  - **Exploração e visualização**;
+  - **Experimentação e previsão**;
+  - **Apresentação de dados**.
+
+Essa sistematização promoveu a criação da **Ciência de Dados**, que é basicamente um **conjunto de metodologias** criadas para receber milhares de formatos de dados diferentes que estão disponíveis, com o **objetivo de tirar informações ou conclusões significativas e úteis**.
+
+Os dados podem descrever o **estado atual do conjunto de métricas e indicadores de uma organização**, como por exemplo, o lucro obtido por uma empresa ou o número de clientes ativos em uma plataforma. Essa descrição pode ser resumida em gráficos, painéis interativos (dashboards) ou alertas de mudança de um estado para o outro.
+
+Através dos dados, também é possível diagnosticar as **causas de um evento ou comportamento** de um determinado indicador. Grandes corporações conseguem monitorar as atividades de seus usuários, e consequentemente as mudanças dos seus comportamentos. Também conseguem aplicar mudanças de um aplicativo para determinada amostra de usuários com a finalidade verificar se tal mudança gera maiores benefícios ou interações. Esse último também é aplicável no setor público, através de avaliações de políticas públicas.
+
+Um dos maiores benefícios dos dados está contido também na possibilidade de **prever eventos futuros**. Através de métodos estatísticos e matemáticos, é possível realizar uma estimativa do quanto uma empresa esperar vender ou faturar no mês seguinte, do quanto as instituições esperam do resultado da inflação no próximo mês, ou mesmo, a rotatividade dos usuários em um determinado horizonte de tempo.
+
+Cientistas de dados **criam os projetos de dados** a partir da experimentação; realizam a coleta e limpeza dos dados, analisando-os, construindo previsões e comunicando os resultados.
+
+Portanto, eles necessitam de **habilidades** que os possibilitem performar **todas** essas atividades.
+
+Dependendo da definição e uso dos dados de uma organização, um cientista de dados necessita de uma **qualificação maior em uma área, em detrimento de outra**.
+
+```{r, out.width = "110%", fig.alt="", fig.cap=""}
+knitr::include_graphics("imgs/workflow_ds.png")
+```
+
+
+# LINGUAGENS PARA AS CIÊNCIAS DE DADOS
+
+
+As linguagens de programação são extremamente úteis em todas as etapas acima, criando-se um sistema automatizado permitindo que seja controlado todo o fluxo de dados.
+
+As três linguagens mais utilizadas em Ciência de Dados são: SQL; R; Python.
+
+**SQL** é o acrônimo para **Structured Query Language - Linguagem de Consulta Estruturada** - e é utilizada para acessar, manipular e consultar dados de objetos, ou seja, uma linguagem criada para se comunicar com bancos de dados.
+
+**R** é uma linguagem criada para realizar uma grande variedade de cálculos estatísticos e técnicas para a construção de gráficos.
+
+**Python** é uma linguagem de propósito geral (diferente do R), que possui diversas funcionalidades, entretanto, a partir de bibliotecas criadas pela comunidade, se tornou uma ferramenta poderosa para a análise de dados.
+
+**R e Python são linguagens *open source***. Isso significa que o código base está disponível de graça para qualquer um criar, distribuir ou contribuir com o seu uso. Isso permite que tenha um universo imenso de pacotes grátis criados pela comunidade, que auxiliam na resolução de problemas desde a área de análise geoespacial até para a área de finanças e economia.
+
+```{r, out.width = "35%", fig.alt="", fig.cap="", fig.align="center"}
+knitr::include_graphics("imgs/RPY.png")
+```
+
+# O QUE É UM BANCO DE DADOS?
+
+O termo banco de dados (*database*), para a maioria das pessoas, pode significar uma **coleção de dados ou itens** (listas de qualquer tipo, como por exemplo pagamentos mensais, clientes, compras, etc).
+
+Porém, o termo é estritamente definido como uma **coleção de registros integrados que formam um método de coleta e organização de dados**.
+
+E obviamente, implica na utilização de uma tecnologia, como por exemplo:
+
+  - planilhas contendo dados de clientes
+  - arquivos de texto contendo dados sobre voos
+  - bancos de dados armazenados em nuvem (*Cloud Computing*)
+  - arquivos de bancos de dados relacionais organizados por SGBDs - Sistema Gerenciador de Bancos de Dados.
+
+
+## Como funciona um Banco de Dados?
+
+Um **registro** é a representação de um **objeto físico ou conceitual**. Por exemplo, o envio de pedidos para clientes de uma empresa. Cada registro desses pedidos representa um cliente. Os registros possuem **atributos**, como por exemplo, nome, endereço e região. As observações (o registro de cada atributo) são os dados.
+
+Entretanto, os **bancos de dados relacionais** dominam o mercado e são os mais utilizados por sistemas de bancos de dados em empresas.
+
+```{r, out.width = "85%", fig.alt="", fig.cap="", fig.align="center"}
+knitr::include_graphics("imgs/clientes.png")
+```
+
+### Formatos dos dados
+
+Os dados podem ser armazenados em diferentes formas e estruturas. 
+
+**Não estruturados**, como por exemplo: documentos em texto, imagens e áudios. 
+
+**Estruturados**, em formato tabular, como uma planilha ou Data Frame, contendo linhas e colunas.
+
+A maioria dos *softwares* para a análise de dados realiza aplicações em dados estruturados.
+
+Um banco de dados pode possuir **diferentes tamanhos**, de simples coleções de poucos registros para sistemas que possuem milhões. A **usabilidade** do banco de dados pode ser **definida** com base no seu **tamanho**, no **equipamento** em que é utilizado e no **tamanho da organização que o mantém**. Sendo assim, os separamos em três tipos:
+
+ - **Banco de dados pessoal**: é desenhado para uma única pessoa para ser utilizado em um único computador. Possui uma estrutura simples e tamanho relativamente pequeno.
+
+ - **Banco de dados de uma organização ou grupo de trabalho**: Esse tipo de banco de dados é geralmente maior que um pessoal e mais complexo. Necessita ser utilizado por diversas pessoas que tentam acessar o mesmo dados ao mesmo tempo
+
+ - **Banco de dados de uma empresa**: São enormes, guardando informações sobre a organização inteira.
+ 
+ ### Sistema gerenciador de banco de dados
+
+Quando se refere a um banco de dados, usualmente está se referindo a um **sistema gerenciador de banco de dados (SGBD)**.
+
+Um SGDB é um **conjunto de programas utilizado para definir, administrar e processar bancos de dados e suas aplicações**. O SGDB é a ferramenta que se utiliza para **construir a estrutura e operacionalizar os dados contidos em um banco de dados**.
+
+```{r, out.width = "100%", fig.alt="", fig.cap="", fig.align="center"}
+knitr::include_graphics("imgs/SGBD.png")
+```
+
+### Bancos de dados Relacionais
+
+Um banco de dados relacional é uma **coleção de tabelas** que se relacionam entre si. Vamos utilizar como exemplo duas tabelas de **PEDIDOS** e **CLIENTES**.
+
+Veja que na primeira tabela, **PEDIDOS**, contém a coluna chamada **ID_CLIENTE**. Essa coluna também está contida na tabela **CLIENTES**. As informações se relacionam de forma que seja possível ligar os dados entre as duas tabelas.
+
+Com isso, através das informações sobre os pedidos, é possível localizar as informações sobre os clientes que realizaram os pedidos.
+
+```{r, out.width = "80%", fig.alt="", fig.cap="", fig.align="center"}
+knitr::include_graphics("imgs/pedidos.png")
+```
+
+```{r, out.width = "80%", fig.alt="", fig.cap="", fig.align="center"}
+knitr::include_graphics("imgs/clientes.png")
+```
+
+# PARA QUE SERVE A LIMPEZA DE DADOS?
+
+A **limpeza de dados**, também chamada de **tratamento**, envolve todo o processo de **preparar os dados** para que eles sejam utilizados nas fases de exploração, experimentação e previsão.
+
+Os **dados do mundo real são bagunçados e desorganizados**, portanto, sempre teremos problemas em utilizá-los ao coletá-los. Entre os motivos desse problema, temos:
+
+  - Fontes disponibilizam os dados de forma bagunçada e com erros;
+  - Dependendo do tipo de arquivo, os dados podem ser disponibilizados desorganizados; 
+  - Métodos de extração ocasionam uma coleta desordenada.
+
+## Estrutura
+
+Idealmente, sempre iremos desejar obter dados estruturados, em formato tabular, em que possuem colunas (representando as variáveis) e linhas (que representam os registros).
+
+Na categoria de dados estruturados, temos dois tipos de formatos: wide e long.
+
+### Wide
+
+O formato wide é conhecido por possuir uma coluna para cada variável, como o abaixo:
+
+| Data | PIB | Inflação | Desemprego |
+|------|-----|----------|------------|
+| 2010 | 2   | 4        | 8          |
+| 2011 | 2.2 | 5        | 7.6        |
+*Dados fictícios
+
+### Long
+
+Já o formato long, “gira” e empilha  as variáveis, tornando-as observações, criando uma estrutura concisa em número de colunas, porém, mais longa, repetindo observações.
+
+| Data | Variáveis  | Valores |
+|------|------------|---------|
+| 2010 | PIB        | 2       |
+| 2010 | Inflação   | 4       |
+| 2010 | Desemprego | 8       |
+| 2011 | PIB        | 2.2     |
+| 2011 | Inflação   | 7.6     |
+| 2011 | Desemprego | 7.6     |
+*Dados fictícios
+
+
+## Tipos de dados
+
+Os dados podem ser **categorizados** em diferentes **tipos**, tanto do ponto de vista **computacional**, quanto do **estatístico** (que iremos entender melhor na próxima aula de exploração).
+
+Do ponto de vista da programação, os dados são **reconhecidos** computacionalmente de diferentes formas.
+
+Cada linguagem possui suas **regras de reconhecimento**, entretanto, uma coisa é certa: no processo de coleta, nem sempre a linguagem irá **reconhecer os tipos de dados corretamente**, sendo necessário uma mudanças.
+
+Entre os diferentes tipos de dados comuns, que possuem semelhanças de reconhecimento entre as linguagens de programação, temos
+
+| Nome usual do tipo       | O que reconhece               |
+|--------------------------|-------------------------------|
+| numeric; double; float   | Números reais                 |
+| integer                  | Números Inteiros              |
+| strings; character; text | Textos e caracteres           |
+| booleans; logical        | Lógicos (Verdadeiro ou Falso) |
+| Date                     | Data                          |
+
+Portanto, o **principal desafio** da limpeza será o de **alterar** o reconhecimento dos tipos de dados. Vamos utilizar com exemplo a tabela anterior, entretanto, com algumas alterações:
+
+| Data | Variáveis  | Valores |
+|------|------------|---------|
+| 2010 | PIB        | 2%       |
+| 2010 | Inflação   | 4%       |
+| 2010 | Desemprego | 8%       |
+| 2011 | PIB        | 2,2%     |
+| 2011 | Inflação   | 7,6%     |
+| 2011 | Desemprego | 7,6%     |
+*Dados fictícios
+
+Teriamos diversos problemas em relação ao reconhecimento, como:
+
+  - Reconhecimento de caractere ao invés de numérico por efeito do símbolo %.
+  - Problemas em relação a vírgula com decimal e não ponto;
+  - Caracteres especiais nas palavras, causa problemas com a linguagem de programação;
+  - As observações da data pode ser reconhecida com inteiro, e não como data.
+
+## Valores nulos
+  
+Os valores ausentes são ocasiados por:
+
+  - Erros de registro dos dados;
+  - Erros de coleta;
+  - O registro realmente não aconteceu
+
+Para lidar com esse valores, existem técnicas de imputação, que permitem realizar aproximações do valor.
+
+Ou mesmo, a exclusão da linha contendo o valor ausente.
+
+E há casos em que não há nenhuma necessidade de realizar mudanças.
+
+| Data | PIB | Inflação | Desemprego |
+|------|-----|----------|------------|
+| 2010 | 2   | 4        | 8          |
+| 2011 |  | 5        | 7.6        |
+*Dados fictícios
+
+# DATA WRANGLING
+
+O processo de limpeza é interligado com o processo de exploração por meio do data wrangling: **manipular os dados de forma que se consiga utilizar as ferramentas de exploração**.
+
+**Data wrangling** é o processo de transformar e manipular dados em formatos "crus" para outro formato com a intenção de entregar as informações contidas no dados em informação útil, sendo o processo necessário para a construção de gráficos, estatísticas descritivas e também para a modelagem. O objetivo do processo é assegurar a qualidade e a usabilidade dos dados. 
+
+Existem funções que facilitam o processo de data wrangling, permitindo que a partir de um data frame, o usuário o transforme em um formato útil. As principais funções estão contidas no pacote dplyr, também chamadas de verbs. Alguns verbs uteis são:
+
+- filter() - permite que seja filtrado as linhas/observações de um data frame de acordo com uma condição;
+- summarize() - sumariza uma ou mais colunas/variáveis,  permitindo calcular uma estatísticas por meio de grupos;
+- group_by() - agrupa as linhas de acordo com um mesmo grupo/categorias. É utilizado em conjunto com summarize() de forma que seja possível calcular as estatísticas de um grupo separadamente;
+- mutate() - utiliza colunas existentes do data frame para criar novas colunas;
+- arrange() - permite ordenar as linhas em ordem ascendente ou descendente;
+- recode() -  permite alterar o nome das observações de uma coluna;
+- select() - seleciona as colunas especificadas (também permite alterar seus nomes).
+
+Os dados em geral não são importados no formato ideal, portanto, sempre é necessário mudanças.
+
+Com o SQL, podemos utilizar os principais comandos da linguagem para lidar com diversos problemas de limpeza e manipulação de dados.
+
+O Python, com suas funcionalidades e com as bibliotecas NumPy e Pandas, podem lidar facilmente com essas questões.
+
+E o R, tanto com suas funções padrão e com o universo do Tidyverse, conseguem transformar os dados facilmente para a exploração.
+
+```{r aula1, warning=FALSE, message=FALSE, echo=TRUE}
+
+library(sidrar)
+library(dplyr)
+
+
+# Pessoas de 14+ anos (Mil pessoas): ocupados/desocupados na Força de trabalho
+raw_ocupados_desocupados <- sidrar::get_sidra(api = "/t/6318/n1/all/v/1641/p/all/c629/all")
+
+str(raw_ocupados_desocupados)
+
+# Pessoas de 14+ anos (Mil pessoas): ocupados/desocupados na Força de trabalho
+ocupados_desocupados <- raw_ocupados_desocupados |> 
+  dplyr::select(
+    "date"     = `Trimestre Móvel (Código)`,
+    "variable" = `Condição em relação à força de trabalho e condição de ocupação`,
+    "value"    = `Valor`
+  ) |> 
+  dplyr::as_tibble()
+
+ocupados_desocupados <- ocupados_desocupados |> 
+  dplyr::mutate(
+    date = lubridate::ym(date),
+    variable = dplyr::recode(
+      variable,
+      "Total"                          = "População total (PIA)",
+      "Força de trabalho"              = "Força de trabalho (PEA)",
+      "Força de trabalho - ocupada"    = "Ocupados", 
+      "Força de trabalho - desocupada" = "Desocupados",
+      "Fora da força de trabalho"      = "Fora da força (PNEA)"
+    ),
+    value = value / 1000 # converter em milhões de pessoas
+  )
+
+
+ocupados_desocupados <- ocupados_desocupados |> 
+                          dplyr::filter(date >= "2015-01-01")
+
+ocupados_desocupados <- ocupados_desocupados |> 
+                        dplyr::group_by(year = lubridate::year(date), variable) |> 
+                        dplyr::summarize(mean = mean(value))
+
+library(ggplot2)
+
+ggplot2::ggplot(ocupados_desocupados, 
+                ggplot2::aes(x = year, y = mean, fill = variable))+
+  ggplot2::geom_col()+
+  ggplot2::facet_wrap(~variable)
+```
+
+
+Para começar o processo de Data wrangling, usa-se a função select(), selecionando apenas as colunas de interesse, e de quebra, alterando os nomes das colunas para um mais simplificado com o uso do pipe (|>). O seu propósito nesse pedaço de código foi colocar o objeto "raw_ocupados_desocupados" dentro do primeiro argumento da função select(). 
+
+Também é utilizado para colocar o resultado da função select() dentro da função as_tibble(), este alterando a classe do objeto para tibble.
+
+Em seguida, é alterado o tipo do dado da coluna date, uma vez que o R não a reconheceu adequadamente, e utilizada a função recode() para alterar as observações da coluna variable.  Para realizar estas alterações, se usa a função mutate(), renomeando as colunas para o seu mesmo nome (para não criar um nova coluna com formato diferente). Para alterar o tipo da coluna date, utiliza-se a função ym() do pacote {lubridate}. Também divide-se o valor da coluna value por 1000.
+
+Para alterar as linhas do data frama dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador > para dizer que mantenha os valores maiores que a data citada.
+
+Então, pode-se calcular a média de cada ano de acordo com cada categoria do data frame. Para isso, agrupados os dados com group_by. O agrupamento é feito transformando as data mensais em ano com a função year do pacote {lubridate} e identificando a coluna variable. Em seguida, a função summarize permite calcular a média da coluna value para esses linhas agrupadas.
+
+O resultado é mostrado com um gráfico feito com o ggplot2, visando verificar o crescimento das variáveis ao longo dos anos.
