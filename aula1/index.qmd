@@ -153,7 +153,7 @@ knitr::include_graphics("imgs/clientes.png")
 
 A **limpeza de dados**, também chamada de **tratamento**, envolve todo o processo de **preparar os dados** para que eles sejam utilizados nas fases de exploração, experimentação e previsão.
 
-Os **dados do mundo real são bagunçados e desorganizados**, portanto, sempre teremos problemas em utilizá-los ao coletá-los. Entre os motivos desse problema, temos:
+Os **dados do mundo real são bagunçados e desorganizados**, portanto, sempre teremos problemas em utilizá-los ao coletá-los. Entre os motivos desse problema, tem-se:
 
   - Fontes disponibilizam os dados de forma bagunçada e com erros;
   - Dependendo do tipo de arquivo, os dados podem ser disponibilizados desorganizados; 
@@ -220,7 +220,7 @@ Portanto, o **principal desafio** da limpeza será o de **alterar** o reconhecim
 | 2011 | Desemprego | 7,6%     |
 *Dados fictícios
 
-Teriamos diversos problemas em relação ao reconhecimento, como:
+Tem-se diversos problemas em relação ao reconhecimento, como:
 
   - Reconhecimento de caractere ao invés de numérico por efeito do símbolo %.
   - Problemas em relação a vírgula com decimal e não ponto;
@@ -265,7 +265,7 @@ Existem funções que facilitam o processo de data wrangling, permitindo que a p
 
 Os dados em geral não são importados no formato ideal, portanto, sempre é necessário mudanças.
 
-Com o SQL, podemos utilizar os principais comandos da linguagem para lidar com diversos problemas de limpeza e manipulação de dados.
+Com o SQL, pode-se utilizar os principais comandos da linguagem para lidar com diversos problemas de limpeza e manipulação de dados.
 
 O Python, com suas funcionalidades e com as bibliotecas NumPy e Pandas, podem lidar facilmente com essas questões.
 
@@ -328,8 +328,8 @@ Também é utilizado para colocar o resultado da função select() dentro da fun
 
 Em seguida, é alterado o tipo do dado da coluna date, uma vez que o R não a reconheceu adequadamente, e utilizada a função recode() para alterar as observações da coluna variable.  Para realizar estas alterações, se usa a função mutate(), renomeando as colunas para o seu mesmo nome (para não criar um nova coluna com formato diferente). Para alterar o tipo da coluna date, utiliza-se a função ym() do pacote {lubridate}. Também divide-se o valor da coluna value por 1000.
 
-Para alterar as linhas do data frama dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador > para dizer que mantenha os valores maiores que a data citada.
+Para alterar as linhas do data frame, dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador >= para dizer que mantenha os valores a partir da data citada.
 
-Então, pode-se calcular a média de cada ano de acordo com cada categoria do data frame. Para isso, agrupados os dados com group_by. O agrupamento é feito transformando as data mensais em ano com a função year do pacote {lubridate} e identificando a coluna variable. Em seguida, a função summarize permite calcular a média da coluna value para esses linhas agrupadas.
+Então, pode-se calcular a média de cada ano de acordo com cada categoria do data frame. Para isso, agrupa-se os dados com group_by. O agrupamento é feito transformando as data mensais em ano com a função year do pacote {lubridate} e identificando a coluna variable. Em seguida, a função summarize permite calcular a média da coluna value para esses linhas agrupadas.
 
 O resultado é mostrado com um gráfico feito com o ggplot2, visando verificar o crescimento das variáveis ao longo dos anos.

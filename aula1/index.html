@@ -4533,7 +4533,7 @@ window.onload = function() {
 <section id="para-que-serve-a-limpeza-de-dados" class="level1">
 <h1>PARA QUE SERVE A LIMPEZA DE DADOS?</h1>
 <p>A <strong>limpeza de dados</strong>, também chamada de <strong>tratamento</strong>, envolve todo o processo de <strong>preparar os dados</strong> para que eles sejam utilizados nas fases de exploração, experimentação e previsão.</p>
-<p>Os <strong>dados do mundo real são bagunçados e desorganizados</strong>, portanto, sempre teremos problemas em utilizá-los ao coletá-los. Entre os motivos desse problema, temos:</p>
+<p>Os <strong>dados do mundo real são bagunçados e desorganizados</strong>, portanto, sempre teremos problemas em utilizá-los ao coletá-los. Entre os motivos desse problema, tem-se:</p>
 <ul>
 <li>Fontes disponibilizam os dados de forma bagunçada e com erros;</li>
 <li>Dependendo do tipo de arquivo, os dados podem ser disponibilizados desorganizados;</li>
@@ -4698,7 +4698,7 @@ window.onload = function() {
 </tbody>
 </table>
 <p>*Dados fictícios</p>
-<p>Teriamos diversos problemas em relação ao reconhecimento, como:</p>
+<p>Tem-se diversos problemas em relação ao reconhecimento, como:</p>
 <ul>
 <li>Reconhecimento de caractere ao invés de numérico por efeito do símbolo %.</li>
 <li>Problemas em relação a vírgula com decimal e não ponto;</li>
@@ -4759,7 +4759,7 @@ window.onload = function() {
 <li>select() - seleciona as colunas especificadas (também permite alterar seus nomes).</li>
 </ul>
 <p>Os dados em geral não são importados no formato ideal, portanto, sempre é necessário mudanças.</p>
-<p>Com o SQL, podemos utilizar os principais comandos da linguagem para lidar com diversos problemas de limpeza e manipulação de dados.</p>
+<p>Com o SQL, pode-se utilizar os principais comandos da linguagem para lidar com diversos problemas de limpeza e manipulação de dados.</p>
 <p>O Python, com suas funcionalidades e com as bibliotecas NumPy e Pandas, podem lidar facilmente com essas questões.</p>
 <p>E o R, tanto com suas funções padrão e com o universo do Tidyverse, conseguem transformar os dados facilmente para a exploração.</p>
 <div class="cell">
@@ -4835,8 +4835,8 @@ window.onload = function() {
 <p>Para começar o processo de Data wrangling, usa-se a função select(), selecionando apenas as colunas de interesse, e de quebra, alterando os nomes das colunas para um mais simplificado com o uso do pipe (|&gt;). O seu propósito nesse pedaço de código foi colocar o objeto “raw_ocupados_desocupados” dentro do primeiro argumento da função select().</p>
 <p>Também é utilizado para colocar o resultado da função select() dentro da função as_tibble(), este alterando a classe do objeto para tibble.</p>
 <p>Em seguida, é alterado o tipo do dado da coluna date, uma vez que o R não a reconheceu adequadamente, e utilizada a função recode() para alterar as observações da coluna variable. Para realizar estas alterações, se usa a função mutate(), renomeando as colunas para o seu mesmo nome (para não criar um nova coluna com formato diferente). Para alterar o tipo da coluna date, utiliza-se a função ym() do pacote {lubridate}. Também divide-se o valor da coluna value por 1000.</p>
-<p>Para alterar as linhas do data frama dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador &gt; para dizer que mantenha os valores maiores que a data citada.</p>
-<p>Então, pode-se calcular a média de cada ano de acordo com cada categoria do data frame. Para isso, agrupados os dados com group_by. O agrupamento é feito transformando as data mensais em ano com a função year do pacote {lubridate} e identificando a coluna variable. Em seguida, a função summarize permite calcular a média da coluna value para esses linhas agrupadas.</p>
+<p>Para alterar as linhas do data frame, dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador &gt;= para dizer que mantenha os valores a partir da data citada.</p>
+<p>Então, pode-se calcular a média de cada ano de acordo com cada categoria do data frame. Para isso, agrupa-se os dados com group_by. O agrupamento é feito transformando as data mensais em ano com a função year do pacote {lubridate} e identificando a coluna variable. Em seguida, a função summarize permite calcular a média da coluna value para esses linhas agrupadas.</p>
 <p>O resultado é mostrado com um gráfico feito com o ggplot2, visando verificar o crescimento das variáveis ao longo dos anos.</p>
 </section>
 
