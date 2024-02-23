@@ -123,7 +123,7 @@ Um banco de dados pode possuir **diferentes tamanhos**, de simples coleções de
 
  - **Banco de dados de uma empresa**: São enormes, guardando informações sobre a organização inteira.
  
- ### Sistema gerenciador de banco de dados
+### Sistema gerenciador de banco de dados
 
 Quando se refere a um banco de dados, usualmente está se referindo a um **sistema gerenciador de banco de dados (SGBD)**.
 
