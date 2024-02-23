@@ -1,0 +1,241 @@
+---
+title: "ANÁLISE EXPLORATÓRIA DE DADOS"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: visual
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+<hr>
+
+# O que é Análise Exploratória de Dados?
+
+A AED é um **conjunto de métodos e ferramentas** que o analista utiliza para **descrever um determinado conjunto de dados**, permitindo compreender o comportamento de diversas variáveis. Permite também solidificar uma base para **criar hipóteses e modelos preditivos/causais**.
+
+Cada conjunto de dados se comporta de uma forma, portanto, cada método ou ferramenta  se encaixa melhor em determinado *dataset*, enquanto em outros não, portanto, para saber diferenciar quais devem ser utilizadas é necessário um conjunto de conhecimento analítico e crítico.
+
+E quais são os métodos e as ferramentas ? De quais formas podemos "entrevistar" nossos dados e retirar *insights*? Os meios mais importantes são:
+
+ - Classificar os tipos dos dados das variáveis em categóricas ou quantitativas;
+ - Sumarizar os dados utilizando estatísticas descritivas;
+ - Visualizar os dados utilizando gráficos.
+ 
+
+# Classificação das variáveis
+
+Cada variável possui um tipo de dado diferente, e que para cada tipo existe uma ferramenta adequada para a análise. A classificação destas variáveis é realizada de forma relativamente arbitrária, com um certo padrão na escolha destes tipos. Elas podem ser:
+
+```{r, echo = FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("imgs/dados.png")
+```
+
+  - **Categóricas**: Assume valores que dizem respeito sobre a qualidade ou característica de cada observação.  Os valores são não numéricos, como strings (caracteres) ou lógicos. É subdividido em binário, nominal e ordinal.
+   - **Binário**: Assume apenas dois valores, normalmente como sim ou não; True ou False; 0 ou 1 ou qualquer outra característica de dois valores;
+   - **Nominal**: Valores qualitativos que assumem mais de dois valores, como país, nome, espécie do pinguim, etc.
+   - **Ordinal**: Valores qualitativos que assumem mais de dois valores e também possuem uma ordem intrínseca, como pequeno, médio, grande, dias da semana e etc.
+
+  - **Quantitativas**: variáveis quantitativas são valores numéricos que dizem respeito a grandeza de uma variável. Assumem valores contínuos ou discretos.
+   - **Contínuo**: em teoria, assumem uma distância não padrão entre uma observação e outra, bem como essa distância pode ser um número infinito de possíveis valores.
+   - **Discreto**: assumem apenas valores fixos entre duas observações.
+
+
+# Estatística Descritiva
+
+Estatística descritiva são números que **sumarizam as características de um conjunto de dados**. Através desses números, retira-se informações valiosas, sendo cruciais para o processo da analise exploratória de dados.
+
+Os cálculos realizados para sumarizar os dados possuem classificações, separando-os em tipos de medidas.
+
+  - **Medidas de tendência central:** responde sobre o que está no centro do dados, medidas importantes incluem a média, mediana e a moda
+  - **Medidas de variabilidade:** responde sobre o quanto os dados estão dispersos, medidas importantes incluem a variância e o desvio padrão
+  - **Medidas de relacionamento:** responde sobre a relação entre duas variáveis em um dataset, medidas importantes incluem a covariância e a correlação.
+
+
+A sumarização dos cinco números consiste em um conjunto de estatísticas que dividem os dados em seções, permitindo compreender a **distribuição dos dados**:
+
+1. O valor mínimo do conjunto
+2. O 25° percentil ou primeiro quartil (Q1)
+3. A mediana (ou 50° percentil) e a Média
+4. O 75° percentil ou terceiro quartil (Q3)
+5. O valor máximo do conjunto
+
+```{r aula2_a, warning=FALSE, message=FALSE, echo=TRUE}
+library(ggplot2)
+library(dplyr)
+
+economics |> 
+  select(pop, unemploy) |> 
+  summary()
+```
+
+# Visualização dos dados
+
+A visualização de dados permite que possamos analisar facilmente os valores dos dados, sendo extremamente útil não somente para a etapa de exploração, mas também para a etapa de comunicação, devido a facilidade de entendimento do público pelo o que um gráfico está descrevendo.
+
+```{r aula2_b, echo = FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("imgs/image_visual.jpeg")
+```
+Fonte: Análise Macro, 2022.
+
+# Tipos de gráficos
+
+**Comparação:** são comuns para a representação de como um conjunto de dados se compara em diferentes categorias ou como se comporta em relação ao tempo, incluem gráficos de linhas e gráficos de barras ou colunas.
+
+```{r aula2_bb, echo = FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("imgs/graph_contribuicao-1.png")
+```
+
+```{r aula2_c, echo = FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("imgs/graph_nucleos-1.png")
+```
+
+**Distribuição:** ajudam a entender a distribuição do conjunto de dados, são gráficos que auxiliam a entender as estatísticas descritivas, incluem gráficos de histograma, densidade e o boxplot.
+
+```{r aula2_d, echo = FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("imgs/hist.png")
+```
+
+```{r aula2_e, echo = FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("imgs/boxplot.png")
+```
+
+**Composição:** permitem entender os dados como parte de um todo, incluem: gráficos de barras empilhados, gráficos de área (empilhados ou não) e gráficos de pizza.
+
+```{r aula2_f, echo = FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("imgs/pedidos seguro desemprego.png")
+```
+
+**Relacionamento:** exibem a relação entre duas ou mais variáveis. Ajudam a entender as medidas de relacionamento da estatística descritiva, incluem gráficos de dispersão e de bolhas.
+
+```{r aula2_g, echo = FALSE, out.width="90%", fig.align='center'}
+knitr::include_graphics("imgs/beta_r.png")
+```
+
+# Exemplo de análise de dados
+
+```{r aula2_h, warning=FALSE, message=FALSE, echo=TRUE}
+
+
+#Criando a primeira análise de dados com o R
+
+### PACOTES
+
+library(sidrar)
+library(tidyverse)
+```
+
+```{r aula2_i, warning=FALSE, message=FALSE, echo=TRUE}
+### COLETA
+
+ipca_raw <- sidrar::get_sidra(api = "/t/1737/n1/all/v/2265/p/all/d/v2265%202")
+
+dplyr::glimpse(ipca_raw)
+```
+
+```{r aula2_j, warning=FALSE, message=FALSE, echo=TRUE}
+
+### LIMPEZA
+
+ipca <- ipca_raw |> 
+    dplyr::select("data" = "Mês (Código)",
+                  "ipca" = "Valor") |> 
+    dplyr::mutate(data = lubridate::ym(data)) |> 
+    dplyr::filter(data >= "2004-01-01") |> 
+    dplyr::as_tibble()
+```
+
+Na análise exploratória, busca-se respostas para: 
+
+- **Como a inflação se comportou no Brasil?**
+- **Qual o período com menores e maiores taxas de inflação?**
+- **Qual o valor médio da inflação do Brasil e como é a distribuição de seus valores?**
+- **O que afeta a inflação? Com qual variável ela se relaciona?**
+
+```{r aula2_k, warning=FALSE, message=FALSE, echo=TRUE}
+### Análise Exploratória
+
+# Gráfico de linha
+
+ggplot2::ggplot(ipca)+
+  ggplot2::aes(x = data, y = ipca)+
+  ggplot2::geom_line()
+
+# Os cinco números
+
+summary(ipca)
+
+# Gráfico boxplot
+
+ggplot2::ggplot(ipca)+
+  ggplot2::aes(y = ipca)+
+  ggplot2::geom_boxplot()
+  
+# Gráfico de histograma
+
+ggplot2::ggplot(ipca)+
+  ggplot2::aes(x = ipca)+
+  ggplot2::geom_histogram()
+
+
+#### Taxa de desocupação 
+
+desocupacao_raw <- sidrar::get_sidra(api = "/t/6381/n1/all/v/4099/p/all/d/v4099%201")
+
+# Limpeza da desocupação
+
+desocupacao <- desocupacao_raw |> 
+  dplyr::select('data' = "Trimestre Móvel (Código)", "desocupacao" = "Valor") |> 
+  dplyr::mutate(data = lubridate::ym(data)) |> 
+  dplyr::as_tibble()
+
+# Junta os dados
+
+df_dados <- ipca |> 
+  inner_join(desocupacao, by = "data")
+
+# Compara os duas variáveis
+
+df_dados |> 
+  ggplot2::ggplot()+
+  ggplot2::aes(x = data)+
+  ggplot2::geom_line(aes(y = desocupacao, color = "Taxa de desocupação"))+
+  ggplot2::geom_line(aes(y = ipca, color = "IPCA"))+
+  ggplot2::scale_color_manual(values = c("#282f6b", "#b22200"))
+
+# IPCA em função do desemprego
+
+modelo_phillips <- lm(ipca ~ desocupacao, data = df_dados)
+
+
+summary(modelo_phillips)
+
+# Gráfico de Dispersão
+
+ggplot2::ggplot(df_dados, ggplot2::aes(x = desocupacao, y = ipca)) +
+  ggplot2::geom_point()+
+  geom_smooth(method = 'lm')
+```
