@@ -1,0 +1,213 @@
+---
+title: "VISUALIZAÇÃO DE DADOS COM O GGPLOT2"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: visual
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+<hr>
+
+# Visualização de Dados com o ggplot2 [^1]
+
+[^1]: Este material está baseado em (https://rstudio.github.io/cheatsheets/html/data-visualization.html) e no material do LES/UFF (https://bookdown.org/jarrais/ciencia-dados-r-modi/\_book/construindo-graficos-com-o-ggplot2.html)
+
+```{r, echo = FALSE, out.width="20%", fig.align='center'}
+knitr::include_graphics("imgs/ggplot2.png")
+```
+
+O ggplot2 é um pacote do R para a produção de gráficos. A ideia de que você pode construir cada gráfico a partir dos mesmos componentes: um conjunto de dados, um sistema de coordenadas e geoms – marcas visuais que representam pontos de dados.
+
+## Quais as principais vantagens do ggplot2?
+
+-   Gramática de gráficos consistente;
+-   Especificação de plotagem em um alto nível de abstração;
+-   Muito flexível;
+-   Sistema de temas para polir a aparência do gráfico;
+-   Sistema gráfico completo e maduro.
+
+Contudo, ele pode parecer meio "assustador" quando se tem o primeiro contato.
+
+A Idéia básica é especificar separadamente blocos de construção de plotagem e combiná-los para criar qualquer tipo de exibição gráfica que você deseja.
+
+Os blocos de construção de um gráfico incluem:
+
+-   Dados;
+-   Mapeamento estético;
+-   Objeto geométrico;
+-   Transformações estatísticas;
+-   Escalas;
+-   Ajustes de posição;
+-   Facetas, entre outros.
+
+A instalação pode ser feita de diversas maneiras:
+
+```{r, echo=TRUE, eval = FALSE}
+
+# The easiest way to get ggplot2 is to install the whole tidyverse:
+install.packages("tidyverse")
+
+# Alternatively, install just ggplot2:
+install.packages("ggplot2")
+
+# Or the development version from GitHub:
+# install.packages("pak")
+pak::pak("tidyverse/ggplot2")
+```
+
+Para exibir valores, mapeie variáveis nos dados para propriedades visuais do geom (estética), como tamanho, cor e localizações x e y. Preencha o modelo abaixo para construir um gráfico.
+
+```{r, echo=TRUE, eval = FALSE}
+ggplot(data = <Data>) +
+  <Geom_Function>(mapping = aes(<Mappings>),
+  stat = <Stat>,
+  position = <Position>) +
+  <Coordinate_Function> +
+  <Facet_Function> +
+  <Scale_Function> +
+  <Theme_Function>
+```
+
+Dados, uma função Geom e mapeamentos Aes são necessários. As funções Estatística, Posição e Coordenada, Faceta, Escala e Tema não são necessárias se pode usar o default.
+
+-   **ggplot(data = mpg, aes(x = cty, y = hwy))**: inicia um gráfico ao qual você finaliza adicionando camadas. Adicione uma função geom por camada.
+
+-   **last_plot()**: Mostra o último gráfico.
+
+-   **ggsave("plot.png", width = 5, height = 5)**: Salva o último gráfico como um arquivo 5' x 5' chamado “plot.png” no diretório de trabalho. Corresponde o tipo de arquivo à extensão do arquivo.
+
+### AES
+
+Values de AES mais comuns são:
+
+-   color and fill: String ("red", "#RRGGBB"), sendo este último em número hexadecimal. [^2]
+
+-   linetype: Integer or string (0 = "blank", 1 = "solid", 2 = "dashed", 3 = "dotted", 4 = "dotdash", 5 = "longdash", 6 = "twodash").
+
+-   size: Integer (line width in mm for outlines).
+
+-   linewidth: Integer (line width in mm for lines).
+
+-   shape: Integer/shape name or a single character ("a").
+
+    -   shape integer/name pairs: 0 = "square open", 1 = "circle open", 2 = "triangle open", 3 = "plus", 4 = "cross", 5 = "diamond open", 6 = "triangle down open", 7 = "square cross", 8 = "asterisk", 9 = "diamond plus", 10 = "circle plus", 11 = "star", 12 = "square plus", 13 = "circle cross", 14 = "square triangle", 15 = "square", 16 = "circle", 17 = "triangle", 18 = "diamond", 19 = "circle small", 20 = "bullet", 21 = "circle filled", 22 = "square filled", 23 = "diamond filled", 24 = "triangle filled", 25 = "triangle down filled"
+
+[^2]: No site (https://htmlcolorcodes.com/) é muito fácil encontrar os números hexadecimais para as cores.
+
+### Geoms
+
+Use uma função geom para representar pontos de dados, use as propriedades estéticas do geom para representar variáveis. Cada função retorna uma camada.
+
+```{r, echo = FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("imgs/geom1.png")
+```
+
+```{r, echo = FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("imgs/geom2.png")
+```
+
+## Exemplos
+
+### Gráfico de Colunas ou Barras
+
+```{r aula3_a, warning=FALSE, message=FALSE, echo=TRUE}
+library(sidrar)
+library(dplyr)
+
+# Volume produzido com Manga no Nordeste em toneladas
+raw_volume_manga_ne <- sidrar::get_sidra(api = "/t/5457/n2/2/v/214/p/last%2020/c782/40262")
+
+str(raw_volume_manga_ne)
+
+# Volume produzido com Manga no Nordeste em toneladas
+volume_manga_ne <- raw_volume_manga_ne |> 
+  dplyr::select(
+    "date"     = `Ano`,
+    "variable" = `Variável`,
+    "value"    = `Valor`
+  ) |> 
+  dplyr::as_tibble()
+
+volume_manga_ne <- volume_manga_ne |> 
+  dplyr::mutate(
+    value = value / 1000 # converter em mil toneladas
+  )
+
+# Gráfico com o ggplot2
+library(ggplot2)
+
+g1 <- ggplot() +
+  geom_col(data=volume_manga_ne, aes(x=date, y=value))
+
+g1
+
+g2 <- ggplot(data=volume_manga_ne, aes(x=date, y=value)) +
+  geom_bar(stat="identity")
+
+g2
+```
+
+É possível, então, melhorar a qualidade dos gráficos, fazendo alterações diversas
+
+```{r aula3_b, warning=FALSE, message=FALSE, echo=TRUE}
+g3 <- ggplot() +
+  geom_col(data=volume_manga_ne, aes(x=date, y=value, fill="variable"))+
+  scale_fill_manual(values="gold") +#muda a cor da barra
+  labs(y= "Mil Toneladas", x= "Anos", title='Evolução do volume produzido de manga no Nordeste: 2003 a 2022.',
+       caption = "Fonte: IBGE, 2024.")
+g3
+
+g4 <- ggplot() +
+  geom_col(data=volume_manga_ne, aes(x=date, y=value, fill="variable"))+
+  scale_fill_manual(values="gold") +#muda a cor da barra
+  labs(y= "Mil Toneladas", x= "Anos", title='Evolução do volume produzido de manga no Nordeste: 2003 a 2022.',
+       caption = "Fonte: IBGE, 2024.")+
+  scale_y_continuous(n.breaks = 10)+
+  theme_minimal() + #Definindo tema
+   theme(legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+g4
+
+g5 <- ggplot() +
+  geom_col(data=volume_manga_ne, aes(x=date, y=value, fill="variable"))+
+  scale_fill_manual(values="gold") +#muda a cor da barra
+  labs(y= "Mil Toneladas", x= "Anos", title='Evolução do volume produzido de manga no Nordeste: 2003 a 2022.',
+       caption = "Fonte: IBGE, 2024.")+
+  scale_y_continuous(n.breaks = 10)+
+  theme_minimal() + #Definindo tema
+   theme(axis.text.x = element_text(margin = margin(b=10)), #mais espaço entre valores do eixo e nome do eixo
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), # retirando as linhas
+        plot.title = element_text(hjust = 0.5, size=14, face="italic"), #ajuste titulo
+        plot.caption = element_text(hjust = 0, size=10), #ajuste Fonte
+        legend.position = "none") # Definindo posição da legenda
+ # Nome do eixo mais para baixo
+g5
+
+
+```
