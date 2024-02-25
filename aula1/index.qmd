@@ -35,13 +35,13 @@ execute:
 
 # A CIÊNCIA DE DADOS
 
-O avanço da informática e das telecomunicações possibilitou o armazenamento e a distribuição de conjuntos de dados cada vez mais complexos. Lidar com essas bases de dados exigiu a **sistematização** de diversas técnicas de
+[^1] O avanço da informática e das telecomunicações possibilitou o armazenamento e a distribuição de conjuntos de dados cada vez mais complexos. Lidar com essas bases de dados exigiu a **sistematização** de diversas técnicas de
 
-  - **Coleta e armazenamento**;
-  - **Tratamento**;
-  - **Exploração e visualização**;
-  - **Experimentação e previsão**;
-  - **Apresentação de dados**.
+-   **Coleta e armazenamento**;
+-   **Tratamento**;
+-   **Exploração e visualização**;
+-   **Experimentação e previsão**;
+-   **Apresentação de dados**.
 
 Essa sistematização promoveu a criação da **Ciência de Dados**, que é basicamente um **conjunto de metodologias** criadas para receber milhares de formatos de dados diferentes que estão disponíveis, com o **objetivo de tirar informações ou conclusões significativas e úteis**.
 
@@ -61,9 +61,7 @@ Dependendo da definição e uso dos dados de uma organização, um cientista de 
 knitr::include_graphics("imgs/workflow_ds.png")
 ```
 
-
 # LINGUAGENS PARA AS CIÊNCIAS DE DADOS
-
 
 As linguagens de programação são extremamente úteis em todas as etapas acima, criando-se um sistema automatizado permitindo que seja controlado todo o fluxo de dados.
 
@@ -89,11 +87,10 @@ Porém, o termo é estritamente definido como uma **coleção de registros integ
 
 E obviamente, implica na utilização de uma tecnologia, como por exemplo:
 
-  - planilhas contendo dados de clientes
-  - arquivos de texto contendo dados sobre voos
-  - bancos de dados armazenados em nuvem (*Cloud Computing*)
-  - arquivos de bancos de dados relacionais organizados por SGBDs - Sistema Gerenciador de Bancos de Dados.
-
+-   planilhas contendo dados de clientes
+-   arquivos de texto contendo dados sobre voos
+-   bancos de dados armazenados em nuvem (*Cloud Computing*)
+-   arquivos de bancos de dados relacionais organizados por SGBDs - Sistema Gerenciador de Bancos de Dados.
 
 ## Como funciona um Banco de Dados?
 
@@ -107,9 +104,9 @@ knitr::include_graphics("imgs/clientes.png")
 
 ### Formatos dos dados
 
-Os dados podem ser armazenados em diferentes formas e estruturas. 
+Os dados podem ser armazenados em diferentes formas e estruturas.
 
-**Não estruturados**, como por exemplo: documentos em texto, imagens e áudios. 
+**Não estruturados**, como por exemplo: documentos em texto, imagens e áudios.
 
 **Estruturados**, em formato tabular, como uma planilha ou Data Frame, contendo linhas e colunas.
 
@@ -117,12 +114,12 @@ A maioria dos *softwares* para a análise de dados realiza aplicações em dados
 
 Um banco de dados pode possuir **diferentes tamanhos**, de simples coleções de poucos registros para sistemas que possuem milhões. A **usabilidade** do banco de dados pode ser **definida** com base no seu **tamanho**, no **equipamento** em que é utilizado e no **tamanho da organização que o mantém**. Sendo assim, os separamos em três tipos:
 
- - **Banco de dados pessoal**: é desenhado para uma única pessoa para ser utilizado em um único computador. Possui uma estrutura simples e tamanho relativamente pequeno.
+-   **Banco de dados pessoal**: é desenhado para uma única pessoa para ser utilizado em um único computador. Possui uma estrutura simples e tamanho relativamente pequeno.
 
- - **Banco de dados de uma organização ou grupo de trabalho**: Esse tipo de banco de dados é geralmente maior que um pessoal e mais complexo. Necessita ser utilizado por diversas pessoas que tentam acessar o mesmo dados ao mesmo tempo
+-   **Banco de dados de uma organização ou grupo de trabalho**: Esse tipo de banco de dados é geralmente maior que um pessoal e mais complexo. Necessita ser utilizado por diversas pessoas que tentam acessar o mesmo dados ao mesmo tempo
 
- - **Banco de dados de uma empresa**: São enormes, guardando informações sobre a organização inteira.
- 
+-   **Banco de dados de uma empresa**: São enormes, guardando informações sobre a organização inteira.
+
 ### Sistema gerenciador de banco de dados
 
 Quando se refere a um banco de dados, usualmente está se referindo a um **sistema gerenciador de banco de dados (SGBD)**.
@@ -155,9 +152,9 @@ A **limpeza de dados**, também chamada de **tratamento**, envolve todo o proces
 
 Os **dados do mundo real são bagunçados e desorganizados**, portanto, sempre teremos problemas em utilizá-los ao coletá-los. Entre os motivos desse problema, tem-se:
 
-  - Fontes disponibilizam os dados de forma bagunçada e com erros;
-  - Dependendo do tipo de arquivo, os dados podem ser disponibilizados desorganizados; 
-  - Métodos de extração ocasionam uma coleta desordenada.
+-   Fontes disponibilizam os dados de forma bagunçada e com erros;
+-   Dependendo do tipo de arquivo, os dados podem ser disponibilizados desorganizados;
+-   Métodos de extração ocasionam uma coleta desordenada.
 
 ## Estrutura
 
@@ -173,11 +170,12 @@ O formato wide é conhecido por possuir uma coluna para cada variável, como o a
 |------|-----|----------|------------|
 | 2010 | 2   | 4        | 8          |
 | 2011 | 2.2 | 5        | 7.6        |
-*Dados fictícios
+
+\*Dados fictícios
 
 ### Long
 
-Já o formato long, “gira” e empilha  as variáveis, tornando-as observações, criando uma estrutura concisa em número de colunas, porém, mais longa, repetindo observações.
+Já o formato long, “gira” e empilha as variáveis, tornando-as observações, criando uma estrutura concisa em número de colunas, porém, mais longa, repetindo observações.
 
 | Data | Variáveis  | Valores |
 |------|------------|---------|
@@ -187,8 +185,8 @@ Já o formato long, “gira” e empilha  as variáveis, tornando-as observaçõ
 | 2011 | PIB        | 2.2     |
 | 2011 | Inflação   | 7.6     |
 | 2011 | Desemprego | 7.6     |
-*Dados fictícios
 
+\*Dados fictícios
 
 ## Tipos de dados
 
@@ -212,28 +210,29 @@ Portanto, o **principal desafio** da limpeza será o de **alterar** o reconhecim
 
 | Data | Variáveis  | Valores |
 |------|------------|---------|
-| 2010 | PIB        | 2%       |
-| 2010 | Inflação   | 4%       |
-| 2010 | Desemprego | 8%       |
-| 2011 | PIB        | 2,2%     |
-| 2011 | Inflação   | 7,6%     |
-| 2011 | Desemprego | 7,6%     |
-*Dados fictícios
+| 2010 | PIB        | 2%      |
+| 2010 | Inflação   | 4%      |
+| 2010 | Desemprego | 8%      |
+| 2011 | PIB        | 2,2%    |
+| 2011 | Inflação   | 7,6%    |
+| 2011 | Desemprego | 7,6%    |
+
+\*Dados fictícios
 
 Tem-se diversos problemas em relação ao reconhecimento, como:
 
-  - Reconhecimento de caractere ao invés de numérico por efeito do símbolo %.
-  - Problemas em relação a vírgula com decimal e não ponto;
-  - Caracteres especiais nas palavras, causa problemas com a linguagem de programação;
-  - As observações da data pode ser reconhecida com inteiro, e não como data.
+-   Reconhecimento de caractere ao invés de numérico por efeito do símbolo %.
+-   Problemas em relação a vírgula com decimal e não ponto;
+-   Caracteres especiais nas palavras, causa problemas com a linguagem de programação;
+-   As observações da data pode ser reconhecida com inteiro, e não como data.
 
 ## Valores nulos
-  
+
 Os valores ausentes são ocasiados por:
 
-  - Erros de registro dos dados;
-  - Erros de coleta;
-  - O registro realmente não aconteceu
+-   Erros de registro dos dados;
+-   Erros de coleta;
+-   O registro realmente não aconteceu
 
 Para lidar com esse valores, existem técnicas de imputação, que permitem realizar aproximações do valor.
 
@@ -244,24 +243,25 @@ E há casos em que não há nenhuma necessidade de realizar mudanças.
 | Data | PIB | Inflação | Desemprego |
 |------|-----|----------|------------|
 | 2010 | 2   | 4        | 8          |
-| 2011 |  | 5        | 7.6        |
-*Dados fictícios
+| 2011 |     | 5        | 7.6        |
+
+\*Dados fictícios
 
 # DATA WRANGLING
 
 O processo de limpeza é interligado com o processo de exploração por meio do data wrangling: **manipular os dados de forma que se consiga utilizar as ferramentas de exploração**.
 
-**Data wrangling** é o processo de transformar e manipular dados em formatos "crus" para outro formato com a intenção de entregar as informações contidas no dados em informação útil, sendo o processo necessário para a construção de gráficos, estatísticas descritivas e também para a modelagem. O objetivo do processo é assegurar a qualidade e a usabilidade dos dados. 
+**Data wrangling** é o processo de transformar e manipular dados em formatos "crus" para outro formato com a intenção de entregar as informações contidas no dados em informação útil, sendo o processo necessário para a construção de gráficos, estatísticas descritivas e também para a modelagem. O objetivo do processo é assegurar a qualidade e a usabilidade dos dados.
 
 Existem funções que facilitam o processo de data wrangling, permitindo que a partir de um data frame, o usuário o transforme em um formato útil. As principais funções estão contidas no pacote dplyr, também chamadas de verbs. Alguns verbs uteis são:
 
-- filter() - permite que seja filtrado as linhas/observações de um data frame de acordo com uma condição;
-- summarize() - sumariza uma ou mais colunas/variáveis,  permitindo calcular uma estatísticas por meio de grupos;
-- group_by() - agrupa as linhas de acordo com um mesmo grupo/categorias. É utilizado em conjunto com summarize() de forma que seja possível calcular as estatísticas de um grupo separadamente;
-- mutate() - utiliza colunas existentes do data frame para criar novas colunas;
-- arrange() - permite ordenar as linhas em ordem ascendente ou descendente;
-- recode() -  permite alterar o nome das observações de uma coluna;
-- select() - seleciona as colunas especificadas (também permite alterar seus nomes).
+-   filter() - permite que seja filtrado as linhas/observações de um data frame de acordo com uma condição;
+-   summarize() - sumariza uma ou mais colunas/variáveis, permitindo calcular uma estatísticas por meio de grupos;
+-   group_by() - agrupa as linhas de acordo com um mesmo grupo/categorias. É utilizado em conjunto com summarize() de forma que seja possível calcular as estatísticas de um grupo separadamente;
+-   mutate() - utiliza colunas existentes do data frame para criar novas colunas;
+-   arrange() - permite ordenar as linhas em ordem ascendente ou descendente;
+-   recode() - permite alterar o nome das observações de uma coluna;
+-   select() - seleciona as colunas especificadas (também permite alterar seus nomes).
 
 Os dados em geral não são importados no formato ideal, portanto, sempre é necessário mudanças.
 
@@ -321,15 +321,16 @@ ggplot2::ggplot(ocupados_desocupados,
   ggplot2::facet_wrap(~variable)
 ```
 
-
-Para começar o processo de Data wrangling, usa-se a função select(), selecionando apenas as colunas de interesse, e de quebra, alterando os nomes das colunas para um mais simplificado com o uso do pipe (|>). O seu propósito nesse pedaço de código foi colocar o objeto "raw_ocupados_desocupados" dentro do primeiro argumento da função select(). 
+Para começar o processo de Data wrangling, usa-se a função select(), selecionando apenas as colunas de interesse, e de quebra, alterando os nomes das colunas para um mais simplificado com o uso do pipe (\|\>). O seu propósito nesse pedaço de código foi colocar o objeto "raw_ocupados_desocupados" dentro do primeiro argumento da função select().
 
 Também é utilizado para colocar o resultado da função select() dentro da função as_tibble(), este alterando a classe do objeto para tibble.
 
-Em seguida, é alterado o tipo do dado da coluna date, uma vez que o R não a reconheceu adequadamente, e utilizada a função recode() para alterar as observações da coluna variable.  Para realizar estas alterações, se usa a função mutate(), renomeando as colunas para o seu mesmo nome (para não criar um nova coluna com formato diferente). Para alterar o tipo da coluna date, utiliza-se a função ym() do pacote {lubridate}. Também divide-se o valor da coluna value por 1000.
+Em seguida, é alterado o tipo do dado da coluna date, uma vez que o R não a reconheceu adequadamente, e utilizada a função recode() para alterar as observações da coluna variable. Para realizar estas alterações, se usa a função mutate(), renomeando as colunas para o seu mesmo nome (para não criar um nova coluna com formato diferente). Para alterar o tipo da coluna date, utiliza-se a função ym() do pacote {lubridate}. Também divide-se o valor da coluna value por 1000.
 
-Para alterar as linhas do data frame, dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador >= para dizer que mantenha os valores a partir da data citada.
+Para alterar as linhas do data frame, dada certa condição, utiliza-se a função filter(). No caso, se quer apenas dados após a data de 01-01-2015. Utiliza-se o operador \>= para dizer que mantenha os valores a partir da data citada.
 
 Então, pode-se calcular a média de cada ano de acordo com cada categoria do data frame. Para isso, agrupa-se os dados com group_by. O agrupamento é feito transformando as data mensais em ano com a função year do pacote {lubridate} e identificando a coluna variable. Em seguida, a função summarize permite calcular a média da coluna value para esses linhas agrupadas.
 
 O resultado é mostrado com um gráfico feito com o ggplot2, visando verificar o crescimento das variáveis ao longo dos anos.
+
+[^1]: Todo este material foi retirado de diversas postagens da Análise Macro (www.analisemacro.com.br)
