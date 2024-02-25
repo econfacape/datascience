@@ -33,9 +33,9 @@ execute:
 
 <hr>
 
-# O que é Análise Exploratória de Dados?
+# O que é Análise Exploratória de Dados? 
 
-A AED é um **conjunto de métodos e ferramentas** que o analista utiliza para **descrever um determinado conjunto de dados**, permitindo compreender o comportamento de diversas variáveis. Permite também solidificar uma base para **criar hipóteses e modelos preditivos/causais**.
+[^1] A AED é um **conjunto de métodos e ferramentas** que o analista utiliza para **descrever um determinado conjunto de dados**, permitindo compreender o comportamento de diversas variáveis. Permite também solidificar uma base para **criar hipóteses e modelos preditivos/causais**.
 
 Cada conjunto de dados se comporta de uma forma, portanto, cada método ou ferramenta  se encaixa melhor em determinado *dataset*, enquanto em outros não, portanto, para saber diferenciar quais devem ser utilizadas é necessário um conjunto de conhecimento analítico e crítico.
 
@@ -239,3 +239,5 @@ ggplot2::ggplot(df_dados, ggplot2::aes(x = desocupacao, y = ipca)) +
   ggplot2::geom_point()+
   geom_smooth(method = 'lm')
 ```
+
+[^1]: Todo este material foi retirado de diversas postagens da Análise Macro (www.analisemacro.com.br)
