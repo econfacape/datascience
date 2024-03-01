@@ -209,5 +209,106 @@ g5 <- ggplot() +
  # Nome do eixo mais para baixo
 g5
 
+```
+
+### Gráfico de Colunas com duas variáveis
+
+```{r aula3_c, warning=FALSE, message=FALSE, echo=TRUE}
+library(sidrar)
+library(dplyr)
+library(tidyverse)
+
+# Volume produzido com Manga no Nordeste em toneladas
+raw_volume_manga <- sidrar::get_sidra(api = "/t/5457/n2/2/n8/2602,2902/v/214/p/last%2020/c782/40262")
+
+str(raw_volume_manga)
+
+# Volume produzido com Manga no Nordeste em toneladas
+volume_manga <- raw_volume_manga |> 
+  dplyr::select(
+    "date"     = `Ano`,
+    "value"    = `Valor`,
+    "regiao"   = `Grande Região e Mesorregião Geográfica`
+  ) |> 
+  dplyr::mutate(
+    value = value / 1000) |> # converter em mil toneladas
+  dplyr::as_tibble()
+
+volume_manga <- tidyr::pivot_wider(
+  data = volume_manga,
+  id_cols = date,
+  names_from = regiao,
+  values_from = value
+)
+
+volume_manga <- volume_manga |> 
+  dplyr::mutate(
+    Vale = `São Francisco Pernambucano (PE)` + `Vale São-Franciscano da Bahia (BA)`) |>
+  dplyr::select(date, Nordeste, Vale)
+
+# Gráfico com duas colunas
+g6 <- ggplot() +
+  geom_col(data=volume_manga, aes(x=date, y=Nordeste, fill="variable"))+
+  scale_fill_manual(values="gold") +#muda a cor da barra
+  labs(y= "Mil Toneladas", x= "Anos", title='Evolução do volume produzido de manga no Nordeste: 2003 a 2022.',
+       caption = "Fonte: IBGE, 2024.")+
+  scale_y_continuous(n.breaks = 10)+
+  theme_minimal() + #Definindo tema
+   theme(axis.text.x = element_text(margin = margin(b=10)), #mais espaço entre valores do eixo e nome do eixo
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), # retirando as linhas
+        plot.title = element_text(hjust = 0.5, size=14, face="italic"), #ajuste titulo
+        plot.caption = element_text(hjust = 0, size=10), #ajuste Fonte
+        legend.position = "none") # Definindo posição da legenda
+ # Nome do eixo mais para baixo
+g6
+
+g7 <- ggplot(data=volume_manga, aes(x=date)) +
+  geom_col(aes(y=Vale, fill="variable"))+
+  geom_col(aes(y=Nordeste, fill="variable"))+
+  labs(y= "Mil Toneladas", x= "Anos", title='Evolução do volume produzido de manga no Nordeste e Vale do São Francisco: 2003 a 2022.',
+       caption = "Fonte: IBGE, 2024.")+
+  scale_y_continuous(n.breaks = 10)+
+  theme_minimal() + #Definindo tema
+   theme(axis.text.x = element_text(margin = margin(b=10)), #mais espaço entre valores do eixo e nome do eixo
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), # retirando as linhas
+        plot.title = element_text(hjust = 0.5, size=12, face="italic"), #ajuste titulo
+        plot.caption = element_text(hjust = 0, size=10), #ajuste Fonte
+        legend.position = "bottom") # Definindo posição da legenda
+ # Nome do eixo mais para baixo
+g7
+
+library(reshape2)
+volume_manga <- melt(volume_manga, id.var='date')
+
+#Outra possibilidade
+
+# Reorganizar novamente os dados para o formato long
+#volume_manga_teste <- tidyr::pivot_longer(
+#  data = volume_manga,
+#  cols = Nordeste:Vale,
+#  names_to = "regiao",
+#  values_to = "value"
+#)
+#volume_manga_teste2 <- volume_manga_teste[order(volume_manga_teste $regiao),]
+
+mycolors <- c("lightblue3", "gold")
+g8 <- ggplot() +
+  geom_col(data=volume_manga, aes(x=date, y=value, fill=variable), size=2, width = 0.7, 
+           position = "dodge")+
+  scale_fill_manual(values=mycolors)+
+  labs(y= "Mil Toneladas", x= "Anos", title='Evolução do volume produzido de manga no Nordeste e Vale do São Francisco: 2003 a 2022.',
+       caption = "Fonte: IBGE, 2024.")+
+  theme_minimal() + #Definindo tema
+  theme(axis.text.x = element_text(margin = margin(b=10)), #mais espaço entre valores do eixo e nome do eixo
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), # retirando as linhas
+        plot.title = element_text(hjust = 0.5, size=12, face="italic"), #ajuste titulo
+        plot.caption = element_text(hjust = 0, size=9), #ajuste Fonte
+        legend.title = element_blank(),
+        legend.position = "bottom") # Definindo posição da legenda
+# Nome do eixo mais para baixo
+g8
 
 ```
