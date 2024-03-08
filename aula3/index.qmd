@@ -2,7 +2,7 @@
 title: "VISUALIZAÇÃO DE DADOS COM O GGPLOT2"
 author: "João Ricardo F. de Lima"
 date: "today"
-editor: visual
+editor: source
 lang: pt
 language: 
   toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
@@ -387,13 +387,16 @@ selic_ipca %>%
 ### Gráfico de Linhas e Colunas
 
 ```{r aula3_e, warning=FALSE, message=FALSE, echo=TRUE}
+
+library(plotly)
+
 ipca <- selic_ipca |>
   dplyr::filter(variable == "IPCA em 12 meses")
 
 selic <- selic_ipca |>
   dplyr::filter(variable == "Taxa SELIC")
 
-  ggplot2::ggplot() +
+g1 <- ggplot2::ggplot() +
   ggplot2::geom_col(data=ipca, aes(x=date, y=value, fill=variable))+
   ggplot2::geom_line(data=selic, aes(x = date, y = value, colour = variable), size = 1) +
   ggplot2::labs(title = "Inflação e Taxa de Juros - Selic",
@@ -409,4 +412,11 @@ selic <- selic_ipca |>
   ggplot2::theme_minimal()+
   ggplot2::theme(legend.title = element_blank(),
                  legend.position = "bottom")
+
+ggplotly(g1) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.2,
+                      title=''))
 ```
