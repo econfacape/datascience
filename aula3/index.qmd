@@ -312,3 +312,101 @@ g8 <- ggplot() +
 g8
 
 ```
+
+### Gráfico de Linhas
+
+```{r aula3_d, warning=FALSE, message=FALSE, echo=TRUE}
+library(GetBCBData)
+library(magrittr)
+
+# Coleta e tratamento de dados
+selic_ipca <- GetBCBData::gbcbd_get_series(
+  id          = c("IPCA em 12 meses" = "13522", "Taxa SELIC" = "4189"),
+  first.date  = "1999-08-01", 
+  use.memoise = FALSE
+) |> 
+  dplyr::as_tibble() |> 
+  dplyr::select(
+    "date"     = ref.date, 
+    "variable" = series.name, 
+    value
+  )
+
+# Gráfico com apenas uma série
+library(scales)
+
+selic_ipca |>
+  dplyr::filter(variable == "Taxa SELIC") |>
+  ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = variable)) +
+  ggplot2::geom_line(size = 1) +
+  ggplot2::labs(title = "Taxa de Juros - Selic",
+                x = "Anos",
+                y = "% a.a.",
+                caption = "Dados: SGS/BCB") +
+  ggplot2::scale_colour_manual(values = "#282f6b") +
+  scale_x_date(date_breaks = "2 years",
+               labels = date_format("%Y"))+
+  ggplot2::theme_minimal()+
+  ggplot2::theme(legend.title = element_blank(),
+                 legend.position = "bottom")
+
+# Gráfico das duas séries
+
+selic_ipca |>
+  ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = variable)) +
+  ggplot2::geom_line(size = 1) +
+  ggplot2::labs(title = "Inflação e Taxa de Juros - Selic",
+                x = "Anos",
+                y = "% a.a.",
+                caption = "Dados: SGS/BCB") +
+  ggplot2::scale_colour_manual(values = c(
+             "#282f6b", # azul
+             "#b22200" # vermelho
+  )) +
+  ggplot2::theme_minimal()+
+  ggplot2::theme(legend.title = element_blank(),
+                 legend.position = "bottom")
+
+# Gráfico das duas séries uma emabaixo da outra
+selic_ipca %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = variable)) +
+  ggplot2::geom_line(size = 1) +
+  ggplot2::labs(title = "Inflação vs. Taxa de Juros - Selic",
+                x = "",
+                y = "% a.a.",
+                caption = "Dados: SGS/BCB | Elaborado por: analisemacro.com.br") +
+  ggplot2::scale_colour_manual(values = c(
+             "#282f6b", # blue
+             "#b22200" # red
+  )) +
+  ggplot2::facet_wrap(~variable, nrow = 2, scales = "free_y") +
+  ggplot2::theme_minimal()+
+  ggplot2::theme(legend.position = "none")
+```
+
+### Gráfico de Linhas e Colunas
+
+```{r aula3_e, warning=FALSE, message=FALSE, echo=TRUE}
+ipca <- selic_ipca |>
+  dplyr::filter(variable == "IPCA em 12 meses")
+
+selic <- selic_ipca |>
+  dplyr::filter(variable == "Taxa SELIC")
+
+  ggplot2::ggplot() +
+  ggplot2::geom_col(data=ipca, aes(x=date, y=value, fill=variable))+
+  ggplot2::geom_line(data=selic, aes(x = date, y = value, colour = variable), size = 1) +
+  ggplot2::labs(title = "Inflação e Taxa de Juros - Selic",
+                x = "Anos",
+                y = "% a.a.",
+                caption = "Dados: SGS/BCB") +
+  ggplot2::scale_colour_manual(values =
+             "#b22200" # vermelho
+  ) +
+    scale_fill_manual(values="#282f6b")+
+    scale_x_date(date_breaks = "2 years",
+               labels = date_format("%Y"))+
+  ggplot2::theme_minimal()+
+  ggplot2::theme(legend.title = element_blank(),
+                 legend.position = "bottom")
+```
