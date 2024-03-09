@@ -1,0 +1,568 @@
+---
+title: "ANÁLISE ESTATÍSTICA MULTIVARIADA"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+
+## Análise Fatorial
+
+*Análise Fatorial* é uma técnica estatística para redução de dados. Ela reduz o número de variáveis (p) na análise, descrevendo combinações lineares destas (fatores) que contém a maior parte das informações das variáveis originais e que possam ter interpretações significativas. Estes fatores não são correlacionados entre si.
+
+O "fator" é uma variável latente (não observada) que representa uma característica marcante dos dados. O objetivo da *Análise Fatorial* é identificar os r<p fatores e relacioná-los com as variáveis originais.
+
+Segundo Mingoti (2005, p. 99), "a análise fatorial tem como objetivo principal descrever a variabilidade original do vetor de variáveis X, em termos de um número menor r de variáveis aleatórias, chamadas de fatores comuns e que estão relacionadas com o vetor original X através de um modelo linear. Neste modelo, parte da variabilidade de X é atribuída aos fatores comuns, sendo o restante da variabilidade de X atribuído às variáveis que não foram incluídas no modelo, ou seja, ao erro aleatório". 
+
+Existem dois enfoques diferentes para *Análise Fatorial*: A **Análise Fatorial Exploratória** e a **Análise Fatorial Confirmatória**. A **Análise Fatorial Exploratória** objetiva determinar dimensões latentes dos dados denominadas fatores partindo-se de um conjunto de variáveis e a solução conduz a uma relação de todas as variáveis com todos os fatores. Na **Análise Fatorial Confirmatória** parte-se de um conjunto de variáveis e de um conjunto de hipóteses sobre o número de fatores e sobre quais variáveis se relacionam com quais fatores. O objetivo da análise é "confirmar" se as variáveis formam os fatores da forma como foi assumido. A formulação do modelo é baseada em uma teoria que será testada com a análise. O modelo especifica quais variáveis são relacionadas com quais fatores e se os fatores são correlacionados. A definição dos fatores é feita antes do ajustamento do modelo.
+
+Seja $\mathbf{x}$ um vetor aleatório $p_x1$ com média $\mathbf{\mu}$ e matriz de variância-covariância dada por $\mathbf{\Sigma}$. A variância total de cada variável pode ser separada em três parcelas: fatores comuns (influenciam duas ou mais variáveis), fatores específicos (contribuem para a variação de uma única variável) e um erro. 
+
+Assim, a variação total vai ser a soma da variação comum (comunalidade), da variação específica (unicidade) e do erro. 
+
+$$
+\mathbf{x}=\mathbf{\Lambda} \mathbf{f}+ \mathbf{\epsilon}
+$$
+
+onde $\mathbf{f}$ é um vetor aleatório de ordem $k_x1$($k<p$), com os elementos $f_1, \dots, f_k$ sendo denominados fatores comuns (comunalidade); $\Lambda$ é uma matriz de constantes desconhecidas $p_xk$ chamadas de cargas fatoriais (ou coeficientes de correlação entre as variáveis e os fatores quando as variáveis são padronizadas); e os elementos $\epsilon_1, \dots, \epsilon_p$ do $p_x1$ vetor aleatório $\mathbf{\epsilon}$ são chamados de fatores específicos (unicidade) e erro. Assume-se que  $\mathbf{f}$ e $\mathbf{\epsilon}$ não são correlacionados.
+
+\begin{cases}
+X_1=a_{11}F_1+a_{12}F_2+a_{13}F_3+ \dots +a_{1r}F_r+\epsilon_1 \\
+X_2=a_{21}F_1+a_{22}F_2+a_{23}F_3+ \dots +a_{2r}F_r+\epsilon_2 \\
+X_3=a_{31}F_1+a_{32}F_2+a_{33}F_3+ \dots +a_{3r}F_r+\epsilon_3 \\
+. \\
+. \\ 
+. \\
+X_p=a_{p1}F_1+a_{p2}F_2+a_{p3}F_3+ \dots +a_{pr}F_r+\epsilon_p \\
+\end{cases}
+
+O modelo tem como objetivo explicar o comportamento das p variáveis em função de r<p fatores comuns (desconhecidos) e de um termo de erro composto de unicidade (fatores específicos) e erro aleatório. O processo de estimação consiste em determinar a matriz de cargas fatoriais $\mathbf{\Lambda}$.
+
+### Pressupostos do Modelo de Análise Fatorial
+
+
+Os pressupostos do Modelo de Análise Fatorial podem ser resumidos em:
+
+1. $\mathbf{f} \sim (\mathbf{0},\mathbf{I})$, ou seja, os fatores possuem média zero e variância constante igual a um e não são autocorrelacionados;
+
+2. $\epsilon \sim (\mathbf{0},\mathbf{\Psi})$, em que $\mathbf{\Psi}=diag(\psi_1,\dots,\psi_p)$, ou seja, os erros tem média zero e podem ter variâncias diferentes, mas não correlacionadas;
+	 
+3. $\mathbf{f}$ e $\mathbf{\epsilon}$ são independentes, ou seja, os fatores comuns são independentes dos fatores específicos e erros.
+
+A Análise Fatorial pode ser feita com a matriz de variâncias e covariâncias ou com a matriz de correlações. Como normalmente é recomendado o uso de variáveis padronizadas para contornar o problema de unidades de medidas diferentes e a influência que uma variável com variância grande pode ter na determinação das cargas fatoriais, a Análise Fatorial é, quase sempre, feita com a matriz de correlações $\mathbf{\Sigma}$ .
+
+No modelo fatorial, a matriz $\mathbf{\Sigma}$ é decomposta como
+
+$$
+\mathbf{\Sigma}=E(xx')
+$$
+
+$$
+\mathbf{\Sigma}=E[(\mathbf{\Lambda} \mathbf{f}+ \mathbf{\epsilon})(\mathbf{\Lambda} \mathbf{f}+ \mathbf{\epsilon})']
+$$
+
+sendo que é possível demonstrar que o resultado desta decomposição é 
+
+$$
+\mathbf{\Sigma}=\mathbf{\Lambda}\mathbf{\Phi}\mathbf{\Lambda}'+\mathbf{\Psi}
+$$
+Este resultado, que é derivado com base nas pressuposições do modelo, diz que a matriz de correlações pode ser decomposta em duas parcelas, uma relacionada com a comunalidade e outra com a unicidade. O modelo assume que os fatores não são correlacionados $\mathbf{\Phi}=\mathbf{I}$. 
+
+Um termo importante na Análise Fatorial é a comunalidade, ou seja, o somatório das correlações dos fatores com a variável "**i**".
+
+$$
+\mathbf{h_i^2}=a_{i1}^2+a_{i2}^2+\dots+a_{ir}^2
+$$
+
+A Unicidade ($\mathbf{\Psi}$) é dada por $\mathbf{\Psi}=1-\mathbf{h_i^2}$. 
+
+A comunalidade é a parcela da variância de X explicada pelos r fatores e a unicidade é a parcela não explicada. 
+
+
+
+### Estimação das Cargas Fatoriais
+
+
+
+Dado o modelo 
+
+$$
+\mathbf{x}=\mathbf{\Lambda} \mathbf{f}+ \mathbf{\epsilon}
+$$
+pode-se entender o x como a variável dependente e o f como as variáveis explicativas, $\Lambda$ como como os coefientes e $\epsilon$ como os erros de um modelo de regressão múltipla. 
+
+O problema, então, é estimar $\mathbf{\Lambda}$ e $\mathbf{\Psi}$ que reproduzam $\mathbf{\Sigma}$ com um número de fatores r menor que o número de variáveis originais p, mas apenas o x é conhecido.
+
+Existem diversas formas de estimar as cargas fatoriais sendo que componentes principais e  máxima verossimilhança são as principais. As explicações mais detalhadas podem ser encontradas em Mingoti (2005).
+
+O método dos **Componentes Principais** é o mais usado e tem como base o uso das raízes características e vetores característicos relacionados com r<p componentes para estimar $\Lambda$. O método de **Máxima Verossimilhança** maximiza uma função de verossimilhança formada com a pressuposição de que o vetor de variáveis aleatórias X segue distribuição normal p-variada com vetor de médias $\mu$ e matriz de variâncias e covariâncias $\mathbf{\Sigma}$.
+
+O método dos componentes principais parte da *decomposição espectral* da matriz de variâncias e covariâncias $\mathbf{\Sigma}$. Assim, é necessário informar que a *decomposição espectral* de uma matriz é uma operação que relaciona a matriz com seus autovalores e seus autovetores. 
+
+Considere A uma matriz $p_xp$ simétrica com raízes características $\lambda_p$ e vetores característicos $x_p$. A decomposição espectral de A é dada por
+
+$$
+A=\sum \lambda_i x_i x_i'
+$$
+com i variando de 1 a p. A decomposição pode ser representada por $A=P \Lambda P'$ em que P é uma matriz cujas colunas são os vetores característicos normalizados de A e $\Lambda$ é uma matriz diagonal com as raízes características de A na diagonal principal. Dessa relação tem-se, também, que $\Lambda=PAP'$ que é uma operação denominada diagonalização de A.
+
+Pelo teorema da decomposição espectral, a matriz de correlação amostral ou a matriz de variâncias e covariâncias pode ser decomposta como a soma de p matrizes, cada uma relacionada com um autovetor da matriz $\mathbf{\Sigma}$.
+
+$$
+\Sigma=P \Lambda P'=\sum \lambda_i x_i x_i'
+$$
+com i variando de 1 a p. Com p componentes, a matriz $\mathbf{\Sigma}$ é totalmente reproduzida. Para r < p, pode-se escrever 
+
+$$
+\Sigma=P \Lambda P'=\sum_{j=1}^r \lambda_j x_j x_j' + \sum_{j=r+1}^p \lambda_j x_j x_j'
+$$
+
+Cada parcela desta soma envolve uma matriz de dimensão $p_xp$ correspondente a informação da j-ésima componente fazendo com que a variabilidade das variáveis seja representada pela soma da variabilidade relacionada com cada componente. Assim, pode-se escrever
+
+
+$$
+\Sigma=\sum_{j=1}^r \lambda_j x_j x_j' + \sum_{j=r+1}^p \lambda_j x_j x_j'=P_1 \Lambda_1 P_1'+P_2 \Lambda_2 P_2'
+$$
+e pode-se considerar uma aproximação da matriz de correlações $\mathbf{\Sigma}$ dada por
+
+$$
+\mathbf{\Sigma} \approx P_1 \Lambda_1 P_1'=\sum_{j=1}^r \lambda_j x_j x_j'
+$$
+o que possibilita estimar as matrizes $\Lambda$ e $\Psi$ por meio de raízes e vetores característicos de $\mathbf{\Sigma}$.
+
+Pela decomposição espectral ainda é possível escrever 
+
+$$
+\mathbf{\Sigma} \approx P_1 \Lambda_1^{1/2} \Lambda_1^{1/2}P_1'
+$$
+e definir por $A=P_1 \Lambda_1^{1/2}$ e por $A'=\Lambda_1^{1/2}P_1'$
+
+Esta aproximação de $\mathbf{\Sigma}$ considera que os fatores específicos são de menor importância. Incluindo os fatores específicos a aproximação de $\mathbf{\Sigma}$ fica 
+
+$$
+\mathbf{\Sigma} \approx AA' + \Psi
+$$
+e a matriz $\Psi$, que é diagonal, pode ser estimada por 
+
+$$
+\Psi = diag(R-AA')
+$$
+
+A matriz de resíduos resultante do ajustamento do modelo é definida por
+
+$$
+RES= \mathbf{\Sigma} - (AA'+\Psi)
+$$
+
+que serve como critério de avaliação do modelo. Valores pequenos, próximos de zero, indicam bom ajustamento. Esta matriz só é nula quando todos os "p" fatores são extraídos, o que não é o desejado na prática. Através destes procedimentos os elementos da diagonal da matriz $\mathbf{\Sigma}$ (variâncias) são exatamente reproduzidos por $AA'+\Psi$. Entretanto, o mesmo não ocorre para os elementos fora da diagonal principal (correlações).
+
+Todo o conhecimento de Componentes Principais se aplica neste caso com os componentes agora denominados fatores.
+
+
+
+### Demonstração de Análise Fatorial no R por Componentes Principais
+
+
+
+```  {r estat5, warning=FALSE, message=FALSE}
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/multivariada')
+
+library(tidyverse)
+library(skimr)
+library(psych)
+library(REdaS)
+
+#Lendo os dados no R
+dados <- read.csv2('winequality-red.csv', sep=";", dec=".")
+dados <- dados |> 
+  dplyr::select(-quality) #retira a variável quality
+
+attach(dados)
+glimpse(dados)
+head(dados)
+tail(dados)
+
+# Estatística descritiva das variáveis
+summary(dados)
+skim(dados)
+```
+
+O banco de dados é composto por 1599 observações e 12 variáveis: acidez fixa, acidez volátil, ácido cítrico, açucar residual, cloretos, dióxido de
+enxofre livre, dióxido de enxofre total, densidade, Ph, sulfatos, álcool.
+
+```  {r estat6, warning=FALSE, message=FALSE}
+library(corrplot)
+corrplot(cor(dados), order="hclust", tl.col="black", tl.cex = .75)
+
+#Obtenção do Modelo Fatorial Ortogonal
+
+#Analise Fatorial - dados devem ser padronizados
+#Padronizaçao dos dados
+dados.pad <-as.data.frame(scale(dados))
+
+s <- cov(dados.pad) #matriz de cov com var pad = mat correlaçoes origem
+
+#Autovalores e Autovetores da Matriz de Covariancias
+lambda <-eigen(s)$values
+lambda #
+evec <-eigen(s)$vectors
+evec
+evec[,1:4]
+
+#Matriz de Cargas Fatoriais A modelo completo
+A <- sqrt(lambda)*t(evec)
+A <- t(A) #Extracao dos Fatores
+A[,1:4] #4 primeiros fatores
+AAT <- A%*%t(A)
+AAT
+
+#Proporção da variabilidade explicada por cada componente
+round(lambda/sum(lambda),4)
+
+#Matriz de Cargas Fatoriais m =4
+Am4 <- A[,1:4]
+AATm4 <- Am4%*%t(Am4)
+AATm4
+
+#Matriz PSI - Unicidade
+psi <- diag(diag(s-AATm4))
+psi
+
+#Matriz Residual
+s-(AATm4+psi)
+```
+
+```{r estat7, warning=FALSE, message=FALSE}
+#2 Forma de fazer a Analise Fatorial
+matcor <- cor(dados)
+
+k <- 4
+dados.pca <- prcomp(dados.pad, scale = TRUE) #PCA
+carfat <- dados.pca$rotation[, 1:k] %*% diag(dados.pca$sdev[1:k])
+colnames(carfat) <- paste("Fator", 1:k, sep = " ")
+
+#Cargas Fatoriais com autovalor maior do que 1
+carfat
+
+#Comunalidade e Unicidade
+comum <- rowSums(carfat^2)
+vespec <- diag(matcor) - comum
+estimat <- cbind(comum, vespec, diag(matcor))
+rownames(estimat) <- colnames(dados)
+colnames(estimat) <- c("Comunalidade", "Unicidade", "Variância")
+estimat
+#Matriz de Resíduos
+resid <- matcor - (carfat %*% t(carfat) + diag(vespec))
+resid
+
+# Estimativas das cargas fatoriais das variaveis 
+
+plot(carfat, pch = 20, col = "red", xlab = "Fator 1", ylab = "Fator 2")
+text(carfat, rownames(carfat), adj = 1)
+```
+
+Em relação a Análise Fatorial por **Máxima Verossimilhança**, supondo o vetor de variáveis com distribuição Normal p-variada, tem-se
+
+a) as variáveis padronizadas serão Z $\sim$ N(0, $\Sigma$);
+
+b) o vetor de fatores será F $\sim$ N(0,I);
+
+c) o vetor de erros será $\epsilon \sim N(0, \Psi)$
+
+Pelo modelo fatorial $\mathbf{x}=\mathbf{\Lambda} \mathbf{f}+ \mathbf{\epsilon}$ e $\mathbf{\Sigma} \approx AA' + \Psi$. Com uma amostra de n observações o objetivo é estimar $\hat A$ e $\hat \Psi$. O procedimento consiste em maximizar a *função de verossimilhança* 
+
+$$
+L(0, \Sigma)=(2 \pi)^{(\frac{-np}{2})}|AA' + \Psi|^{\frac{-n}{2}}e^{\frac{-1}{2}\sum_{j=1}^n Z_j'(AA'+\Psi)^{-1}Z_j}
+$$
+É necessário definir o número de fatores antecipadamente. Uma mudança neste número acarreta mudança nas cargas fatoriais, diferentemente do método de componentes principais. Na Analise Fatorial por Máxima Verossimilhança há equivalência entre decompor $\Sigma$ ou a matriz de covariâncias $S$, o que não ocorre na AF via Componentes Principais. 
+
+### Demonstração de Análise Fatorial no R por Máxima Verossimilhança
+
+```{r estat8, warning=FALSE, message=FALSE}
+
+# Definição do número de Fatores
+
+eigv <- eigen(cor(dados))
+eigv <- data.frame(nfact = 1:ncol(dados), eigval = eigv$values)
+ggplot(data = eigv, mapping = aes(nfact, eigval)) +
+geom_line() +
+geom_point() +
+geom_abline(slope = 0, intercept = 1, color = "red") +
+labs(x = "Número de fatores",
+y = "Autovalor",
+title = "Scree plot") +
+theme_bw()
+
+#Terceira forma de fazer - factanal()
+#Usar as variaveis padronizadas - dados.pad
+#Não usa componentes principais, usa max verosimilhança
+
+#Pelo Screeplot, tem-se 4 autovalores acima de 1
+
+fatorial1 <- factanal(dados.pad, factors=4, rotation="none", na.action=na.omit)
+
+fatorial1
+
+#fatorial1$loadings
+load = fatorial1$loadings[,c(1,2)]
+plot(load, type="n")
+text(load, labels=names(dados.pad),cex = .7)#visualiza variaveis com fatores
+
+fa.diagram(fatorial1$loadings, digits = 3, main = "Análise Fatorial")
+```
+
+A partir do diagrama com as cargas fatoriais é possível observar que as variáveis cloreto e sulfatos têm pouco peso na composição dos fatores. Assim, pode-se excluir tais variáveis do modelo.
+
+```{r estat9, warning=FALSE, message=FALSE}
+dados2 <- subset(dados, select = -c(sulphates, chlorides))
+
+dados2.pad <- as.data.frame(scale(dados2))
+
+fatorial2<- factanal(dados2.pad, factors=4, rotation="none", na.action=na.omit)
+
+fatorial2
+```
+
+### Rotação de Fatores
+
+Sabe-se que vetores característicos não são únicos e, por isso, as cargas fatoriais da Análise Fatorial por Componentes Principais podem ser modificadas sem prejudicar o significado da análise. A rotação consiste em "modificar" as cargas fatoriais, ou seja, calcular nova matriz A. O objetivo é obter uma matriz de cargas fatoriais de mais fácil interpretação, onde cada fator se relaciona mais distintamente com certo grupo de variáveis.
+
+No entanto, nem sempre se tem uma estrutura nítida de relacionamento de variáveis e fatores. Normalmente, todas as variáveis apresentam coeficiente de correlação de certa magnitude com todos os fatores e, muitas vezes, é difícil identificar a relação de forma adequada. A rotação de fatores/eixos é um procedimento matematicamente correto e tem como finalidade facilitar a interpretação dos fatores, isto é, gerar uma nova solução para as cargas fatoriais que mostra uma relação mais nítida entre variáveis e fatores.
+
+A rotação dos fatores consiste na rotação dos eixos coordenados e o cálculo de novos valores de abscissas e ordenadas relacionados com o novo sistema de eixos. Se o ângulo do novo sistema se mantiver em 90º, a rotação é denominada **ortogonal** e, se mudar o ângulo, a rotação é denominada **oblíqua**. No primeiro caso os fatores permanecem não correlacionados, mas, no segundo caso, haverá correlação, o que dificulta a interpretação.
+
+Vale ressaltar que a rotação ortogonal modifica as cargas fatoriais, mas não modifica as comunalidades ($h_i^2$) e, como observa Mingoti (2005, p. 121), “em termos de qualidade de ajuste, esta nova solução não acrescenta nenhuma melhoria em relação ao ajuste obtido usando a matriz $\hat A_{p_xm}$, pois a matriz residual original não é alterada pela transformação ortogonal”.
+
+Existem diversos métodos de rotação, tanto ortogonal (Varimax, Quartimax, Orthomax, Equimax) quanto oblíqua (Oblimim, Quartimim, Biquartimim, Covax). Entretanto, o método de rotação mais utilizado é o Varimax, o qual permite que os coeficientes de correlação entre os indicadores e os fatores fiquem o mais próximo possível de zero ou de 1 em valor absoluto, facilitando a interpretação.
+
+O método de Rotação Varimax "forma um novo sistema de eixos ortogonais com o mesmo número de fatores e permite que o grupo de variáveis apareça com maior nitidez, facilitando a interpretação e análise" (ZAMBRANO e LIMA, 2004). 
+
+Considere que partindo da já vista matriz de correlaçoes
+
+$$
+\mathbf{\Sigma} = AA'+\Psi
+$$
+se tenha uma matriz ortogonal T de tal forma que $TT'=I$. Então, é possível escrever 
+
+$$
+\mathbf{\Sigma} = ATT'A'+\Psi
+$$
+
+$$
+\mathbf{\Sigma} = AT(AT)'+\Psi
+$$
+
+se denominar AT por A*, tem-se
+
+$$
+\mathbf{\Sigma} = A^{*} A^{* '}+ \Psi
+$$
+isto significa que dada uma solução para A, é possível encontrar uma outra solução para $A^*$, através da escolha da matriz ortogonal T, que seja de mais fácil interpretação do que a solução original. 
+
+No critério Varimax, a busca pela matriz T tem como base a tentativa de encontrar fatores com grandes variabilidades nas cargas fatoriais, isto é, encontrar para um fator fixo, um grupo de variáveis X altamente correlacionadas com o fator e um outro grupo de variáveis que tenham correlação desprezível ou moderada com o fator. 
+
+Para cada fator fixo, a solução é obtida através da maximização da variação dos quadrados das cargas fatoriais originais das colunas da matriz A. Seja $\hat a_{ij}^*$ o coeficiente da i-ésima variável no j-ésimo fator após a rotação, e seja V a quantidade definida por
+
+$$
+V= \frac{1}{p} \sum_{j=1}^m \Bigg[\sum_{i=1}^p \tilde a_{ij}^4-\frac{1}{p}(\sum_{i=1}^p \tilde a_{ij}^2)^2 \Bigg]
+$$
+
+onde $\tilde a_{ij}=(\hat a_{ij}^*/ \hat h_i)$, sendo $\hat h_i$ a raiz quadrada da comunalidade da variável $X_i$. A maximização de V corresponde a "puxar" os quadrados das cargas sobre cada fator o máximo possível. O que se espera é encontrar grupos definidos de coeficientes para cada coluna de fator.
+
+A função da rotação de fatores tem a função de procurar cargas fatoriais que mostram um padrão de relacionamento claro e de fácil interpretação entre variáveis e fatores. Deve-se observar que as comunalidades não mudam, o que é uma característica da rotação ortogonal.
+
+
+```{r estat10, warning=FALSE, message=FALSE}
+
+#Esimação da AF fazendo a rotação Varimax
+fatorial3<- factanal(dados2.pad, factors=4, rotation="varimax", na.action=na.omit)
+
+fatorial3
+
+fa.diagram(fatorial3$loadings, digits = 3, main = "Análise Fatorial - Modelo Rotacionado Varimax")
+
+#Comunalidades
+rowSums(fatorial3$loadings^2)
+
+
+# Matriz Residual
+L <- fatorial3$loadings
+
+rho_til <- L%*%t(L)+diag(fatorial3$uniquenesses)
+U <- cor(dados2.pad) - rho_til
+round(U, 4)
+```
+
+Para esse último modelo, o fator 1 está fortemente relacionado à acidez e Ph. O fator 2 ao dióxido de enxofre, o fator 3 é composto pela
+quantidade de alcool e o fator 4 pela densidade e açucar residual.
+
+A partir das comunalidades é possível concluir que os 4 fatores explicam cerca de 92% da variabilidade da acidez fixa, pouco mais de 19% da
+variabilidade da acidez volátil, 57% da variabilidade da acidez cítrica, 30% da variabilidade do açucar residual, 51% da variabilidade do enxofre livre, 88% da variação no enxofre total, 99% da variação na densidade, 70% na variação do Ph e 99% da variabilidade do teor alcólico.
+
+A análise da matriz residual indica a qualidade do modelo, que deve possuir uma matriz residual com valores muito próximos a zero.
+Assim, a partir desta matriz residual, o modelo em questão indica que a Análise Fatorial se ajusta bem aos dados amostrais, pois a grande maioria dos valores da matriz foram calculados proximos a zero.
+
+### Escores Fatoriais
+
+Escores fatoriais são os valores de cada fator para cada observação da amostra. São importantes para mapeamento das observações e para serem utilizadas em outras técnicas, como cluster, regressão, etc. Como se tem um modelo estatístico estes escores devem ser estimados à semelhança de um modelo de regressão onde se obtém previsões para a variável dependente. 
+
+```{r estat11, warning=FALSE, message=FALSE}
+
+#Esimação da AF fazendo a rotação Varimax
+fatorial3<- factanal(dados2.pad, factors=4, rotation="varimax", na.action=na.omit, scores = "regression")
+
+escores <- as.data.frame(fatorial3$scores)
+
+head(escores)
+tail(escores)
+
+ggplot(data = escores, mapping = aes(x = Factor1, y = Factor2)) +
+geom_point() +
+labs(x = "Fator 1",
+y = "Fator 2",
+title = "Dispersão dos escores fatoriais") +
+theme_bw()
+
+```
+	
+### Análise da Adequabilidade 
+
+1. **Matriz de Correlações**: examinar a matriz de correlações simples, procurando visualizar algum padrão de relacionamento entre as variáveis; devem existir grupos de variáveis correlacionadas;
+
+2. **Matriz Anti-Imagem**: Matriz de correlações Parciais com sinais invertidos. Matrizes anti-imagem podem ser usadas para avaliar se variáveis individuais devem ser incluídas na análise fatorial. Isso significa trazer a porção de variância de uma variável que pode ser explicada com as variáveis correlacionadas (imagem) em associação com a porção de variância inexplicável (anti-imagem). As variáveis são adequadas para incluir na análise fatorial se os valores da matriz anti-imagem forem baixos;
+
+3. **Teste de esfericidade de Bartlett**: testa se a matriz de correlações é estatisticamente igual a uma matriz identidade. Se for, não é boa para Análise Fatorial. O que se busca, então, é rejeitar a hipótese nula de que a matriz de correlação verdadeira é uma matriz identidade;
+	
+4. **Medida KMO (Kayser-Meyer-Olkin)**: é um índice que compara correlações simples e parciais:
+
+$$
+\mathbf{KMO}=\frac{\sum_{i=1}^{p}\sum_{j=1}^{p}r_{ij}^2}{\sum_{i=1}^{p}\sum_{j=1}^{p}r_{ij}^2+\sum_{i=1}^{p}\sum_{j=1}^{p}a_{ij}^2}
+$$
+em que $r_{ij}$ é o coeficiente de correlação simples e $a_{ij}$ é a correlação parcial.
+
+Quanto mais $\sum_{i=1}^{p}\sum_{j=1}^{p}a_{ij}^2$ for próximo de 0, mais o valor de $\mathbf{KMO}$ se aproximará de 1 e mais adequados os dados serão para a Análise fatorial. Valores abaixo de 0,6 são considerados ruins para a Análise Fatorial.
+
+```{r estat12, warning=FALSE, message=FALSE}
+
+#Correlaçoes Parciais - Matriz anti-imagem coeficientes de corr
+partial.cor <- function (X, ...)
+{
+  R <- cor(X, ...)
+  RI <- solve(R)
+  D <- 1/sqrt(diag(RI))
+  Rp <- -RI * (D %o% D)
+  diag(Rp) <- 0
+  rownames(Rp) <- colnames(Rp) <- colnames(X)
+  Rp
+}
+matcorp <- partial.cor(dados)
+print(matcorp, digits=2)
+
+#Estatística KMO
+KMO(cor(dados))
+
+# Bartlett teste de esfericidade
+cortest.bartlett(cor(dados), n = nrow(dados))
+
+bart_spher(dados)
+```
+
+Um outro exemplo é do trabalho que visou construiu um Índice de Desenvolvimento Humano da mesorregião do Campo das Vertentes-MG (IDF-CV), para o ano de 2000, com base em 10 indicadores socioeconômicos de saúde, infraestrutura, educação e vulnerabilidade renda (Esperança de vida ao nascer; Mortalidade até um ano de idade; em cada mil crianças nascidas vivas; Percentual de pessoas que vivem em domicílios com banheiro e água encanada; Percentual de pessoas que vivem em domicílios com energia elétrica e geladeira; Percentual de pessoas que vivem em domicílios urbanos com serviço de coleta de lixo; Percentual de pessoas que vivem em domicílios com carro, computador e TV; Percentual da renda proveniente de transferências governamentais; Razão entre a renda média dos 20% mais ricos e a dos 40% mais pobres; Percentual de pessoas que vivem em famílias com razão de dependência maior que 75%; Taxa de alfabetização). Para isto, foi utilizada a técnica da Análise Fatorial.
+
+```  {r estat13, warning=FALSE, message=FALSE}
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/multivariada')
+
+library(tidyverse)
+library(skimr)
+library(psych)
+library(REdaS)
+
+#Lendo os dados no R
+dadosc <- read.csv2('idh_mg.csv', header=TRUE, sep=";", dec=".")
+
+dados <- dadosc[,-1]
+  
+attach(dados)
+glimpse(dados)
+head(dados)
+tail(dados)
+
+# Estatística descritiva das variáveis
+summary(dados)
+skim(dados)
+
+#Estatística KMO
+KMO(cor(dados))
+
+# Bartlett teste de esfericidade
+cortest.bartlett(cor(dados), n = nrow(dados))
+
+bart_spher(dados)
+
+#Correlaçoes Parciais - Matriz anti-imagem coeficientes de corr
+partial.cor <- function (X, ...)
+{
+  R <- cor(X, ...)
+  RI <- solve(R)
+  D <- 1/sqrt(diag(RI))
+  Rp <- -RI * (D %o% D)
+  diag(Rp) <- 0
+  rownames(Rp) <- colnames(Rp) <- colnames(X)
+  Rp
+}
+matcorp <- partial.cor(dados)
+print(matcorp, digits=2)
+
+# Definição do número de Fatores
+
+eigv <- eigen(cor(dados))
+eigv <- data.frame(nfact = 1:ncol(dados), eigval = eigv$values)
+ggplot(data = eigv, mapping = aes(nfact, eigval)) +
+geom_line() +
+geom_point() +
+geom_abline(slope = 0, intercept = 1, color = "red") +
+labs(x = "Número de fatores",
+y = "Autovalor",
+title = "Scree plot") +
+theme_bw()
+
+#Padronizaçao dos dados
+dados.pad <-as.data.frame(scale(dados))
+
+s <- cov(dados.pad) #matriz de cov com var pad = mat correlaçoes origem
+
+#Autovalores e Autovetores da Matriz de Covariancias
+lambda <-eigen(s)$values
+lambda[1:3] 
+evec <-eigen(s)$vectors
+evec[,1:3]
+```
