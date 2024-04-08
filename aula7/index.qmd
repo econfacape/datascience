@@ -1,0 +1,340 @@
+---
+title: "MACHINE LEARNING - CLASSIFICAÇÃO COM k-NN"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+
+
+# Introdução
+
+<br>
+
+[^1] Em termos gerais, **Machine Learning (ML)** se refere a um vasto conjunto de técnicas para entender os dados. Essas técnicas podem ser classificadas em supervisionadas ou não supervisionadas.
+
+[^1]: Todo este material foi retirado de diversas postagens da Análise Macro (www.analisemacro.com.br)
+
+*Métodos supervisionados* envolvem construir modelos estatísticos para previsão ou simplesmente estimação de uma variável de interesse (um output) em função de um ou mais variáveis explicativas (ou inputs). Dado um conjunto de dados, um algoritmo de aprendizado supervisionado busca otimizar um função - o modelo - de modo a encontrar uma combinação de valores que resultam no output esperado. 
+
+
+ \hline  Algoritmos de ML             | Função     
+:------------------------------------:|:------------------:
+ \hline  Nearest Neighbor             | Classificação 
+ \hline  Naive Bayes                  | Classificação     
+ \hline  Decision Trees               | Classificação     
+ \hline  Classification Rule Learners | Classificação     
+ \hline  Linear Regression            | Previsão numérica 
+ \hline  Regression Trees             | Previsão numérica 
+ \hline  Model Trees                  | Previsão numérica 
+ \hline  Neural Networks              | Uso dual          
+ \hline  Support Vector Machine       | Uso dual          
+
+    
+
+
+Já nos *métodos não supervisionados*, se tem apenas inputs e não tem-se outputs. Nesses, o objetivo é aprender sobre relações e estruturas envolvendo as variáveis consideradas. Um exemplo é a análise de conglomerados (clusters).
+
+Finalmente, tem-se uma classe de algoritmos de ML conhecida como **meta-aprendizagem**. Esta não está associada a uma tarefa de aprendizado específica, mas por outro lado está focada em como aprender mais efetivamente. 
+
+ \hline  Algoritmos de ML| Função 
+:-----------------------:|:--------:
+ \hline  Bagging         | Uso dual 
+ \hline  Boosting        | Uso dual 
+ \hline  Random Forests  | Uso dual 
+
+<br>
+
+## Classificação usando algoritmos K-NN
+
+<br>
+
+Em termos simples, classificadores **nearest neighbor** - vizinho mais próximo - são definidos pela sua característica de classificar exemplos não rotulados atribuindo a eles a classe de exemplos rotulados similares. A despeito dessa definição simples, os métodos *nearest neighbor* são extremamente poderosos. Eles têm sido bem sucedidos em:
+
+- Reconhecimento facial em vídeos e imagens;
+- Prever se uma pessoa irá gostar de um filme ou música recomendada;
+- Identificar padrões em dados genéticos.
+
+Em geral, classificadores **nearest neighbor** são bem adequados para tarefas de classificação. O método de **nearest neighbor** para classificação é exemplificado pelo algoritmo **k-nearest neighbor** (k-NN). Embora seja um dos mais simples algoritmos de ML, ele ainda é bastante utilizado. A seguir os pontos fortes e fracos dessa abordagem:
+
+**Pontos fortes**:
+
+- Simples e efetivo;
+- Não faz suposição sobre a distribuição dos dados;
+- Fase de treino rápida. 
+
+**Pontos fracos**:
+
+- Não há produção de modelo;
+- Requer a seleção de um k apropriado;
+- Fase de classificação lenta;
+- Características nominais e missing data requerem processamento adicional. 
+
+O algoritmo k-NN tem esse nome do fato de que ele usa informação de um exemplo k-nearest neighbors para classificar exemplos não rotulados. A letra **k** é um termo variável implicando que qualquer número de vizinhos próximos pode ser utilizado. Após escolher *k*, o algoritmo requer um dataset de treino contendo exemplos que são classificados em diferentes categorias, rotulados por uma variável nominal. Assim, para cada registro não rotulado no dataset de teste, o algoritmo k-NN identifica *k* registros no dataset de treino que estão mais próximos em similaridade. O exemplo de teste não rotulado é então atribuído à classe da maioria dos k vizinhos mais próximos. 
+
+<br>
+
+## Como o k-NN funciona?
+
+**Pseudocódigo:**
+
+**Algoritmo** *k-vizinhos próximos* é:
+
+**Entrada**:
+
+-   Conjunto de dados de treino $F = {(x_1, y_1), \dots, (x_n, y_n)}$,
+    -   $x$ = valor de um atributo da observação
+    -   $y$ = classe da observação
+-   Número $k$ de vizinhos próximos,
+-   Métrica de distância $d(x,y)$,
+-   Conjunto de dados de teste $X$ para classificar.
+
+**Saída**:
+
+-   Classificação da observação $X$.
+
+**Início**
+
+**para** cada amostra de treino $(x_i, y_i) \in F$ faça
+
+> Calcular $d(X, x_i)$, a distância entre $X$ e $x_i$
+
+Deixe $N \subseteq F$ ser o conjunto de treinamento com as $k$ menores distâncias $d(X, x_i)$
+
+**retorne** a classe mais frequente em $N$
+
+**Fim**
+
+<br>
+
+### Exemplo numérico
+
+<br>
+
+-   **Aplicação**: descobrir o tipo da comida em um *jantar às cegas*.
+-   **Distância euclidiana**:
+
+$$d(p,q) = \sqrt{\sum_{i=1}^{n}(p_i-q_i)^2}$$
+
+<br>
+
+| Ingrediente | Doçura | Crocância | Tipo     |
+|-------------|--------|-----------|----------|
+| bacon       | 1      | 4         | proteína |
+| banana      | 10     | 1         | fruta    |
+| cenoura     | 7      | 10        | vegetal  |
+| alface      | 2      | 10        | vegetal  |
+| queijo      | 1      | 1         | proteína |
+| uva         | 8      | 5         | fruta    |
+| feijão      | 3      | 7         | vegetal  |
+| nozes       | 3      | 6         | proteína |
+| laranja     | 7      | 3         | fruta    |
+
+<br>
+
+-   **Nova observação**: *tomate* com doçura = 6 e crocância = 4
+
+<br>
+
+| Ingrediente | Doçura | Crocância | Tipo     | Distância                       |
+|-------------|--------|-----------|----------|---------------------------------|
+| bacon       | 1      | 4         | proteína | $\sqrt{(6-1)^2 + (4-4)^2}=5$    |
+| banana      | 10     | 1         | fruta    | $\sqrt{(6-10)^2 + (4-1)^2}=5$   |
+| cenoura     | 7      | 10        | vegetal  | $\sqrt{(6-7)^2 + (4-10)^2}=6.1$ |
+| alface      | 2      | 10        | vegetal  | $\sqrt{(6-2)^2 + (4-10)^2}=7.2$ |
+| queijo      | 1      | 1         | proteína | $\sqrt{(6-1)^2 + (4-1)^2}=5.8$  |
+| uva         | 8      | 5         | fruta    | $\sqrt{(6-8)^2 + (4-5)^2}=2.2$  |
+| feijão      | 3      | 7         | vegetal  | $\sqrt{(6-3)^2 + (4-7)^2}=4.2$  |
+| nozes       | 3      | 6         | proteína | $\sqrt{(6-3)^2 + (4-6)^2}=3.6$  |
+| laranja     | 7      | 3         | fruta    | $\sqrt{(6-7)^2 + (4-3)^2}=1.4$  |
+
+<br>
+
+Para **classificar** a nova observação *tomate*:
+
+-   Com $k = 1$: *tomate* é **fruta** pois a laranja é o vizinho mais próximo (distância de 1.4) e é uma fruta;
+
+-   Com $k = 2$: *tomate* é **fruta** pois a laranja e a uva são os vizinhos mais próximos (distância de 1.4 e 2.2)) e a classe mais frequente é fruta;
+
+-   Com $k = 3$: *tomate* é **fruta** pois laranja, uva e nozes são os vizinhos mais próximos (distância de 1.4, 2.2 e 3.6) e a classe mais frequente é fruta;
+
+-   Etc...
+
+Prática comum: escolher $k$ como a raiz quadrada do número de amostras de treino.
+
+A decisão de quantos vizinhos usar para o algoritmo `k-NN` determinará quão bem o modelo irá gerar os dados futuros. O balanço entre `overfitting` e `underfitting` o dataset de treino é um problema conhecido como **bias-variance tradeoff**. *Overfitting* é um termo usado em estatística para descrever quando um modelo estatístico se ajusta muito bem ao conjunto de dados anteriormente observado, mas se mostra ineficaz para prever novos resultados. Por outro lado, *underfitting* ocorre quando o modelo não se adapta bem sequer aos dados com os quais foi treinado.
+
+O *tradeoff* de *viés e variância* é a propriedade de um conjunto de modelos preditivos em que os modelos com um viés menor na estimativa de parâmetros têm uma variância maior das estimativas de parâmetros entre as amostras e vice-versa.
+
+A escolha de um k alto, nesse contexto, reduz o impacto ou variância causada por dados que sejam ruídos, mas pode viesar o aprendizado. Por outro lado, utilizar um único vizinho mais próximo permite que dados ruidosos ou *outliers* influenciem a classificação de exemplos. O melhor valor para k, portanto, será algo entre esses dois extremos.
+
+
+### Exemplo de k-vizinhos mais próximos: classificação econômica
+
+
+Nessa seção apresenta-se um exemplo do algoritmo k-vizinhos mais próximos.
+
+O **problema** utilizado nesse exemplo é o seguinte:
+
+-   Deseja-se distinguir os países do mundo, em termos de desempenho econômico, em 3 categorias: economias avançadas, economias emergentes e economias de baixa renda.
+
+-   A finalidade da classificação é informacional: é mais fácil analisar e comparar o desempenho econômico de países dentro de uma mesma economia, além de servir como insumo para outros tipos de classificação, como, por exemplo, o risco de crédito soberano.
+
+Os **dados** utilizados para abordar esse problema são os seguintes:
+
+-   [Agrupamento econômico do Monitor Fiscal do IMF]{.underline}: consiste de uma classificação oficial, de uma instituição reconhecida internacionalmente, que agrupa os países do mundo em 3 grandes categorias (41 avançadas, 95 emergentes e 59 renda baixa). Esses dados formam a variável de interesse Y do nosso problema de classificação. Essas informações estão disponíveis [neste link](https://www.imf.org/external/datamapper/datasets/FM) do IMF, onde há [esse outro link](https://www.imf.org/external/datamapper/Metadata_Oct2023.xlsx) para uma planilha de Excel com os agrupamentos e outros metadados.
+
+-   [Produto Interno Bruto (PIB)]{.underline}: consiste na variável utilizada pelo IMF, conforme o *Methodological and Statistical Appendix* do Monitor Fiscal[^4], para agrupar as economias pelo tamanho do PIB em dólares americanos. Esses dados, sendo o valor anual de 2018 divulgado para cada país no conjunto de dados WEO a referência aqui utilizada, formam a variável independente X do nosso problema de classificação. Essas informações estão disponíveis na base de dados [DBnomics](https://api.db.nomics.world/v22/series/IMF/WEO:2023-10?dimensions=%7B%22unit%22%3A%5B%22us_dollars%22%5D%2C%22weo-subject%22%3A%5B%22NGDPD%22%5D%7D&observations=1).
+
+[^4]: Veja <https://www.imf.org/en/Publications/FM/Issues/2023/10/10/fiscal-monitor-october-2023>
+
+**Nota**: os links acima foram acessados no dia 08/04/2024 e não há garantia de que continuem funcionando no futuro. Contate a fonte da informação para dúvidas.
+
+Os **pré-processamentos** de dados realizados para a finalidade de classificação via regressão logística são:
+
+-   Países sem informação de PIB para 2019 são tratados como valor ausente e deixados de fora da análise;
+
+-   É utilizada a amostragem aleatória estratificada para separar duas amostras: 70% para treino e o restante para teste.
+
+-   Valores extremos do PIB, detectados pela regra de corte IQR sugerida por Hyndman e Athanasopoulos (2021), são removidos das amostras;
+
+Uma **visualização de dados**, antes da separação das amostras e remoção de valores extremos, é exibida abaixo:
+
+```{r}
+# Carrega pacotes
+library(rio)
+library(rdbnomics)
+library(dplyr)
+library(tidyr)
+library(splitTools)
+library(ggplot2)
+library(class)
+library(caret)
+
+# Carrega dados
+dados_brutos_y <- rio::import(
+  file = "https://www.imf.org/external/datamapper/Metadata_Oct2023.xlsx",
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Table A. Economy Groupings",
+  col_types = c(rep("text", 3), rep("skip", 16)),
+  n_max = 95
+  )
+dados_brutos_x <- rdbnomics::rdb(
+  api_link = paste0(
+    "https://api.db.nomics.world/v22/series/IMF/WEO:2023-10?",
+    "dimensions=%7B%22unit%22%3A%5B%22us_dollars%22%5D%2C%22",
+    "weo-subject%22%3A%5B%22NGDPD%22%5D%7D&observations=1"
+    )
+  )
+
+# Pré-processamentos
+dados_y <- dados_brutos_y |>
+  dplyr::rename(
+    "avancada" = "Advanced Economies",
+    "emergentes" = "Emerging\r\nMarket Economies\r\n",
+    "baixa_renda" = "Low-Income Developing\r\nCountries\r\n"
+    ) |>
+  tidyr::pivot_longer(
+    cols = dplyr::everything(),
+    names_to = "y",
+    values_to = "pais"
+    ) |>
+  tidyr::drop_na()
+
+dados_x <- dados_brutos_x |>
+  dplyr::as_tibble() |>
+  dplyr::group_by(`weo-country`) |>
+  dplyr::filter(!is.na(value)) |>
+  dplyr::filter(period == as.Date("2021-01-01")) |>
+  dplyr::ungroup() |>
+  dplyr::select("pais" = "WEO Country", "pib" = "value")
+
+dados <- dplyr::left_join(x = dados_y, y = dados_x, by = "pais") |>
+  tidyr::drop_na()
+
+# Visualização de dados
+dados |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = pib, y = y) +
+  ggplot2::geom_point()
+```
+
+As **classificações** do algoritmo k-vizinhos mais próximos são exibidas abaixo:
+
+```{r}
+# Separação de amostras
+set.seed(1984)
+amostras <- splitTools::partition(
+  y = dados$y,
+  p = c(treino = 0.7, teste = 0.3),
+  type = "stratified"
+  )
+
+dados_treino <- dados[amostras$treino, ]
+dados_teste <- dados[amostras$teste, ]
+
+# Função para computar regra de corte IQR
+regra_iqr <- function(x, side) {
+  if (side == "lower") {
+    lower <- quantile(x = x, probs = 0.25, na.rm = TRUE) - 1.5 * IQR(x = x, na.rm = TRUE)
+    return(lower)
+  } else if (side == "upper") {
+    upper = quantile(x = x, probs = 0.75, na.rm = TRUE) + 1.5 * IQR(x = x, na.rm = TRUE)
+    return(upper)
+  } else stop("side tem que ser lower ou upper")
+}
+
+# Filtra dados
+dados_treino <- dados_treino |>
+  dplyr::filter(
+    !pib < regra_iqr(pib, "lower") & !pib > regra_iqr(pib, "upper")
+    )
+dados_teste <- dados_teste |>
+  dplyr::filter(
+    !pib < regra_iqr(pib, "lower") & !pib > regra_iqr(pib, "upper")
+    )
+
+# Classificação por k-vizinhos próximos
+classificacao_teste <- class::knn(
+  train = dados_treino[, 3],
+  test = dados_teste[, 3],
+  cl = factor(dados_treino$y),
+  k = as.integer(sqrt(nrow(dados_treino)))
+  )
+classificacao_teste
+```
+
+Por fim reportam-se **medidas de acurácia**:
+
+```{r}
+# Medidas de acurácia
+caret::confusionMatrix(classificacao_teste, factor(dados_teste$y))
+```
