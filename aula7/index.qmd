@@ -42,7 +42,7 @@ execute:
 
 [^1]: Todo este material foi retirado de diversas postagens da Análise Macro (www.analisemacro.com.br)
 
-*Métodos supervisionados* envolvem construir modelos estatísticos para previsão ou simplesmente estimação de uma variável de interesse (um output) em função de um ou mais variáveis explicativas (ou inputs). Dado um conjunto de dados, um algoritmo de aprendizado supervisionado busca otimizar um função - o modelo - de modo a encontrar uma combinação de valores que resultam no output esperado. 
+*Métodos supervisionados* envolvem construir modelos estatísticos para previsão ou simplesmente estimação de uma variável de interesse (um output) em função de uma ou mais variáveis explicativas (ou inputs). Dado um conjunto de dados, um algoritmo de aprendizado supervisionado busca otimizar um função - o modelo - de modo a encontrar uma combinação de valores que resultam no output esperado. 
 
 
  \hline  Algoritmos de ML             | Função     
@@ -215,11 +215,7 @@ Os **dados** utilizados para abordar esse problema são os seguintes:
 
 [^4]: Veja <https://www.imf.org/en/Publications/FM/Issues/2023/10/10/fiscal-monitor-october-2023>
 
-**Nota**: os links acima foram acessados no dia 08/04/2024 e não há garantia de que continuem funcionando no futuro. Contate a fonte da informação para dúvidas.
-
-Os **pré-processamentos** de dados realizados para a finalidade de classificação via regressão logística são:
-
--   Países sem informação de PIB para 2019 são tratados como valor ausente e deixados de fora da análise;
+Os **pré-processamentos** de dados realizados são:
 
 -   É utilizada a amostragem aleatória estratificada para separar duas amostras: 70% para treino e o restante para teste.
 
