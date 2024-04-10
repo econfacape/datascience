@@ -1,0 +1,526 @@
+---
+title: "MACHINE LEARNING - CLASSIFICAÇÃO COM NAIVE BAYES E ÁRVORE DE DECISÃO"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+
+# Classificação com Naive Bayes
+
+[^1] **Probabilidade** é um número entre 0 e 1, que captura as chances de um evento ocorrer, dado um conjunto de evidências. O algoritmo Naive Bayes, como o próprio nome diz, está baseado no **Teorema de Bayes**. Ele utiliza um conjunto de treino de modo a calcular a probabilidade de cada resultado com base nos valores de variáveis conhecidas. Assim, quando o algoritmo é aplicado a dados não rotulados, ele utiliza as probabilidades observadas para prever a qual classe mais provável pertence aquele dado. 
+
+[^1]: Todo este material foi retirado de diversas postagens da Análise Macro (www.analisemacro.com.br)
+
+**Teoria de probabilidade bayesiana**: a probabilidade estimada de um evento é baseada na evidência disponibilizada por várias tentativas (*trials* ou oportunidades para que o evento ocorra).
+
+Exemplo:
+
+-   **Evento de interesse**: candidato ganhar eleição;
+-   **Tentativa**: eleição presidencial.
+
+-   **Evento de interesse**: texto é um spam;
+-   **Tentativa**: comentário em vídeo do YouTube.
+
+## Como calcular a probabilidade?
+
+Probabilidade de um evento: 
+
+$$
+P=\frac{\text{Nº de tentativas em que o evento ocorreu}}{\text{Nº total de tentativas}}
+$$
+
+A probabilidade de um evento será estimada a partir dos dados observados dividindo-se o números de tentativas onde o evento ocorreu pelo número total de tentativas. Por exemplo, se choveu em 3 dos 10 dias com condições atmosféricas similares, a probabilidade de chover hoje será de $\frac{3}{10} = 0,30 = 30\%$. De forma similar, se 10 dos 50 emails recebidos forem considerados como *spam*, a probabilidade de um email recebido ser um *spam* será de 20%. 
+
+Como consequência, a probabilidade de não chover será de 70% e a probabilidade de um email não ser um spam será de 80%. Isto porque, estamos tratando de eventos que são **mutualmente exclusivos**, i.e., não podem podem ocorrer ao mesmo tempo.
+
+Sob certas circunstâncias, porém, pode-se estar interessados em eventos não mutualmente exclusivos. Se certos eventos ocorrem com o evento de interesse, nós pode-se usá-lo para fazer previsões.
+
+Por exemplo, no caso do spam, um segundo evento pode ser *emails contendo a palavra Viagra*. Na maioria dos casos, essa palavra aparecerá em emails considerados como spam. Sua presença em um email recebido é uma forte evidência de que a mensagem em questão é um spam. 
+
+Sabe-se que 20% de todas as mensagens são spam e 5% de todas as mensagens contém a palavra Viagra. Se está interessado, então, em definir a probabilidade de que $P(spam)$ e $P(Viagra)$ ocorram ao mesmo tempo, isto é, $P(spam \cap Viagra)$.
+
+Calcular $P(spam \cap Viagra)$ depende da **probabilidade conjunta** de dois eventos ou como a probabilidade de um evento está relacionada com a probabilidade de outro evento. Se dois eventos são totalmente não relacionados, eles são chamados de **eventos independentes**.
+
+Os eventos podem ocorrer ao mesmo tempo, mas se eles são independentes significa dizer que saber a probabilidade de um evento ocorrer não provê qualquer informação sobre o outro evento. 
+
+Se todos os eventos são independentes, é impossível prever um observando outro. Em outras palavras, **eventos dependentes** são a base da modelagem preditiva. 
+
+De forma geral, para eventos independentes, tem-se:
+
+$$
+P(A \cap B) = P(A)*P(B)
+$$
+
+Nós sabemos, porém, que o cálculo acima está incorreto porque $P(spam)$ e $P(Viagra)$ não são independentes. 
+
+O relacionamento entre eventos dependentes pode ser descrito utilizando o **Teorema de Bayes**:
+
+$$
+P(A|B) = \frac{P(A \cap B)}{P(B)}
+$$
+
+Essa formulação provê um meio de pensar sobre como rever a probabilidade estimada de um evento à luz da evidência disponibilizada por outro evento. A notação $P(A|B)$ deve ser lida como *a probabilidade do evento A ocorrer, dada a ocorrência do evento B*. Isso é conhecido como **probabilidade condicional**. 
+
+Dado que $P(A \cap B) = P(B \cap A)$, pode-se reescrever o Teorema de Bayes da seguinte forma:
+
+$$
+P(A|B) = \frac{P(A \cap B)}{P(B)} = \frac{P(B|A)P(A)}{P(B)} = \frac{\text{Probabilidade} \times \text{Probabilidade a priori}}{\text{Probabilidade marginal}}
+$$
+
+Esse é o formato mais tradicional em que o teorema é apresentado. 
+
+-   **Probabilidade a priori** $P(A)$: sem abrir o email, a melhor estimativa é a probabilidade anterior, ou seja, a probabilidade do email ser um spam.
+
+-   **Probabilidade** $P(B|A)$: investigando emails spam anteriores, é possível calcular a proporção em que o termo viagra aparece, constituindo evidência adicional conhecida como *probabilidade*.
+
+-   **Probabilidade marginal** $P(B)$: é a probabilidade de que o termo viagra apareça em um email.
+
+<br>
+
+**Tabela de frequência**:
+
+| Classificação | Sim   | Não    | Total   |
+|---------------|-------|--------|---------|
+| Spam          | 4     | 16     | 20      |
+| Não Spam      | 1     | 79     | 80      |
+| **Total**     | **5** | **95** | **100** |
+
+<br>
+
+**Tabela de probabilidades**:
+
+| Classificação | Sim       | Não        | Total   |
+|---------------|-----------|------------|---------|
+| Spam          | 4/20      | 16/20      | 20/100  |
+| Não Spam      | 1/80      | 79/80      | 80/100  |
+| **Total**     | **5/100** | **95/100** | **100** |
+
+<br>
+
+-   $P(\text{Viagra}=\text{Sim}|\text{Spam}) = 4/20 = 20\%$ (probabilidade de ter o termo viagra dado que é spam);
+
+<br>
+
+-   $\frac{P(\text{Viagra}|\text{Spam}) \times P(\text{Spam})}{P(\text{Viagra})} = \frac{(4/20) \times (20/100)}{(5/100)} = 80\%$ (probabilidade a posteriori ser spam dado a presença do termo viagra). Com efeito, qualquer mensagem que contiver o termo Viagra deve ser filtrada. 
+
+Sim = termo "viagra" presente no email / Não = termo "viagra" não presente no email.
+
+## O algoritmo Naive Bayes
+
+"Naive" se refere a premissa ingênua em relação aos dados, assumindo as variáveis são igualmente importantes e independentes para classificar um evento de interesse.
+
+::: columns
+::: {.column width="50%"}
+**Pontos fortes**:
+
+-   Simples, rápido e bastante efetivo
+-   Trabalha bem com ruídos e valores faltantes
+-   Requer poucas observações para treino
+-   Fácil obtenção da probabilidade estimada para previsão
+:::
+
+::: {.column width="50%"}
+**Pontos fracos**:
+
+-   Baseia-se numa suposição frequentemente defeituosa de características igualmente importantes e independentes
+-   Não é ideal para conjuntos de dados com muitas variáveis numéricas
+-   As probabilidades estimadas são menos confiáveis do que as classes preditas
+:::
+:::
+
+Podemos generalizar o algoritmo de classificação Naive Bayes a partir da seguinte fórmula:
+
+$$
+P(C_{k}|x_{1},...,x_{n}) = \frac{1}{Z} p(C_{k}) \prod_{i=1}^{n} p(x_{i}|C_{k})
+$$
+
+Isto é, a probabilidade do nível $k$ da classe $C$, dadas as evidências providas pelos recursos $x_{n}$ será igual aos produtos das probabilidades de cada pedaço de evidência condicionada aos níveis das classes, a probabilidade anterior do nível da classe e um fator $\frac{1}{Z}$, que converte os valores de possibilidades para probabilidades.
+
+<br>
+
+# Exemplo Didático com a Base de dados íris
+
+É um conjunto de dados multivariados introduzido pelo estatístico e biólogo britânico Ronald Fisher em seu artigo de 1936, “O uso de múltiplas medições em problemas taxonômicos, como um exemplo de análise discriminante linear”. Às vezes, é chamado de conjunto de dados da íris de Anderson porque Edgar Anderson coletou os dados para quantificar a variação morfológica das flores da íris de três espécies relacionadas. Duas das três espécies foram coletadas na Península de Gaspé, “todas do mesmo campo, colhidas no mesmo dia e medidas ao mesmo tempo pela mesma pessoa com a mesma aparelho”. O conjunto de dados consiste em 50 amostras de cada uma das três espécies de Iris ( Iris setosa, Iris virginica e Iris versicolor). Quatro variáveis foram medidas em cada amostra: o comprimento e a largura das sépalas e pétalas, em centímetros. Com base na combinação dessas quatro características, Fisher desenvolveu um modelo discriminante linear para distinguir as espécies umas das outras (Fonte: https://pt.wikipedia.org/wiki/Conjunto_de_dados_flor_Iris).
+
+
+```{r}
+# Carrega os pacotes
+library(e1071)
+library(caTools)
+library(caret)
+ 
+# Dividindo (split) os dados em 
+# Treino (training) e teste (test)
+split <- sample.split(iris, SplitRatio = 0.7)
+train_cl <- subset(iris, split == "TRUE")
+test_cl <- subset(iris, split == "FALSE")
+ 
+# Padronizaçao dos dados
+train_scale <- scale(train_cl[, 1:4])
+test_scale <- scale(test_cl[, 1:4])
+ 
+# Estimando o Naive Bayes Model 
+# com os dados de treino
+set.seed(120)  # Configurando a semente
+classifier_cl <- naiveBayes(Species ~ ., data = train_cl)
+
+# Previsão com os dados de teste
+y_pred <- predict(classifier_cl, newdata = test_cl)
+ 
+# Confusion Matrix
+cm <- table(test_cl$Species, y_pred)
+cm
+ 
+# Avaliação do Modelo
+confusionMatrix(cm)
+```
+
+## **Exemplo de classificação textual com dados reais**
+
+Abaixo é descrito a aplicação do modelo *Naive Bayes* para um problema de classificação com dados reais.
+
+O objetivo é classificar comentários de um vídeo no YouTube como "spam" ou "não spam". O vídeo foi publicado na plataforma em 2010 e está intitulado como "*Eminem - Love The Way You Lie ft. Rihanna"*. Os comentários (uma amostra) estão armazenados no conjunto de dados [YouTube Spam Collection](https://archive.ics.uci.edu/dataset/380/youtube+spam+collection) (arquivo `Youtube04-Eminem.csv`) e apresentam estrutura de dados textual.
+
+A tabela abaixo mostra as primeiras linhas da tabela de dados brutos:
+
+```{r}
+#| echo: false
+
+library(readr)
+library(dplyr)
+library(tm)
+
+set.seed(1984)
+
+dados_brutos <- readr::read_csv("Youtube04-Eminem.csv")
+head(dados_brutos)
+```
+
+A coluna `CLASS` é a variável de interesse, ou seja, o objetivo é classificar as categorias presentes na coluna. A origem da classificação presente na tabela acima é desconhecida.
+
+A partir dos dados brutos, diversos procedimentos de processamento de dados textuais são aplicados (capitalização da fonte, remoção de números/*stop words*/pontuação, processamento de *stemming*, separação aleatória de amostras de treino e teste, remoção de termos infrequentes, etc.). Códigos relacionados a estes procedimentos são omitidos aqui por brevidade.
+
+A tabela abaixo mostra a estrutura da tabela de dados processados (treino):
+
+```{r}
+#| echo: false
+
+# Converte Y para fator
+dados_limpos <- dados_brutos |> 
+  dplyr::mutate(
+    CLASS = factor(CLASS)
+    ) |> 
+  dplyr::rename("doc_id" = "COMMENT_ID", "text" = "CONTENT") |> 
+  dplyr::relocate(doc_id, text) |> 
+  as.data.frame(check.names = FALSE)
+
+# Prepara estrutura de dados
+dados_corpus <- dados_limpos |> 
+  tm::DataframeSource() |> 
+  tm::Corpus()
+
+# Limpa dados textuais
+dados_processados <- dados_corpus |> 
+  tm::tm_map(tm::content_transformer(tolower)) |> 
+  tm::tm_map(tm::removeNumbers) |> 
+  tm::tm_map(tm::removeWords, tm::stopwords()) |> 
+  tm::tm_map(tm::removePunctuation) |> 
+  tm::tm_map(tm::stemDocument) |> 
+  tm::tm_map(tm::stripWhitespace) 
+
+# Prepara estrutura de dados matricial
+dados_matriz <- tm::DocumentTermMatrix(dados_processados)
+
+# Separa amostras
+amostras_treino <- sample(
+  x = 1:length(dados_processados), 
+  size = length(dados_processados) * 0.75
+  )
+dados_treino <- dados_matriz[amostras_treino, ]
+dados_teste <- dados_matriz[-amostras_treino, ]
+y_treino <- dados_limpos[amostras_treino, ]$CLASS
+y_teste <- dados_limpos[-amostras_treino, ]$CLASS
+
+# Remove termos infrequentes
+dados_treino_freqs <- dados_treino[, tm::findFreqTerms(dados_treino, 5)]
+dados_teste_freqs <- dados_teste[, tm::findFreqTerms(dados_treino, 5)]
+
+# Estrutura de dados tabular
+dados_treino_tbl <- dados_treino_freqs |>
+  as.matrix() |> 
+  as.data.frame(check.names = FALSE) |> 
+  dplyr::mutate(COMMENT_ID = rownames(dados_treino_freqs), .before = 1) |> 
+  dplyr::as_tibble() |> 
+  dplyr::left_join(
+    y = dados_brutos |> dplyr::select("COMMENT_ID", "CONTENT", "CLASS"), 
+    by = "COMMENT_ID"
+    ) |> 
+  dplyr::relocate(COMMENT_ID, CONTENT, CLASS)
+
+dados_teste_tbl <- dados_teste_freqs |>
+  as.matrix() |> 
+  as.data.frame(check.names = FALSE) |> 
+  dplyr::mutate(COMMENT_ID = rownames(dados_teste_freqs), .before = 1) |> 
+  dplyr::as_tibble() |> 
+  dplyr::left_join(
+    y = dados_brutos |> dplyr::select("COMMENT_ID", "CONTENT", "CLASS"), 
+    by = "COMMENT_ID"
+    ) |> 
+  dplyr::relocate(COMMENT_ID, CONTENT, CLASS)
+
+# Salvar como CSV
+# readr::write_csv(dados_treino_tbl, "dados_treino.csv")
+# readr::write_csv(dados_teste_tbl, "dados_teste.csv")
+
+# Exibe parte da tabela
+dados_treino_tbl |> 
+  dplyr::filter(COMMENT_ID %in% head(dados_brutos)$COMMENT_ID)
+```
+
+Agora que os dados estão em um formato que pode ser representado por um modelo estatístico, podemos aplicar o algoritmo Naive Bayes. O algoritmo usará a contagem de termos relevantes para estimar a probabilidade de que um dado comentário seja um spam.
+
+O código abaixo se encarrega de estimar o modelo, produzir previsões para a amostra de teste e reportar estatísticas de acurácia:
+
+```{r}
+# Carregar pacotes
+library(readr)
+library(e1071)
+library(dplyr)
+library(caret)
+
+# Carregar dados
+dados_treino <- readr::read_csv("dados_treino.csv")
+dados_teste <- readr::read_csv("dados_teste.csv")
+
+# Estimar modelo
+modelo <- e1071::naiveBayes(
+  y = dados_treino$CLASS, 
+  x = dplyr::select(dados_treino, -c("COMMENT_ID", "CONTENT", "CLASS"))
+  )
+
+# Produzir previsões
+previsao <- predict(modelo, dados_teste)
+
+# Calcular acurácia
+caret::confusionMatrix(factor(previsao), factor(dados_teste$CLASS))
+```
+
+Analisando os resultados, é possível verificar que o modelo classificou erroneamente muitos comentários como não-spam (0), por isso a acurácia aquém do esperado. Uma possibilidade seria usar o estimador de Laplace para tentar melhorar os resultados ou outro conjunto de variáveis independentes. 
+
+<br>
+
+# Classificação com Árvore de Decisão
+
+Métodos que servem tanto para resolver problemas de regressão quanto de classificação. Eles envolvem *estratificar* e *segmentar* o espaço de previsão em um número de regiões simples. Assim, de modo a fazer a previsão de uma observação qualquer, usa-se a média ou a moda do conjunto de treino da região a que ela pertence.
+
+Os métodos baseados em árvore podem ser divididos em **árvores de regressão** e **árvores de classificação**. São métodos simples e úteis para interpretação.
+
+### Árvores de Regressão
+
+No processo de construção de uma árvore de regressão, tem-se dois passos básicos:
+
+1.  Divide-se o espaço de previsão, isto é, o conjunto de possíveis valores para $X_1, X_2,..., X_p$ em $J$ regiões distintas e não sobrepostas, $R_1, R_2,...,R_j$.
+
+2.  Para cada observação que fica dentro da região $R_j$, é feita a mesma previsão, que é simplesmente a média dos valores de resposta para as observações de treinamento em $R_j$.
+
+Supondo duas regiões, $R_1$ e $R_2$, e que a resposta média das observações de treino na primeira região seja 10 enquanto a resposta média das observações de treino na segunda região seja 20. Então, para uma dada observação $X = x$, se $X \in R_1$, se prevê um valor de 10, se $x \in R_2$,se prevê um valor de 20.
+
+Como se constrói as regiões $R_1,...,R_j$? Na teoria, as regiões podem ter qualquer formato. Entretanto, em geral se escolhe dividir o espaço de preditores em retângulos de alta dimensão, ou simplesmente *boxes*, de modo a simplificar e facilitar a interpretação dos resultados do modelo preditivo. O objetivo é encontrar boxes $R_1,...,R_j$ que minimize
+
+$$
+\sum_{j=1}^{J} \sum_{i \in R_j}^{} (y_i - \hat{y}_{R_j})^2
+$$
+
+onde $\hat{y}_{R_j}$ é a resposta média para as observações de treino contidas no box $j$.
+
+É computacionalmente inviável considerar toda possível partição do espaço em $J$ boxes. Por essa razão, toma-se um *top-down*, uma abordagem chamada de *divisão binária recursiva*. Cada nó intermediário vai ter uma divisão em dois.
+
+A abordagem é chamada de *top-down*, porque ela se inicia no topo da árvore e vai dividindo o espaço preditor. Cada divisão é indicada via dois novos *ramos* até o final da árvore. 
+
+De modo a performar a divisão binária recursiva, primeiro é selecionado o preditor $X_j$ e o ponto de corte $s$ de modo a dividir o espaço preditor em regiões {$X|X_j < s$} e {$X|X_j \geq s$} que irão minimizar a equação dada acima.
+
+Isto é, para cada $j$ e $s$, define-se o par
+
+$$
+R_1(j,s) = {X|X_j < s}
+$$
+e
+
+$$
+R_2(j,s) = {X|X_j \geq s}
+$$
+
+e escolhe-se o par que minimiza a equação
+
+$$
+\sum_{i:x_i \in R_1(j,s)}^{} (y_i - \hat{y}_{R_1})^2 + \sum_{i:x_i \in R_2(j,s)}^{} (y_i - \hat{y}_{R_2})^2
+$$ 
+
+onde $\hat{y}_{R_1}$ é a resposta média para as observações de treino contidas em $R_1(y,s)$.
+
+O processo continua até que chega-se a um critério de parada. Deve-se continuar até que não se tenha região com mais de cinco observações.
+
+Uma vez que as regiões $R_1,...,R_j$ são criadas, se prevê a resposta para um dado conjunto de observações de teste utilizando a média das observações de treino na região ao qual a observação de teste pertence.
+
+O processo descrito acima pode produzir boas previsões sobre o conjunto de treino, mas é provável que gere um *overfit* (sobreajuste) sobre os dados, levando a uma performance fraca no conjunto de teste. Isso ocorre porque a árvore resultante pode ser muito complexa.
+
+Uma árvore menor com poucas divisões pode levar a menor variância e melhor interpretação ao custo de um pequeno viés. Uma alternativa ao processo descrito acima é o de construir a árvore apenas até o ponto em que a primeira equação cai devido a cada divisão exceder algum limite. Essa estratégia irá resultar em árvores menores.
+
+Assim, uma estratégia melhor é construir uma árvore grande $T_0$ e então ir *podando* a mesma, de modo a obter uma sub-árvore. Intuitivamente, o objetivo é selecionar uma sub-árvore que leva a uma menor taxa de erro no conjunto de testes. É necessário, então, um meio para selecionar um pequeno conjunto de sub-árvores para avaliação.
+
+*Cost complexity pruning* (poda por custo-complexidade) nos dá um meio de fazer isso. Ao invés de considerar cada possível sub-árvore, nós consideramos uma sequência de árvores indexadas por um parâmetro $\alpha$.
+
+Cada valor de $\alpha$ corresponde a uma sub-árvore $T \subset T_0$ de modo que
+
+$$
+\sum_{m=1}^{|T|} \sum_{x_i \in R_m} (y_i - \hat{y}_{R_m})^ + \alpha T 
+$$
+
+será o menor possível. Aqui, $|T|$ indica o número de nós terminais da árvore $T$, $R_m$ é o número de subconjuntos do espaço preditor e $\hat{y}_{R_m}$ será a resposta predita associada a $R_m$. O parâmetro $\alpha$ irá controlar o *trade-off* entre a complexidade das sub-árvores e o seu ajuste ao conjunto de treino.[^2] À medida que $\alpha$ aumenta, haverá um preço a se pagar para ter uma árvore com muitos nós terminais, de modo que a soma dada pela equação acima  tenderá a ser minimizada para um número menor de sub-árvores. Isto é, à medida que $\alpha$ aumenta, os ramos (nós internos) da árvore serão podados.
+
+[^2]: Quando $\alpha = 0$, $T = T_0$.
+
+<br>
+
+### Árvores de Classificação
+
+Uma árvore de classificação é similar a uma árvore de regressão, com a diferença que é utilizada para prever uma resposta qualitativa ao invés de uma resposta quantitativa.
+
+Na árvore de regressão, a resposta prevista para uma observação é dada pela resposta média das observações de treino que pertencem ao mesmo nó terminal.
+
+Já na árvore de classificação, se prevê que cada observação pertence à *classe mais comum* das observações de treino da região a que elas pertencem.
+
+Na interpretação dos resultados de uma árvore de classificação, geralmente se está interessados não apenas na previsão da *classe correspondente* a uma região de nó terminal específica, mas também nas *proporções de classe* entre as observações de treinamento que se enquadram nesta região.
+
+O processo de construção de uma árvore de classificação é bastante similar ao de uma árvore de regressão. Assim como lá, também é usada a divisão binária recursiva para construir uma árvore de classificação. Entretanto, aqui não se pode usar como critério a minimização da equação.
+
+Uma alternativa é a *taxa de erro de classificação*. Dado que nosso objetivo é atribuir uma observação em uma dada região à classe mais comum das observações de treino daquela região, a *taxa de erro de classificação* será a fração das observações de treino naquela região que não pertencem à classe mais comum:
+
+$$
+E = 1 - \max_{k} (\hat{p}_{mk})
+$$ 
+Onde $\hat{p}_{mk}$ representa a proporção de observações de treino na região $m$ que é da classe $k$.
+
+A *taxa de erro de classificação*, contudo, não é suficientemente sensível para o crescimento da árvore. Outras medidas são então preferidas. O *Índice de Gini*, por exemplo, é dado por
+
+$$
+G = \sum_{k=1}^{K} (\hat{p}_{mk}) (1 - (\hat{p}_{mk}))
+$$ 
+sendo uma medida de variância total ao longo das classes $K$. Um valor baixo indica que um nó contém observações predominantes de uma única classe.
+
+Uma alternativa ao índice de Gini é a *entropia*:
+
+$$
+D = - \sum_{k=1}^{L} (\hat{p}_{mk}) log (\hat{p}_{mk})
+$$ 
+Qualquer uma das duas pode ser utilizada para avaliar a qualidade de uma divisão particular, dado que as mesmas são mais sensíveis à pureza do nó do que a taxa de erro de classificação.
+
+<br>
+
+### Exemplo de Árvores de Regressão: previsão de preço de carros usados
+
+
+O **problema** usado para exemplificar é:
+
+-   Deseja-se definir o preço de venda de carros usados.
+
+Os **dados** utilizados para abordar esse problema são os seguintes:
+
+-   Conjunto de dados *Kelly Blue Book* disponibilizado [neste link](https://modeldata.tidymodels.org/reference/car_prices.html), contendo uma amostra de dados de 804 carros da fabricante GM do ano de 2005.
+
+Não houve nenhum **pré-processamento** nos dados.
+
+Uma pequena **análise exploratória** é exibida abaixo:
+
+```{r}
+# Pacotes ------
+# Carregar pacotes
+library(modeldata)
+library(skimr)
+library(splitTools)
+library(tree)
+library(forecast)
+
+# Dados ---
+
+# Carregar dados
+data(car_prices)
+dados <- car_prices
+
+# Pequena análise exploratória
+skimr::skim(dados)
+```
+
+<br>
+
+As **previsões** produzidas pelo algoritmo são exibidas abaixo:
+
+```{r}
+# Modelagem ---------------------------------------------------------------
+
+# Separação de amostras
+set.seed(1984)
+amostras <- splitTools::partition(
+  y = dados$Price,
+  p = c(treino = 0.7, teste = 0.3),
+  type = "basic"
+  )
+
+dados_treino <- dados[amostras$treino, ]
+dados_teste <- dados[amostras$teste, ]
+
+# Treino do algoritmo
+modelo <- tree::tree(
+  formula = Price ~ Mileage + Cylinder + Doors + Leather,
+  data = dados_treino
+  )
+
+#Estrutura da árvore
+modelo
+
+#Figura da árvore
+plot(modelo)
+text(modelo)
+
+# Produzir previsões
+previsao <- predict(modelo, dados_teste)
+head(previsao)
+hist(previsao)
+```
+
+Por fim as **medidas de acurácia**:
+
+```{r}
+# Calcular acurácia
+forecast::accuracy(object = predict(modelo), x = dados_treino$Price)
+forecast::accuracy(object = previsao, x = dados_teste$Price)
+```
+
