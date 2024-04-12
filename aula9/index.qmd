@@ -1,0 +1,195 @@
+---
+title: "MACHINE LEARNING - CLASSIFICAÇÃO COM REDES NEURAIS ARTIFICIAIS"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+
+# Classificação com Redes Neurais Artificiais (ANN)
+
+[^1] Redes neurais são uma abordagem totalmente diferente para a análise de dados em relação a qualquer outra técnica multivariada. Em vez de conceitualizar o problema como de caráter matemático, redes neurais usam o cérebro humano e sua estrutura para desenvolver uma estratégia de processamento. 
+
+[^1]: Este material por base Hair et al (2005) e postagens da Análise Macro (www.analisemacro.com.br)
+
+Um elemento-chave em uma rede neural é a aprendizagem (outra analogia com o cérebro humano), pelo qual erros de saída (previsão ou classificação) são retornados ao sistema e ele é, então, ajustado adequadamente. Ele então prossegue novamente, aprendendo a partir de cada conjunto de erros de saída. Esse é um processo sequencial.
+
+Redes neurais foram primeiramente operacionalizadas no final dos anos 1950 e pareciam ser muito promissoras. No entanto, no final dos anos 1960, pesquisas demonstraram que as redes neurais daquela época eram realmente muito limitadas em capacidade e a área em si sofreu, em geral, um retrocesso.
+
+O interesse recomeçou na década de 1980 quando desenvolvimentos teóricos foram acoplados a um maior poder computacional. Um melhoramento considerável foi o acréscimo de camadas ocultas, as quais permitiram que as redes neurais retratassem sistemas muito mais complexos. Hoje em dia redes neurais são empregadas em quase toda disciplina ou área de análise. A natureza flexível de especificação de sistema as torna adaptáveis a uma vasta amplitude de problemas, variando de previsão a classificação e até mesmo a análise de séries temporais.
+
+
+## Conceitos Básicos de Redes Neurais
+
+Redes neurais têm uma estrutura e operação simples que pode ser descrita por quatro conceitos: 
+
+1) O tipo de modelo de rede neural;
+
+2) As unidades de processamento individuais (nós) que coletam informações, processam as mesmas e criam um valor de saída; 
+
+3) O sistema de nós (rede) arranjados para transferir sinais a partir dos nós de entrada para os nós de saída, com alguns nós intermeadiários; 
+4) A função de aprendizado pela qual o sistema "retorna" erros na previsão para recalibrar o modelo.
+
+
+### Tipos de modelos de redes neurais
+
+Existem três tipos básicos de redes neurais: o **perceptron multicamadas**, a função **base radial** e as **redes Kohonen**. O modelo perceptron multicamadas é o mais freqüentemente usado. A função base radial é um método mais recentemente desenvolvido que pode ser utilizado para as mesmas tarefas do modelo multicamadas, mas funciona de uma maneira um tanto diferente. O modelo Kohonen é adequado apenas para problemas de agrupamento. 
+
+
+### Nós
+
+O elemento mais básico em uma rede neural é um nó, uma unidade de processamento completa que atua em paralelo com outros nós na rede neural. O nó é análogo ao neurônio do cérebro humano, o qual aceita entradas e então cria uma saída. 
+
+<br>
+
+![Exemplo de Rede Neural equivalente a uma regressão linear](imgs/nnet1.png){width="70%"}
+
+Cada conexão a partir de outro nó tem um **peso** designado. Os *pesos* são selecionados a partir de um algoritmo de aprendizado que minimiza uma *função custo* como o Erro Quadrático Médio (EQM). A primeira tarefa do nó é processar os dados de entrada pela criação de um valor Esse valor somado é, então, processado por uma função de ativação para gerar uma saída, a qual é enviada para o próximo nó no sistema. Funções de ativação são geralmente uma função não-linear, como a função sigmóide, a qual é uma classe geral de curvas em forma de S que inclui a função logística 
+
+
+### Rede neural
+
+A rede neural é um arranjo sequencial de três tipos básicos de nós ou camadas: nós de entrada, nós de saída e nós intermediários (ocultos).
+
+Os nós de entrada recebem valores iniciais de dados de cada caso e os transmitem para a rede neural. Um nó de entrada representa uma única variável ou padrão. Variáveis métricas demandam apenas um nó para cada variável. Variáveis não-métricas devem ser codificadas, significando que cada categoria é representada por uma variável binária. 
+
+Um nó de saída recebe entradas e calcula um valor de saída, mas ao invés de ir para outro nó, esse é o valor final. Se esse for um modelo preditivo, então, este é o valor de previsão. Se o modelo é usado para classificação, então, esse é o valor empregado no processo de classificação.
+
+Em quase toda rede neural existe um terceiro tipo de nó contido na camada oculta. Esse é um conjunto de nós usado pela rede neural para representar relações mais complexas do que apenas uma relação um-a-um entre entrada e saída. São as camadas ocultas e a função de ativação que permitem que a rede neural represente relações não lineares. 
+
+Esse delineamento da rede neural permite que cada nó atue independentemente, mas em paralelo, com todos os outros nós. Isso fornece grande flexibilidade para a rede neural nos tipos de relações entre entrada e saída com as quais se possa lidar.
+
+<br>
+
+![Exemplo de Rede Neural não-linear](imgs/nnet2.png)
+
+Ao adicionarmos uma camada (*layer*) intermediária com *neurônios ocultos*, a nossa rede neural se torna não linear como no exemplo acima. Ela é conhecida como *rede neural feed-forward multicamadas*, onde cada camada de nós recebe *inputs* da camada anterior.
+
+Os *outputs* dos nós em uma camada serão, então, *inputs* na próxima camada. Os *inputs* em cada nó serão combinados usando uma combinação linear ponderada. O resultado é, então, modificado por uma função não-linear antes de ser transformado em *output*.
+
+
+### Aprendizado
+
+A característica de uma rede neural que verdadeiramente se destaca em relação a outras técnicas multivariadas é sua habilidade para "aprender" ou para "corrigir a si mesma" baseada em seus erros. 
+
+Os pesos representam a melhor "tentativa" do modelo sobre como fazer a previsão dos nós de saída. Logo que a entrada para um caso é processada pelo sistema, ela pode ser comparada com o real valor de saída. Isso se chama de **treino do sistema** em um modo de aprendizado supervisionado. Os valores real e de saída são comparados. Se existe alguma diferença entre os dois valores (semelhante a um valor residual), então, se busca ajustar o modelo na esperança de melhorá-lo. 
+
+A forma mais comum de treino é a retropropagação. Nessa técnica, o erro no valor de saída é calculado e, então, distribuído para trás ao longo do sistema. À medida que funciona pelo seu caminho no sistema de nós, os pesos são modificados proporcionalmente, aumentando ou diminuindo, dependendo da direção do erro. 
+
+Assim que todos os pesos tenham sido recalibrados, a entrada para outro caso é feita na rede e o processo começa novamente. O objetivo é processar um grande número de casos pela rede neural na fase de treinamento de forma que ela possa fazer as melhores previsões ao longo de todos os padrões de entrada de dados. Há também um modo não-supervisionado no qual nenhum *feedback* é dado quanto ao correto valor de saída. Esse método é empregado somente em problemas de agrupamento porque não há modo de conhecer soluções de agrupamentos reais.
+
+<br>
+
+### Exemplo de Redes Neurais: previsão de inadimplência
+
+O **problema** utilizado para exemplificar é o seguinte:
+
+-   Deseja-se definir se um empréstimo será totalmente pago, classificando como *adimplente (bom/good)* ou *inadimplente (ruim/bad)*.
+
+Os **dados** utilizados para abordar esse problema são os seguintes:
+
+-   Conjunto de dados *Lending Club Loan Data* disponibilizado [neste link](https://modeldata.tidymodels.org/reference/lending_club.html), contendo uma amostra de dados referente ao primeiro trimestre de 2016.
+-   Um dicionário sobre as variáveis pode ser conferido [neste link](https://resources.lendingclub.com/LCDataDictionary.xlsx).
+
+Não houve nenhum **pré-processamento** nos dados.
+
+Uma pequena **análise exploratória** é exibida abaixo:
+
+```{r}
+# Carregar pacotes
+library(modeldata)
+library(skimr)
+library(splitTools)
+library(neuralnet)
+library(dplyr)
+library(caret)
+
+# Carregar dados
+data(lending_club)
+dados <- lending_club
+
+# Pequena análise exploratória
+skimr::skim(dados)
+```
+
+As **classificações** produzidas pelo algoritmo são exibidas abaixo:
+
+```{r}
+# Modelagem
+# Separação de amostras
+set.seed(1984)
+amostras <- splitTools::partition(
+  y = dados$Class,
+  p = c(treino = 0.7, teste = 0.3),
+  type = "stratified"
+  )
+
+dados_treino <- dados[amostras$treino, ]
+dados_teste <- dados[amostras$teste, ]
+
+dados_teste$class # variável de interesse
+
+dados_teste$class |>table()
+
+# Treino do modelo
+modelo <- neuralnet::neuralnet(
+  formula = Class ~ funded_amnt + annual_inc + delinq_2yrs + open_il_24m,
+  data = dados
+  )
+
+# Produzir previsões
+previsao <- predict(modelo, dados_teste)
+head(previsao)
+head(dados_teste)$Class
+
+tail(previsao)
+tail(dados_teste)$Class
+```
+
+Por fim reporta-se algumas **medidas de acurácia**:
+
+```{r}
+# Calcular acurácia
+previsao <- previsao |> 
+  as.data.frame() |> 
+  dplyr::as_tibble() |> 
+  dplyr::mutate(
+    classificacao = dplyr::if_else(
+      V1 >= V2,
+      factor(levels(dados$Class)[1]),
+      factor(levels(dados$Class)[2])
+      )
+    )
+
+caret::confusionMatrix(
+  data = previsao$classificacao,
+  reference = dados_teste$Class
+  )
+```
