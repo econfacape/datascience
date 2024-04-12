@@ -226,13 +226,11 @@ head(dados_brutos)
 
 A coluna `CLASS` é a variável de interesse, ou seja, o objetivo é classificar as categorias presentes na coluna. A origem da classificação presente na tabela acima é desconhecida.
 
-A partir dos dados brutos, diversos procedimentos de processamento de dados textuais são aplicados (capitalização da fonte, remoção de números/*stop words*/pontuação, processamento de *stemming*, separação aleatória de amostras de treino e teste, remoção de termos infrequentes, etc.). Códigos relacionados a estes procedimentos são omitidos aqui por brevidade.
+A partir dos dados brutos, diversos procedimentos de processamento de dados textuais são aplicados (capitalização da fonte, remoção de números/*stop words*/pontuação, processamento de *stemming*, separação aleatória de amostras de treino e teste, remoção de termos infrequentes, etc.).
 
 A tabela abaixo mostra a estrutura da tabela de dados processados (treino):
 
 ```{r}
-#| echo: false
-
 # Converte Y para fator
 dados_limpos <- dados_brutos |> 
   dplyr::mutate(
@@ -305,7 +303,7 @@ dados_treino_tbl |>
   dplyr::filter(COMMENT_ID %in% head(dados_brutos)$COMMENT_ID)
 ```
 
-Agora que os dados estão em um formato que pode ser representado por um modelo estatístico, podemos aplicar o algoritmo Naive Bayes. O algoritmo usará a contagem de termos relevantes para estimar a probabilidade de que um dado comentário seja um spam.
+Agora que os dados estão em um formato que pode ser representado por um modelo estatístico, pode-se aplicar o algoritmo Naive Bayes. O algoritmo usará a contagem de termos relevantes para estimar a probabilidade de que um dado comentário seja um spam.
 
 O código abaixo se encarrega de estimar o modelo, produzir previsões para a amostra de teste e reportar estatísticas de acurácia:
 
