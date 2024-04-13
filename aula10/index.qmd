@@ -1,0 +1,339 @@
+---
+title: "MACHINE LEARNING - CLASSIFICAÇÃO COM MÁQUINA DE VETORES DE SUPORTE (SVM)"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+
+# Classificação com Máquina de Vetores de Suporte (SVM).
+
+[^1] É um **algoritmo para classificação e regressão** não probabilístico. A ideia básica contida em um `Support Vector Machine (SVM)` é a de separar conjuntos de objetos que pertençam a diferentes classes. A figura abaixo ilustra.
+
+[^1]: Este material está baseado em diversas postagens da Análise Macro (www.analisemacro.com.br)
+
+![Exemplo de aplicação de um SVM](imgs/svm1.jpeg){width=40%}
+
+<br>
+
+O **Objetivo** é encontrar uma "linha" (hiperplano) que divida as observações entre as categorias. 
+
+Mapeia as observações em um espaço de modo a **maximizar a largura da lacuna** (chamada de margem) entre as categorias
+
+![](imgs/svm01.png){fig-align="center" width="700"}
+
+**Previsões** são geradas com base em qual lado do hiperplano a observação se encontram. 
+ 
+A definição do `hiperplano` que dividirá as diferentes `classes` passa por um algoritmo de aprendizado supervisionado. Esse plano delimitado dividirá o espaço criando *partições homogêneas* de cada lado.
+
+SVMs são mais facilmente entendidos quando utilizados para **classificações binárias**, onde o método tem sido tradicionalmente aplicado. O nome `Support Vector Machine` é uma generalização de um classificador simples denominado *maximal margin classifier*, que separa as classes do conjunto com base em uma *fronteira linear*. Uma primeira extensão desse classificador simples é o *support vector classifier*, que pode ser aplicado a um leque maior de casos. Nesse contexto, o SVM é uma extensão desse último, de modo a acomodar fronteiras não-lineares. 
+
+
+## O que são hiperplanos?
+
+Hiperplanos funcionam como **barreiras de decisão** para classificar as observações.
+
+![](imgs/svm02.png){fig-align="center" width="700"}
+
+em um espaço de dimensão $p$, um hiperplano é um subespaço afinado plano de dimensão $p-1$.^[O termo *afinado* indica tão somente que o subespaço não precisa passar pela origem.] Isso dito, em duas dimensões, um hiperplano será uma *linha*, já em três dimensões será um *plano*. Em duas dimensões, um hiperplano pode ser definido como:
+
+$$
+\beta_0 + \beta_1 X_1 + \beta_2 X_2 = 0
+$$
+
+Para $p$ dimensões, basta fazer
+
+$$
+\beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p = 0
+$$
+
+Assim, quando $X$ não satisfaz a equação acima, ou pode ser maior
+
+$$
+\beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p > 0
+$$
+
+ou ele pode ser menor, 
+
+$$
+\beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p < 0
+$$
+
+De modo que pode-se pensar no hiperplano dividindo o espaço de dimensão $p$ em duas metades, como já mostrado acima.
+
+Suponha agora que se tem um matriz $n \times p$ $X$ de dados que consiste em $n$ observações de treino no espaço $p$,
+
+$$
+x_1 = \begin{pmatrix}
+x_{11}\\ 
+. \\ 
+. \\ 
+. \\ 
+x_{1p}
+\end{pmatrix}, ...,
+x_n = \begin{pmatrix}
+x_{n1}\\ 
+. \\ 
+. \\ 
+. \\ 
+x_{np}
+\end{pmatrix},
+$$
+
+de modo que essas observações caem em duas classes, isto é, $y_1,...,y_n$ $\in$ $\left \{-1,1  \right \}$, onde $-1$ representa uma classe e $1$ representa a outra. 
+
+Também se tem uma *observação de teste*, um vetor $p$ de variáveis observadas $x^{q} = (x_1^{q} ... x_{p}^{q})^T$.
+
+O objetivo será o de desenvolver um classificador baseado nos dados de treino que irá classificar corretemente as observações de teste usando as características de medição. Suponha, então, que seja possível construir um hiperplano que separe as observações de treino de acordo com os labels de suas classes.
+
+![Usando um hiperplano para classificação](imgs/9.2.png){width=80%}
+
+Pode-se nomear as observações azuis como sendo $y_i = 1$ e as roxas como $y_i = -1$. Assim, o hiperplano irá aplicar $\beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p > 0$ se $y_1 = 1$ e $\beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p < 0$ se $y_i = -1$.
+
+Assim, a observação de teste é alocada a uma classe a depender de qual lado esteja do hiperplano.^[Pode-se fazer uso também da magnitude de $f(x^*)$. Se $f(x^*)$ está muito distante de zero, significa que $x^*$ fica longe do hiperplano, de modo que se pode ficar confiante na classe associada a $x^*$]
+
+## Classificador de Margem Máxima
+
+De forma geral, se os dados podem ser separados de forma perfeita usando um hiperplano, existirá um número infinito de possibilidades. Na figura acima, por exemplo, se observa três possibilidades de hiperplanos. Precisa-se, então, escolher qual deles se irá utilizar para separar nossas observações.
+
+Pode-se usar para isso o *classificador de margem máxima*. Observe, por exemplo, a figura abaixo:
+
+![Ilustrando um hiperplano](imgs/9.3.png){width=50%}
+
+Há novamente duas classes de observações, mostradas em azul e roxo. O *hiperplano de margem máxima* é mostrado como sendo uma linha sólida. A *margem* será então a distância da linha sólida até as linhas tracejadas. As linhas azuis e roxas que se encontram nas linhas tracejadas são os *vetores de suporte* e a distância desses pontos até o hiperplano é indicado pelas flechas. Por fim, as grades roxas e azuis indicam a regra de decisão feita por um classificador baseado no hiperplano de separação.
+
+Em termos mais formais, considere um conjunto de observações de treino $x_1,...,x_p \in \mathbb{R}^{p}$ e as classes $y_1, ..., y_n \in \left \{-1,1  \right \}$. O hiperplano de margem máxima será então a solução para o problema de otimização dado por
+
+$$
+\max_{\beta_0, \beta_1,...,\beta_p,M} M
+$$
+$$
+s.a., \sum_{j=1}^{p} \beta_j^2 = 1,
+$$
+$$
+y_i(\beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + .... + \beta_p x_{ip}) \geq M \forall i = 1,...,n.
+$$
+
+De modo que as restrições garantem que cada observação estará no lado correto do hiperplano e ao menos à distância M do hiperplano. $M$ representa assim a margem do nosso hiperplano e o problema de otimização escolhe $\beta_0, \beta_1,..., \beta_p$ de modo a maximizar $M$. 
+
+<br>
+
+## Support Vector Classifiers
+
+Situações possíveis de ocorrer:
+
+![Classes não separáveis por um hiperplano](imgs/9.4.png){width=60%}
+
+
+![Sensibilidade a observações individuais](imgs/9.5.png){width=80%}
+
+O fato do hiperplano de margem máxima ser extremamente sensível a mudanças em uma única observação sugere que estamos incorrendo em problema de *overfit*.
+
+Para resolver este tipo de problema, um outro tipo de abordagem é necessária. Nesse caso, pode-se considerar um classificador baseado em hiperplano que não separe de forma perfeita as duas classes, de modo a 
+
+- Aumentar a robustez a observações individuais 
+- Melhor classificar da maioria das observações de treino
+
+Assim, é permitido que algumas observações estejam colocadas no lado errado do hiperplano.
+
+![Sensibilidade a observações individuais](imgs/9.6.png){width=80%}
+
+O problema passa a ser colocado nos seguintes termos
+
+$$
+\max_{\beta_0, \beta_1,...,\beta_p, \varepsilon_1,..., \varepsilon_n, M} M 
+$$
+$$
+s.a., \sum_{j=1}^{p} \beta_j^2 = 1, 
+$$
+$$
+y_i(\beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + .... + \beta_p x_{ip}) \geq M(1 - \varepsilon_i), 
+$$
+
+$$
+\varepsilon_i \geq 0, \sum_{i=1}^{n} \varepsilon_i \leq C,
+$$
+
+onde $C$ é um parâmetro de sintonia não-negativo. 
+
+A solução do problema nos dará o nosso classificador. Ele irá classificar uma observação de teste a depender de qual lado do hiperplano ela estará. O hiperplano é escolhido de modo a **separar a maioria das observações de treino** em duas classes, mas **pode classificar de forma errada** algumas das observações.
+
+As *variáveis de folga* $\varepsilon_1, ..., \varepsilon_n$ é que irão permitir que as observações individuais estejam do lado errado da margem ou do hiperplano. Se $\varepsilon_i = 0$, a observação $i$ estará no lado correto da margem. Se $\varepsilon_i > 0$, ela estará no lado errado da margem. Por fim, se $\varepsilon_i > 1$, ela estará do lado errado do hiperplano. 
+
+O parâmetro $C$, nesse contexto, é quem dará o controle sobre o quanto é tolerado que as observações violem a margem e o hiperplano. Se $C=0$, não se tolera violação. Maiores valores para $C$ implicam em maior tolerância na violação. 
+
+![Diferentes valores para C](imgs/9.7.png){width=80%}
+
+O *support vector classifier* é uma abordagem natural para classificação se a fronteira entre as duas classes for linear. O problema é quando enfrentamos limites não-lineares.
+
+![Performance ruim](imgs/9.8.png){width=80%}
+<br>
+
+## Support Vector Machine
+
+O *support vector machine*, nesse contexto, será uma extensão do *support vector classifier* no sentido de ampliar o espaço $X_1, X_2,..., X_p$ utilizando para isso **kernels**. 
+
+Para explicar como os SVMs funcionam, vamos voltar ao problema de otimização que dá origem ao *support vector classifier*. A solução para aquele problema envolve apenas o *produto interno* das observações. De modo a relembrar, o produto interno entre dois vetores $a$ e $b$ é definido como $\left \langle a,b  \right \rangle = \sum_{i=1}^{r} a_i b_i$. Assim, o produto interno de duas observações $x_i, x_i^{´}$ será dado por 
+
+$$
+\left \langle x_i, x_i^{T´}  \right \rangle = \sum_{j=1}^{p} x_{ij} x_{ij}^{T´}
+$$
+
+De modo que o *support vector classifier* pode ser representado por 
+
+$$
+f(x) = \beta_0 + \sum_{i=1}^{n} \alpha_i \left \langle x, x_i  \right \rangle,
+$$
+
+onde há $n$ parâmetros $\alpha_i$, um por observação de treino. De modo a estimar os parâmetros $\alpha_1, ..., \alpha_n$ e $\beta_0$, tudo o que se precisa será o $\binom{n}{2}$ produtos internos $\left \langle x_i, x_i^{T´}  \right \rangle$ entre todos os pares de observações de treino.
+
+Isso dito, suponha que sempre o produto interno aparecer na representação do *support vector classifier* ou no cálculo da solução para o classificador, será substituído com uma generalização do produto interno na forma
+
+$$
+K(x_i, x_i^{T´}),
+$$
+
+onde $K$ é uma função referida como **kernel**.^[Uma função kernel é uma função que quantifica as similaridades entre duas observações]
+
+Feito isso, nós podemos pegar
+
+$$
+K(x_i, x_i^{T´}) = \sum_{j=1}^{p} x_{ij} x_{ij}^{T´}
+$$
+
+O que volta ao classificador original. A equação acima é denominada linear porque o classificador será linear nas variáveis.^[Um kernel linear quantifica a similaridade dos pares de observações usando a correlação de Pearson.]
+
+Pode-se, contudo, substituir a forma de $K(x_i, x_i^{T´})$ por 
+
+$$
+K(x_i, x_i^{T´}) = (1 + \sum_{j=1}^{p} x_i, x_i^{T´})^{d},
+$$
+
+conhecido como kernel polinomial de grau $d$. Com $d > 1$, tem-se fronteiras de decisão mais flexíveis do que aquelas impostas pelo classificador anterior. Quando o *support vector classifier* é combinado com a equação acima, tem-se como resultado o **Suport Vector Machine**. 
+
+![Exemplos de SVM](imgs/9.9.png){width=80%}
+<br>
+
+## Exemplo de SVM: pontuação de crédito
+
+Nessa seção apresentamos um exemplo do algoritmo Máquina de Vetores de Suporte.
+
+O **problema** é:
+
+-   Deseja-se definir a pontuação de crédito de clientes para finalidade de concessão de financiamento bancário;
+
+-   A ideia é classificar binariamente os clientes em duas categorias: "bom" (*good*) e ruim (*bad*).
+
+Os **dados** utilizados para abordar esse problema são os seguintes:
+
+-   Conjunto de dados de crédito disponibilizado [neste link](https://modeldata.tidymodels.org/reference/credit_data.html).
+
+Os **pré-processamentos** mínimos realizados nos dados são os seguintes:
+
+-   Remoção de valores ausentes;
+
+-   Separação de amostras estratificada (70% treino);
+
+-   Codificação de variáveis categórias.
+
+Uma pequena **análise exploratória** é exibida abaixo:
+
+```{r}
+# Carregar pacotes
+library(modeldata)
+library(dplyr)
+library(skimr)
+library(tidyr)
+library(splitTools)
+library(e1071)
+library(caret)
+
+# Carregar dados
+data(credit_data)
+dados <- dplyr::as_tibble(credit_data)
+
+# Pequena análise exploratória
+skimr::skim(dados)
+
+# Remoção de observações ausentes
+dados <- tidyr::drop_na(dados)
+```
+
+As **classificações** produzidas pelo algoritmo são exibidas abaixo:
+
+```{r}
+# Separação de amostras
+set.seed(1984)
+amostras <- splitTools::partition(
+  y = dados$Status,
+  p = c(treino = 0.7, teste = 0.3),
+  type = "stratified"
+  )
+
+dados_treino <- dados[amostras$treino, ]
+dados_teste <- dados[amostras$teste, ]
+
+# Treino do algoritmo
+modelo <- e1071::svm(formula = Status ~., data = dados_treino) #kernel radial e cost = 1 
+
+# Treino do algoritmo - Outras opçoes
+modelo2 <- e1071::svm(formula = Status ~., data=dados_treino, kernel="linear")
+
+modelo3 <- e1071::svm(formula = Status ~., data=dados_treino, kernel="polynomial")
+
+modelo4 <- e1071::svm(formula = Status ~., data=dados_treino, kernel="linear", cost=10)
+```
+
+Depois de estimado, pode-se fazer as previsões
+
+```{r}
+# Produzir previsões
+previsao <- predict(modelo, dados_teste)
+head(previsao)
+
+previsao2 <- predict(modelo2, dados_teste)
+head(previsao2)
+
+previsao3 <- predict(modelo3, dados_teste)
+head(previsao3)
+
+previsao4 <- predict(modelo4, dados_teste)
+head(previsao4)
+```
+
+Por fim, reporta-se **medidas de acurácia** de cada modelo
+
+```{r}
+# Calcular acurácia
+caret::confusionMatrix(previsao, dados_teste$Status)
+caret::confusionMatrix(previsao2, dados_teste$Status)
+caret::confusionMatrix(previsao3, dados_teste$Status)
+caret::confusionMatrix(previsao4, dados_teste$Status)
+```
