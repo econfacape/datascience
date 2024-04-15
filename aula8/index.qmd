@@ -79,7 +79,7 @@ $$
 P(A \cap B) = P(A)*P(B)
 $$
 
-Nós sabemos, porém, que o cálculo acima está incorreto porque $P(spam)$ e $P(Viagra)$ não são independentes. 
+Sabe-se, porém, que o cálculo acima está incorreto porque $P(spam)$ e $P(Viagra)$ não são independentes. 
 
 O relacionamento entre eventos dependentes pode ser descrito utilizando o **Teorema de Bayes**:
 
@@ -228,7 +228,7 @@ A coluna `CLASS` é a variável de interesse, ou seja, o objetivo é classificar
 
 A partir dos dados brutos, diversos procedimentos de processamento de dados textuais são aplicados (capitalização da fonte, remoção de números/*stop words*/pontuação, processamento de *stemming*, separação aleatória de amostras de treino e teste, remoção de termos infrequentes, etc.).
 
-A tabela abaixo mostra a estrutura da tabela de dados processados (treino):
+A tabela mostra a estrutura da tabela de dados processados (treino):
 
 ```{r}
 # Converte Y para fator
@@ -394,7 +394,7 @@ Uma árvore menor com poucas divisões pode levar a menor variância e melhor in
 
 Assim, uma estratégia melhor é construir uma árvore grande $T_0$ e então ir *podando* a mesma, de modo a obter uma sub-árvore. Intuitivamente, o objetivo é selecionar uma sub-árvore que leva a uma menor taxa de erro no conjunto de testes. É necessário, então, um meio para selecionar um pequeno conjunto de sub-árvores para avaliação.
 
-*Cost complexity pruning* (poda por custo-complexidade) nos dá um meio de fazer isso. Ao invés de considerar cada possível sub-árvore, nós consideramos uma sequência de árvores indexadas por um parâmetro $\alpha$.
+*Cost complexity pruning* (poda por custo-complexidade) oferece um meio de fazer isso. Ao invés de considerar cada possível sub-árvore, se considera uma sequência de árvores indexadas por um parâmetro $\alpha$.
 
 Cada valor de $\alpha$ corresponde a uma sub-árvore $T \subset T_0$ de modo que
 
@@ -416,7 +416,7 @@ Na árvore de regressão, a resposta prevista para uma observação é dada pela
 
 Já na árvore de classificação, se prevê que cada observação pertence à *classe mais comum* das observações de treino da região a que elas pertencem.
 
-Na interpretação dos resultados de uma árvore de classificação, geralmente se está interessados não apenas na previsão da *classe correspondente* a uma região de nó terminal específica, mas também nas *proporções de classe* entre as observações de treinamento que se enquadram nesta região.
+Na interpretação dos resultados de uma árvore de classificação, geralmente se está interessado não apenas na previsão da *classe correspondente* a uma região de nó terminal específica, mas também nas *proporções de classe* entre as observações de treinamento que se enquadram nesta região.
 
 O processo de construção de uma árvore de classificação é bastante similar ao de uma árvore de regressão. Assim como lá, também é usada a divisão binária recursiva para construir uma árvore de classificação. Entretanto, aqui não se pode usar como critério a minimização da equação.
 
