@@ -1,0 +1,224 @@
+---
+title: "MACHINE LEARNING - BOOTSTRAPPING, BAGGING, BOOSTING E RANDOM FORESTS."
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+
+# Bootstrapping, Bagging, Boosting e Random Forests.
+
+[^1] **Alguns modelos preditivos costumam apresentar alta variância, outros alto viés.** Nenhum destes extremos é desejável se o objetivo é maximizar a acurácia do modelo. Felizmente, ainda podemos utilizar modelos assim para tarefas preditivas, se conciliarmos com técnicas adicionais adequadas.
+
+[^1]: Este material está baseado em diversas postagens da Análise Macro (www.analisemacro.com.br)
+
+Aqui é mostrada as técnicas de Bootstrapping, Bagging, Boosting e Random Forests com o objetivo de aumentar o desempenho em modelos preditivos.
+
+## Bootstrapping
+
+**Bootstrapping** é uma técnica estatística que permite gerar quase qualquer estatística ou estimador de interesse ao empregar a amostragem aleatória com reposição em dados observados.
+
+**A ideia desta técnica é simular múltiplos conjuntos de dados similares aos dados observados ao extrair amostras do mesmo.** Cada conjunto de dados é criado ao selecionar aleatoriamente observações dos dados observados originais, com a possibilidade de que a mesma observação seja selecionada várias vezes ou nunca seja selecionada.
+
+```{r}
+#| fig-width: 10
+
+# Pacotes
+library(rbcb)
+library(dplyr)
+library(tsibble)
+library(fabletools)
+library(fable)
+set.seed(1984)
+
+# Dados
+dados <- rbcb::get_series(
+  code = c("ipca" = 433),
+  start_date = "2010-01-01",
+  end_date = "2024-01-01"
+  ) |> 
+  dplyr::mutate(date = tsibble::yearmonth(date)) |> 
+  tsibble::as_tsibble(index = date)
+
+# Modelo
+modelo <- dados |>
+  fabletools::model(stl = fable::AR(ipca))
+
+# Amostras de bootstrapping
+bootstrapping <- modelo |>
+  fabletools::generate(
+    new_data = dados, 
+    times = 10, 
+    bootstrap_block_size = 8 #seleciona em blocos de 8 obs, reduz questao da autocorrelaçao da serie temporal.
+    ) |>
+  dplyr::select(-c(".model", "ipca"))
+
+bootstrapping
+
+# Previsões de bootstrap
+previsao <- bootstrapping |>
+  fabletools::model(ets = fable::AR(.sim)) |>
+  fabletools::forecast(h = 12)
+
+previsao
+
+# Série original
+g1 <- dados |> 
+  fabletools::autoplot(.vars = ipca, size = 1) + 
+  ggplot2::labs(title = "1) Série original", y = NULL, x = NULL)
+
+# Séries simuladas de bootstrap
+g2 <- bootstrapping |> 
+  fabletools::autoplot(.vars = .sim) +
+  fabletools::autolayer(object = dados, .vars = ipca, size = 1) + 
+  ggplot2::guides(colour = "none") +
+  ggplot2::labs(title = "2) Séries Bootstrap", y = NULL, x = NULL)
+  
+# Previsões de bootstrap
+g3 <- previsao |>
+  tsibble::update_tsibble(key = .rep) |>
+  fabletools::autoplot(.vars = .mean) +
+  fabletools::autolayer(object = dados, .vars = ipca, size = 1) + 
+  ggplot2::guides(colour = "none") +
+  ggplot2::labs(title = "3) Previsões Bootstrap", y = NULL, x = NULL)
+
+# Gráfico
+library(patchwork)
+g1 + g2 + g3 + 
+  patchwork::plot_layout(nrow = 3) +
+  patchwork::plot_annotation(
+    title   = "A técnica de Bootstrapping",
+    caption = "**Elaboração**: analisemacro.com.br <br>**Dados**: IPCA/IBGE",
+    theme   = ggplot2::theme(
+      plot.title   = ggplot2::element_text(face = "bold", size = 22, hjust = 0.5),
+      plot.caption = ggtext::element_textbox_simple()
+      )
+    )
+```
+
+As principais **vantagens** da técnica de bootstrapping são:
+
+-   Simplicidade de uso e implementação;
+
+-   Pode ser usada para obter quase qualquer estatística ou estimador;
+
+-   É mais acurada para obter intervalos de confiança do que o uso da variância amostral ou suposições de normalidade.
+
+<br>
+
+## Bagging
+
+Nesse sentido, a técnica de *Bootstrap aggregation* ou simplesmente *Bagging* é um procedimento de propósito geral que possibilita justamente a redução de variância de diferentes métodos de aprendizado.
+
+Vamos introduzir o método no contexto de `arvores de decisão`, mas o mesmo pode ser utilizado, como dito, em diferentes métodos de aprendizado.
+
+Relembre que dado um conjunto de $n$ observações independentes, $Z_1, ..., Z_n$, cada uma com variância $\sigma^2$, a variância da média $\bar{Z}$ será dada por $\frac{\sigma^2}{n}$.
+
+Ou seja, calcular a média do conjunto de observações reduz a variância.
+
+É imediato pensar que para reduzir a variância e, portanto, aumentar a acurácia dda previsão de um determinado método estatístico de aprendizado basta pegarmos muitos conjuntos de treinamento da população, construir um modelo de previsão separado usando cada conjunto, definir e calcular a média das previsões resultantes.
+
+Em outras palavras, nós calculamos $\hat{f}^{1}(x), \hat{f}^{2}(x), ..., \hat{f}^{B}(x)$ usando $B$ conjuntos de treino, calculamos a média deles de modo a obter um único modelo com baixa variância, dado por:
+
+$$
+\hat{f}_{\text{médio}}(x) = \frac{1}{B} \sum_{b=1}^{B} \hat{f}^{b} (x)
+$$
+
+
+Isso, infelizmente, não é muito prático já que, em geral, não temos acesso a muitos conjuntos de treino. Assim, o que podemos fazer é aplicar a técnica de *bootstrap*, de modo a tomar diversas amostras do mesmo conjunto de treino. Assim, geraremos $B$ diferentes conjuntos de treino. A partir daí, podemos treinar nosso método no $b$ conjunto de treino, de modo a obter $\hat{f}^{*b} (x)$, finalmente obtendo a média das previsões
+
+$$
+\hat{f}_{\text{bag}}(x) = \frac{1}{B} \sum_{b=1}^{B} \hat{f}^{*b} (x)
+$$
+
+o que 'chamamosé chamado de **bagging**. 
+
+Enquanto o método de **bagging** pode ser utilizado para aumentar a acurácia da previsão nos métodos de regressão, ele é particularmente útil para árvores de decisão.
+
+Para aplicar o método à árvores de regressão, simplesmente se constrói $B$ árvores de regressão usando $B$ conjuntos de treino construídos através da aplicação de **bagging**. 
+
+Como as árvores individuais não são podadas, elas crescem bastante, tendo assim alta variância e baixo viés.
+
+Assim, construir a média dessas árvores irá reduzir a variância.
+
+Até aqui, o método de **bagging** é descrito no contexto de uma regressão, com um variável $Y$ quantitativa. Pode-se estender o método para problemas de classificação através de diversas abordagem. 
+
+A mais simples é pensar que para um dado conjunto de teste, pode-se registrar a classe prevista por cada uma das $B$ árvores e tomamos uma *votação majoritária*: a previsão que mais ocorre entre as $B$ previsões. 
+
+Um exemplo detalhado e bem interessante da aplicação do método de **bagging** é mostrado abaixo.
+
+```{r}
+
+library(sidrar)
+library(tidyverse)
+library(forecast)
+library(timetk)
+
+pnad <- sidrar::get_sidra(api = "/t/6381/n1/all/v/4099/p/all/d/v4099%201")
+pnad_ts <- ts(pnad$Valor, start = c(2012,3), freq = 12)
+autoplot(pnad_ts)
+
+### Criar amostras de treino e teste e definir número de bootstraps
+pnad_treino <- window(pnad_ts, end = c(2021,12))
+pnad_teste <- window(pnad_ts, start = c(2022,1))
+k <- 10
+
+### Calcular as séries via bootstrap
+pnad_boot <- forecast::bld.mbb.bootstrap(pnad_treino, k) %>%
+  purrr::map(.f = ts, start = c(2012,3), freq = 12)
+
+pnad_boot_df =
+  pnad_boot %>%
+  as.data.frame() %>%
+  ts(start=c(2012,3), freq=12)
+
+autoplot(pnad_treino) +
+  geom_line(size=.8) +
+  autolayer(pnad_boot_df, colour=TRUE) +
+  autolayer(pnad_treino, colour=FALSE) +
+  labs(x='', y='%',
+       title='Séries calculadas via Bootstrap') +
+  guides(colour='none')
+
+aa_fc <- function(x){forecast(auto.arima(x, max.d = 1), n = 24)[["mean"]]}
+
+pnad_boot_fc <- purrr::map(.x = pnad_boot, .f = aa_fc)
+
+## Computar a previsão pelo método bagging
+
+fc_original <- pnad_boot_fc[[1]] ## Auto Arima simples
+
+fc_bagged <- pnad_boot_fc %>% purrr::reduce(`+`) %>% `/`(k)
+
+library(knitr)
+kable(forecast::accuracy(fc_original, pnad_teste))
+
+kable(forecast::accuracy(fc_bagged, pnad_teste))
+```
