@@ -137,28 +137,28 @@ As principais **vantagens** da técnica de bootstrapping são:
 
 Nesse sentido, a técnica de *Bootstrap aggregation* ou simplesmente *Bagging* é um procedimento de propósito geral que possibilita justamente a redução de variância de diferentes métodos de aprendizado.
 
-Vamos introduzir o método no contexto de `arvores de decisão`, mas o mesmo pode ser utilizado, como dito, em diferentes métodos de aprendizado.
+Aqui o método é introduzido no contexto de `arvores de decisão`, mas o mesmo pode ser utilizado em diferentes métodos de aprendizado.
 
-Relembre que dado um conjunto de $n$ observações independentes, $Z_1, ..., Z_n$, cada uma com variância $\sigma^2$, a variância da média $\bar{Z}$ será dada por $\frac{\sigma^2}{n}$.
+Dado um conjunto de $n$ observações independentes, $Z_1, ..., Z_n$, cada uma com variância $\sigma^2$, a variância da média $\bar{Z}$ será dada por $\frac{\sigma^2}{n}$.
 
 Ou seja, calcular a média do conjunto de observações reduz a variância.
 
-É imediato pensar que para reduzir a variância e, portanto, aumentar a acurácia dda previsão de um determinado método estatístico de aprendizado basta pegarmos muitos conjuntos de treinamento da população, construir um modelo de previsão separado usando cada conjunto, definir e calcular a média das previsões resultantes.
+É imediato pensar que para reduzir a variância e, portanto, aumentar a acurácia da previsão de um determinado método estatístico de aprendizado basta pegar muitos conjuntos de treinamento da população, construir um modelo de previsão separado usando cada conjunto, definir e calcular a média das previsões resultantes.
 
-Em outras palavras, nós calculamos $\hat{f}^{1}(x), \hat{f}^{2}(x), ..., \hat{f}^{B}(x)$ usando $B$ conjuntos de treino, calculamos a média deles de modo a obter um único modelo com baixa variância, dado por:
+Em outras palavras, calcula-se $\hat{f}^{1}(x), \hat{f}^{2}(x), ..., \hat{f}^{B}(x)$ usando $B$ conjuntos de treino, calcula-se a média deles de modo a obter um único modelo com baixa variância, dado por:
 
 $$
 \hat{f}_{\text{médio}}(x) = \frac{1}{B} \sum_{b=1}^{B} \hat{f}^{b} (x)
 $$
 
 
-Isso, infelizmente, não é muito prático já que, em geral, não temos acesso a muitos conjuntos de treino. Assim, o que podemos fazer é aplicar a técnica de *bootstrap*, de modo a tomar diversas amostras do mesmo conjunto de treino. Assim, geraremos $B$ diferentes conjuntos de treino. A partir daí, podemos treinar nosso método no $b$ conjunto de treino, de modo a obter $\hat{f}^{*b} (x)$, finalmente obtendo a média das previsões
+Isso não é muito prático já que, em geral, não se tem acesso a muitos conjuntos de treino. Assim, o quese pode fazer é aplicar a técnica de *bootstrap*, de modo a tomar diversas amostras do mesmo conjunto de treino. Assim, são gerados $B$ diferentes conjuntos de treino. A partir daí, pode-se treinar o método no $b$ conjunto de treino, de modo a obter $\hat{f}^{*b} (x)$, finalmente obtendo a média das previsões
 
 $$
 \hat{f}_{\text{bag}}(x) = \frac{1}{B} \sum_{b=1}^{B} \hat{f}^{*b} (x)
 $$
 
-o que 'chamamosé chamado de **bagging**. 
+o que é chamado de **bagging**. 
 
 Enquanto o método de **bagging** pode ser utilizado para aumentar a acurácia da previsão nos métodos de regressão, ele é particularmente útil para árvores de decisão.
 
@@ -170,7 +170,7 @@ Assim, construir a média dessas árvores irá reduzir a variância.
 
 Até aqui, o método de **bagging** é descrito no contexto de uma regressão, com um variável $Y$ quantitativa. Pode-se estender o método para problemas de classificação através de diversas abordagem. 
 
-A mais simples é pensar que para um dado conjunto de teste, pode-se registrar a classe prevista por cada uma das $B$ árvores e tomamos uma *votação majoritária*: a previsão que mais ocorre entre as $B$ previsões. 
+A mais simples é pensar que para um dado conjunto de teste, pode-se registrar a classe prevista por cada uma das $B$ árvores e toma-se uma *votação majoritária*: a previsão que mais ocorre entre as $B$ previsões. 
 
 Um exemplo detalhado e bem interessante da aplicação do método de **bagging** é mostrado abaixo.
 
