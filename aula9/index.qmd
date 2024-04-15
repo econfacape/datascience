@@ -90,7 +90,7 @@ Esse delineamento da rede neural permite que cada nó atue independentemente, ma
 
 ![Exemplo de Rede Neural não-linear](imgs/nnet2.png)
 
-Ao adicionarmos uma camada (*layer*) intermediária com *neurônios ocultos*, a nossa rede neural se torna não linear como no exemplo acima. Ela é conhecida como *rede neural feed-forward multicamadas*, onde cada camada de nós recebe *inputs* da camada anterior.
+Ao ser adicionada uma camada (*layer*) intermediária com *neurônios ocultos*, a rede neural se torna não linear como no exemplo acima. Ela é conhecida como *rede neural feed-forward multicamadas*, onde cada camada de nós recebe *inputs* da camada anterior.
 
 Os *outputs* dos nós em uma camada serão, então, *inputs* na próxima camada. Os *inputs* em cada nó serão combinados usando uma combinação linear ponderada. O resultado é, então, modificado por uma função não-linear antes de ser transformado em *output*.
 
@@ -154,9 +154,9 @@ amostras <- splitTools::partition(
 dados_treino <- dados[amostras$treino, ]
 dados_teste <- dados[amostras$teste, ]
 
-dados_teste$class # variável de interesse
+tail(dados_teste$Class) # variável de interesse
 
-dados_teste$class |>table()
+dados_teste$Class |>table()
 
 # Treino do modelo
 modelo <- neuralnet::neuralnet(

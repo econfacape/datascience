@@ -4384,7 +4384,7 @@ window.onload = function() {
     <div>
     <div class="quarto-title-meta-heading">Data de Publicação</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">12 de abril de 2024</p>
+      <p class="date">15 de abril de 2024</p>
     </div>
   </div>
   
@@ -4442,7 +4442,7 @@ window.onload = function() {
 <figcaption>Exemplo de Rede Neural não-linear</figcaption>
 </figure>
 </div>
-<p>Ao adicionarmos uma camada (<em>layer</em>) intermediária com <em>neurônios ocultos</em>, a nossa rede neural se torna não linear como no exemplo acima. Ela é conhecida como <em>rede neural feed-forward multicamadas</em>, onde cada camada de nós recebe <em>inputs</em> da camada anterior.</p>
+<p>Ao ser adicionada uma camada (<em>layer</em>) intermediária com <em>neurônios ocultos</em>, a rede neural se torna não linear como no exemplo acima. Ela é conhecida como <em>rede neural feed-forward multicamadas</em>, onde cada camada de nós recebe <em>inputs</em> da camada anterior.</p>
 <p>Os <em>outputs</em> dos nós em uma camada serão, então, <em>inputs</em> na próxima camada. Os <em>inputs</em> em cada nó serão combinados usando uma combinação linear ponderada. O resultado é, então, modificado por uma função não-linear antes de ser transformado em <em>output</em>.</p>
 </section>
 <section id="aprendizado" class="level3">
@@ -4864,13 +4864,16 @@ window.onload = function() {
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>dados_treino <span class="ot">&lt;-</span> dados[amostras<span class="sc">$</span>treino, ]</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>dados_teste <span class="ot">&lt;-</span> dados[amostras<span class="sc">$</span>teste, ]</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>dados_teste<span class="sc">$</span>class <span class="co"># variável de interesse</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(dados_teste<span class="sc">$</span>Class) <span class="co"># variável de interesse</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>NULL</code></pre>
+<pre><code>[1] good good good bad  good good
+Levels: bad good</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dados_teste<span class="sc">$</span>class <span class="sc">|&gt;</span><span class="fu">table</span>()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dados_teste<span class="sc">$</span>Class <span class="sc">|&gt;</span><span class="fu">table</span>()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt; table of extent 0 &gt;</code></pre>
+<pre><code>
+ bad good 
+ 155 2802 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Treino do modelo</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>modelo <span class="ot">&lt;-</span> neuralnet<span class="sc">::</span><span class="fu">neuralnet</span>(</span>
