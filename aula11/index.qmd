@@ -163,9 +163,9 @@ As principais **vantagens** da técnica de bootstrapping são:
 
 ## Bagging
 
-Nesse sentido, a técnica de *Bootstrap aggregation* ou simplesmente *Bagging* é um procedimento de propósito geral que possibilita justamente a redução de variância de diferentes métodos de aprendizado.
+A técnica de *Bootstrap aggregation* ou simplesmente *Bagging* é um procedimento de propósito geral que possibilita justamente a redução de variância de diferentes métodos de aprendizado.
 
-Aqui o método é introduzido no contexto de `arvores de decisão`, mas o mesmo pode ser utilizado em diferentes métodos de aprendizado.
+A ideia desta técnica é utilizar modelos estimados em múltiplas amostras de bootstrapping para produzir múltiplas previsões e, então, agregar estas previsões, geralmente usando uma média. Ao fazer isso, introduz-se diversidade de dados nos modelos ao estimar os mesmos em diferentes amostras de dados. Isto tende a produzir previsões mais acuradas e robustas em relação à modelos individuais.
 
 Dado um conjunto de $n$ observações independentes, $Z_1, ..., Z_n$, cada uma com variância $\sigma^2$, a variância da média $\bar{Z}$ será dada por $\frac{\sigma^2}{n}$.
 
@@ -196,9 +196,13 @@ Como as árvores individuais não são podadas, elas crescem bastante, tendo ass
 
 Assim, construir a média dessas árvores irá reduzir a variância.
 
-Até aqui, o método de **bagging** é descrito no contexto de uma regressão, com um variável $Y$ quantitativa. Pode-se estender o método para problemas de classificação através de diversas abordagem. 
+**As principais vantagens da técnica bagging são:**
 
-A mais simples é pensar que para um dado conjunto de teste, pode-se registrar a classe prevista por cada uma das $B$ árvores e toma-se uma *votação majoritária*: a previsão que mais ocorre entre as $B$ previsões. 
+-   Costuma performar melhor do que modelos individuais;
+
+-   Reduz o sobreajuste e a variância do modelo;
+
+-   Pode ser executado usando computação paralela. 
 
 Considerando o exemplo acima, do Bootstrap, o uso de **bagging** seria como abaixo:
 
@@ -243,6 +247,9 @@ g1 + g2 + g3 + g4 +
     )
 
 ```
+
+
+### Previsão Desemprego com Arima e Bagging
 
 Um outro exemplo detalhado e bem interessante da aplicação do método de **bagging** é mostrado abaixo.
 
@@ -381,4 +388,165 @@ kable(forecast::accuracy(forecast_original, dados_teste))
 
 #Forecast do Bagging
 kable(forecast::accuracy(forecast_bagged, dados_teste))
+```
+
+## Random Forests
+
+Florestas aleatórias (do inglês *random forests*) é um método de aprendizado de máquina para tarefas de classificação, regressão e outras que constrói uma infinidade de árvores de decisão no momento do treinamento do modelo preditivo. Para tarefas de classificação, a saída da floresta aleatória é a categoria selecionada pela maioria das árvores. Para tarefas de regressão, a média ou previsão média das árvores individuais é retornada.
+
+Florestas aleatórias é uma forma de equilibrar múltiplas árvores de decisão profundas, que individualmente tendem a sobreajuste. Dados um conjunto de dados, múltiplas amostras são extraídas usando amostragem aleatórias com reposição e árvores de decisão são treinadas em cada amostra. Durante o treinamento, um conjunto aleatório de variáveis é selecionado em cada nó da árvore. Depois do treinamento, previsões podem ser geradas ao calcular a média das previsões individuais das árvores. Ao introduzir aleatoriedade nas amostras de dados e nas variáveis consideradas, tende-se a obter melhores resultados de acurácia.
+
+Assim, de certa forma, é a combinação dos métodos de árvore com bootstrap.
+
+![Fonte: Wikipedia](imgs/randomforests.png){width=50%}
+
+As principais vantagens do método Random Forests são:
+
+-   Costuma ser mais acurado do que árvores de decisão individuais;
+
+-   Reduz a variância do modelo;
+
+-   É menos sensível a ruídos nos dados.
+
+### Exemplo
+
+O relacionamento complexo entre variáveis é uma aplicação interessante do método Random Forests. Tome como exemplo o problema de previsão do PIB do Brasil. Diversos fatores podem afetar esta variável, como taxas de juros, inflação, desemprego, gastos do governo e outros.
+
+O método Random Forests poderia ser utilizado para prever o PIB trimestral, separando amostras dos dados e treinando árvores de decisão individuais. Ao final deste processo, é possível obter previsões possivelmente mais acuradas combinando as previsões individuais.
+
+
+```{r}
+# Pacotes
+library(sidrar)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(randomForest)
+set.seed(1984)
+
+# Dados SIDRA/IBGE - PIB e componentes
+dados <- sidrar::get_sidra(
+  api = "/t/6612/n1/all/v/all/p/all/c11255/90687,90691,90696,90707/d/v9318%202"
+  ) |>
+  dplyr::mutate(
+    data  = lubridate::yq(`Trimestre (Código)`),
+    componentes = dplyr::recode(
+      .x                                 = `Setores e subsetores`,
+      "PIB a preços de mercado"          = "pib",
+      "Agropecuária - total"             = "agro",
+      "Indústria - total"                = "ind",
+      "Serviços - total"                 = "serv"
+    ),
+    valor = Valor,
+    .keep = "none"
+  ) |>
+  tidyr::pivot_wider(
+    id_cols     = "data",
+    names_from  = "componentes",
+    values_from = "valor"
+  )
+
+y <- dplyr::pull(dados, pib)
+x <- dplyr::select(dados, -c(data, pib)) |> as.matrix()
+
+# Modelo
+modelo <- randomForest::randomForest(formula = pib ~ ., data = dados[-1])
+
+# Previsao supondo que as 6 ultimas observaçoes 
+#vão se repetir no futuro
+previsao <- predict(object = modelo, newdata = tail(x))
+previsao
+```
+
+<br>
+
+## **Boosting**
+
+Boosting é uma técnica para melhorar a acurácia de modelos preditivos ao, sequencialmente, combinar modelos fracos (tipicamente modelos simples) para formar um modelo forte.
+
+A ideia da técnica boosting é treinar modelos preditivos sequencialmente, onde cada novo modelo tenta corrigir os erros do modelo anterior. Erros são corrigidos com a atribuição de pesos maiores, fazendo com que os modelos subsequentes errem menos. Ao final os modelos são combinados, usualmente através de média.
+
+![Fonte: Wikipedia](imgs/boosting.png){width=50%}
+
+Em outras palavras, a técnica de `Boosting` é similar a de `Bagging`, com a exceção de que as árvores aqui crescem de forma *sequencial*: cada árvore cresce usando informação da árvore que cresceu anteriormente. 
+
+O `Boosting` não envolve aplicar `bootstrap` sobre o conjunto de treino, ao invés disso cada árvore é ajustada em uma versão modificada do data set original. 
+
+Assim como a técnica de `Bagging`, o método de `Boosting` envolve combinar um número grande de árvores. Entretanto, ao invés de ajustar uma única árvore sobre os dados, o método de `boosting` *aprende devagar*. 
+
+Dado um modelo corrente, ajusta-se uma árvore sobre os resíduos do modelo, ao invés da variável resposta Y. Feito isso, nós adicionamos a nova árvore à função de ajuste de modo a atualizar os resíduos. 
+
+Cada uma dessas árvores pode ser cada vez menor, com apenas alguns nós, determinado pelo parâmetro $d$ no algoritmo. Assim, ao ajustar árvores pequenas sobre os resíduos, nós vamos aprimorando $\hat{f}$ em áreas onde ela não performa tão bem. 
+
+O parâmetro de encolhimento $\lambda$ reduz o processo ainda mais, permitindo diferentes formatos de árvores. Como é possível perceber, ao contrário do método de `Bagging`, o método de `Boosting` depende fortemente da forma que a árvore já foi construída. 
+
+Em resumo, o método de `Boosting` possui três parâmetros de ajuste:
+
+1. O número de árvores $B$;
+
+2. O parâmetro de encolhimenot $\lambda$, que controla a taxa sobre a qual o método *aprende*, sendo tipicamente notado como 0.01 ou 0.001. Pequenos valores para $\lambda$ dependem de vários altos para $B$ de modo a melhor performance;
+
+3. O parâmetro $d$ de divisões em cada árvore, de modo a controlar a complexidade da amostra gerada. 
+
+As principais vantagens da técnica boosting são:
+
+-   Costuma performar melhor do que modelos individuais;
+
+-   Reduz o viés e a variância do modelo;
+
+-   Lida com relações complexas nos dados.
+
+### Exemplo
+
+O relacionamento complexo entre variáveis é uma aplicação interessante da técnica boosting. Tome como exemplo o problema de previsão do PIB do Brasil.
+
+A técnica bagging poderia ser utilizada para prever o PIB trimestral, estimando um modelo com o conjunto de dados e sequencialmente corrigindo os erros ao modelar os mesmos na próxima iteração. Este processo permite agregar vários modelos fracos em um modelo forte e mais acurado.
+
+```{r}
+# Pacotes
+library(sidrar)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(xgboost)
+set.seed(1984)
+
+# Dados SIDRA/IBGE - PIB e componentes
+dados <- sidrar::get_sidra(
+  api = "/t/6612/n1/all/v/all/p/all/c11255/90687,90691,90696,90707/d/v9318%202"
+  ) |>
+  dplyr::mutate(
+    data  = lubridate::yq(`Trimestre (Código)`),
+    componentes = dplyr::recode(
+      .x                                 = `Setores e subsetores`,
+      "PIB a preços de mercado"          = "pib",
+      "Agropecuária - total"             = "agro",
+      "Indústria - total"                = "ind",
+      "Serviços - total"                 = "serv"
+    ),
+    valor = Valor,
+    .keep = "none"
+    ) |>
+  tidyr::pivot_wider(
+    id_cols     = "data",
+    names_from  = "componentes",
+    values_from = "valor"
+    )
+
+y <- dplyr::pull(dados, pib)
+x <- dplyr::select(dados, -c(data, pib)) |> as.matrix()
+
+# Modelo
+modelo <- xgboost::xgboost(
+  data      = x,
+  label     = y,
+  nrounds   = 50,
+  params = list(eval_metric = "rmse")
+  )
+
+modelo$evaluation_log
+
+# Previsao
+previsao <- predict(object = modelo, newdata = tail(x))
+previsao
 ```
