@@ -1,0 +1,178 @@
+---
+title: "PRODUZINDO TEXTOS, RELATÓRIOS, ARTIGOS."
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+<hr>
+---
+
+# QUARTO E RMD
+
+Para criar relatórios com o Quarto é necessário um **ambiente de programação** com tudo instalado e configurado. Há duas opções para tal: 
+
+- **Ambiente local**: compreende instalar e configurar todas as ferramentas necessárias ([R](https://cran.r-project.org/), [Quarto](https://quarto.org/docs/get-started/) e outras) no seu computador manualmente.
+
+- **Ambiente na nuvem**: através do [Posit Cloud](https://posit.cloud/) é possível utilizar a IDE RStudio de maneira online e gratuita (com recursos limitados), onde já vem instalado e configurado o R, o Quarto e outros recursos necessários.
+
+Para evitar problemas de reprodutibilidade e questões específicas de sistemas (Windows, Linux, Mac OS), vamos optar pelo uso do ambiente na nuvem daqui em diante. Para usar o RStudio online faça o seguinte:
+
+1. Crie uma conta na [Posit Cloud](https://posit.cloud/) e faça *login* (gratuito);
+2. Na tela inicial, crie um projeto clicando em *New Project* > *New RStudio Project*.
+
+Aguarde a IDE carregar e você terá um ambiente totalmente novo (ou seja, sem nenhum pacote instalado) e já configurado para programar e produzir relatórios.
+
+# O QUE É QUARTO?
+
+O Quarto é um sistema de escrita técnica e científica, de código aberto sobre o `Pandoc` (um conversor universal de documentos - pandoc.org).
+
+![Fonte: Beatriz Milz](imgs/quarto_schematic.png){width=80%}
+
+-   **O Quarto é a nova geração do R Markdown!**
+
+O rmarkdown é um pacote em R. Para usá-lo, é necessário ter o R instalado (mesmo que o seu arquivo não tenha conteúdos em R). O R Markdown é uma ferramenta muito boa para escrita técnica e científica reprodutível, possibilitando criar vários tipos de documentos. 
+
+![Fonte: Workshop Get Started with Quarto](imgs/quarto0.png){width=80%}
+
+Porém, **o seu uso acaba ficando limitado às pessoas que usam R**.
+
+-   **O Quarto é um software novo, que não depende do R**!
+
+**Quarto** é uma interface de linha de comando (CLI) que renderiza formatos de texto simples (.qmd, .rmd, .md) ou formatos mistos (.ipynb/Jupyter notebook) em relatórios estáticos em PDF/Word/HTML, livros, sites, apresentações e muito mais
+
+Por exemplo: É possível usar o VSCode da Microsoft como IDE (Integrated Development Environment), escrever um documento com código em Python e gerar o documento final. Tudo isso sem precisar ter o R e/ou RStudio instalados.
+
+A estrutura do arquivo é muito similar! Para muitos arquivos, há compatibilidade (bastando alterar a extensão de `.Rmd` para `.qmd`). Pode-se adicionar código em R, Python, Julia, etc etc. Pode-se criar diversos tipos de arquivos, como: páginas da internet (arquivos `.html`), PDFs, `.docx`, apresentações, documentos interativos, livros, etc.
+
+
+# COMO USAR O QUARTO?
+
+
+A primeira questão é instalar o Quarto. Em seguida, escolher a IDE. No nosso caso, é usado o RStudio. 
+
+![Fonte: quarto.org](imgs/quarto1.png){width=100%}
+
+## Criar um Novo Arquivo
+
+Para criar um novo arquivo do Quarto, ir em File... New File... e depois preencher o quadro que irá aparecer.
+
+![Novo Arquivo Quarto](imgs/quarto2.png){width=120%}
+
+
+## Engines 
+
+- Ao criar um novo arquivo com Quarto, pode-se escolher entre duas *engines*: knitr ou jupyter.
+
+
+### Com knitr
+
+Caso não tenha o pacote rmarkdown instalado, execute no console:
+
+``` r
+install.packages("rmarkdown")
+```
+<br>
+
+### Com jupyter
+
+Caso não tenha o jupyter instalado, execute no terminal:
+
+```
+python3 -m pip install jupyter
+```
+
+A Figura abaixo mostra o quadro que aparece depois de clicar em New File e a possibilidade de escolher a Engine.
+
+![Novo Arquivo Quarto](imgs/quarto3.png){width=60%}
+
+
+## Renderizar o arquivo
+
+Depois de criar o arquivo e escrever o que for preciso, o passo seguinte é gerar o pdf ou o html, por exemplo. Para isto, é preciso apertar a opção Render. 
+
+![Renderizar o Arquivo Quarto](imgs/quarto4.png){width=80%}
+
+## O Cabeçalho ou YAML
+
+É a parte mais complexa de configurar. Existem inúmeras possibilidades como pode ser visto no link <https://quarto.org/docs/reference/formats/opml.html>
+
+![Renderizar o Arquivo Quarto](imgs/quarto5.png){width=60%}
+
+## Código em R
+
+```{r}
+# Pacotes
+library(sidrar)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(randomForest)
+set.seed(1984)
+
+# Dados SIDRA/IBGE - PIB e componentes
+dados <- sidrar::get_sidra(
+  api = "/t/6612/n1/all/v/all/p/all/c11255/90687,90691,90696,90707/d/v9318%202"
+  ) |>
+  dplyr::mutate(
+    data  = lubridate::yq(`Trimestre (Código)`),
+    componentes = dplyr::recode(
+      .x                                 = `Setores e subsetores`,
+      "PIB a preços de mercado"          = "pib",
+      "Agropecuária - total"             = "agro",
+      "Indústria - total"                = "ind",
+      "Serviços - total"                 = "serv"
+    ),
+    valor = Valor,
+    .keep = "none"
+  ) |>
+  tidyr::pivot_wider(
+    id_cols     = "data",
+    names_from  = "componentes",
+    values_from = "valor"
+  )
+
+y <- dplyr::pull(dados, pib)
+x <- dplyr::select(dados, -c(data, pib)) |> as.matrix()
+
+# Modelo
+modelo <- randomForest::randomForest(formula = pib ~ ., data = dados[-1])
+
+# Previsao supondo que as 6 ultimas observaçoes 
+#vão se repetir no futuro
+previsao <- predict(object = modelo, newdata = tail(x))
+previsao
+```
+
+
+## Texto
+
+Use # para criar uma nova seção, use ## para criar um novo slide (apresentação). Em um pdf, a quantidade de # altera o tamanho da fonte do titulo da seção.
+
+Outras informações, consultar <https://quarto.org/>
