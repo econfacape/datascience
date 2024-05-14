@@ -1,0 +1,448 @@
+---
+title: "PRODUÇÃO DE DASHBOARDS COM O R"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+# O que é uma Dashboard?
+
+[^1] Uma dashboard, ou painel de dados, pode ser definida como **um compilado de tabelas, gráficos e widgets que agregam e resumem de maneira interativa um determinado conjunto de dados** para possibilitar análises e *insights*, podendo ser disponibilizada com atualização automática.
+
+[^1]: Todo este material foi retirado de diversas postagens e cursos da Análise Macro (www.analisemacro.com.br)
+
+![Fonte: Observatórios de Mercado da Embrapa](imgs/dash1.png){width=100%}
+
+##  Dashboard estática
+
+É uma página de internet (um arquivo `.html`) que traz uma "**fotografia**" da dashboard na forma como ela foi gerada pela última vez. Não há um servidor por trás executando comandos do R e a interatividade fica limitada as possibilidades do pacote ggplotly.
+
+- Simples de criar
+- Fácil de publicar
+- Análise de dados pronta
+- Carregamento da página é rápido
+- Não exige conhecimentos avançados de outras linguagens
+
+## Flexdashboard
+
+**Flexdashboard** é um pacote do R mantido pela RStudio que permite criar **dashboards estáticas ou dinâmicas**, com a sintaxe fácil do R Markdown e com *layouts* e elementos prontos para desenvolvimento.
+
+**Com a Flexdashboard é possível:**
+
+- Criar dashboards simples a partir de um `.Rmd`
+- Personalizar aparência, layout, cores, etc.
+
+O Tutorial do pacote pode ser encontrado no ling (https://pkgs.rstudio.com/flexdashboard/articles/using.html)
+
+## Shiny
+
+**Shiny** é um pacote do R mantido pela RStudio que facilita a construção de **aplicativos web interativos**, mesmo sem saber programar em outras linguagens como o `HTML`, `CSS` e `JavaScript`.
+
+**Com o Shiny é possível:**
+
+- Criar aplicativos web elegantes e complexos
+- Criar dashboards interativas
+- Criar documentos R Markdown dinâmicos
+
+### Shinyapps.io e rsconnect
+
+O **Shinyapps** é um serviço do RStudio que permite **hospedar gratuitamente aplicativos e dashboards** em Shiny e compartilhá-los online através de um linnk com qualquer pessoa no mundo.
+
+Com uma dashboard criada é muito fácil publicá-la na web usando o Shinyapps e o RStudio, dado a sua integração nativa possibilitada pelo pacote **`{rsconnect}`**.
+
+
+## Preparar o setup
+
+**Pacotes** que precisa ter instalado:
+
+```{r, eval=FALSE, echo=TRUE}
+pacotes <- c(
+  "flexdashboard", 
+  "shiny", 
+  "rsconnect", 
+  "rmarkdown"
+  )
+install.packages(pacotes)
+```
+
+**Cadastros/contas de usuário**:
+
+- **Shinyapps.io**:<br>
+  **1)** Crie uma conta gratuita em https://www.shinyapps.io/admin/#/signup <br>
+  **2)** Logado no site clique em: `Seu nome de usuário > Tokens > Show > Show secret > Copy to clipboard`<br>
+  **3)** Cole e execute o comando de R (exemplo abaixo) no Console do RStudio para configurar o `rsconnect`<br>
+
+```{r, eval=FALSE, echo=TRUE}
+rsconnect::setAccountInfo(name="<ACCOUNT>", token="<TOKEN>", secret="<SECRET>")
+```
+
+
+- **GitHub**: crie uma conta gratuita neste link (https://github.com/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F&source=header-home)
+
+
+## Criando um template com a Flexdashboard
+
+Um template de dashboard é um arquivo `.Rmd` com uma estrutura predefinida, trazendo aspectos e elementos visuais padronizados. A grande vantagem do template da **`flexdashboard`** é a possibilidade de gerar dashboards interessantes mesmo sem saber programar em `HTML`, `JavaScript`, `CSS`, etc.
+
+```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+knitr::include_graphics("imgs/template.png")
+```
+
+Fonte: RStudio
+
+
+Outra vantagem da Flexdashboard é a possibilidade de construir, a partir de um template básico, **visualizações de dados totalmente personalizadas**. 
+
+Há **opções flexíveis para organizar o layout** em painéis, páginas, menus de navegação, além da possibilidade de elementos com interatividade usando pacotes como `plotly`, `highcharter`, `DT`, `shiny` e outros para construir interações totalmente personalizadas em `R`.
+
+Além disso, a Flexdashboard se adapta naturalmente em **dispositivos móveis** (mobile) com tela menor.
+
+O pacote oferece uma grande variedade de componentes que pode ser inseridos no layout, incluindo:
+
+- Gráficos estáticos ou interativos;<br>
+- Tabelas de dados com classificação, filtragem e paginação opcionais;<br>
+- Caixas de valor para destacar "grandes números" em resumo;<br>
+- Gráficos do tipo velocímetro;<br>
+- Anotações textuais;<br>
+- Barra de navegação personalizável.
+
+Crie um projeto de R e, com o projeto aberto no RStudio, navegue pelos menus `File > New File > R Markdown > From Template`, escolha no campo **Template** a opção correspondente a `Flex Dashboard {flexdashboard}` e clique em `OK`.`
+
+```{r, echo=FALSE, out.width = "70%", fig.align='center'}
+knitr::include_graphics("imgs/create_flexdashboard.png")
+```
+
+Com o documento criado, pode-se **visualizar o resultado do template**, antes de adentrar na sintaxe do pacote. Primeiro salve o documento dentro do projeto de `R` e, em seguida, clique no botão `Knit` para obter esse resultado (um arquivo HTML):
+
+```{r, echo=FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("imgs/template_flex1.png")
+```
+
+
+### A estrutura do documento Flexdashboard
+
+A estrutura dos documentos Flexdashboard incorpora a sintaxe do R Markdown e traz algumas novidades especificas referentes ao próprio pacote:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/str_flexdashboard.png")
+```
+
+Pode-se orientar a página e seus elementos por colunas ou linhas usando cabeçalhos Markdown de nível dois (------------------). Na orientação por colunas:
+
+```{r, echo=FALSE, out.width = "150%", fig.align='center'}
+knitr::include_graphics("imgs/template_flex2.png")
+```
+
+Na orientação por linhas:
+
+```{r, echo=FALSE, out.width = "150%", fig.align='center'}
+knitr::include_graphics("imgs/template_flex3.png")
+```
+
+
+Por padrão a Flexdashboard preenche a tela do navegador verticalmente, através do parâmetro `vertical_layout: fill`, mas pode-se mudar esse comportamento para criar uma barra de rolagem (`scroll`):
+
+```{r, echo=FALSE, out.width="85%", fig.align='center'}
+knitr::include_graphics("imgs/template_flex4.png")
+```
+
+Outra maneira de organizar os elementos da página é criando os chamados `tabsets`, que são seções de uma coluna ou linha agrupadas lado a lado para navegação. Para usar o recurso adicione o atributo `{.tabset}` ao cabeçalho Markdown: 
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/template_flex5.png")
+```
+
+Na orientação por linhas, o procedimento é o mesmo: 
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/template_flex6.png")
+```
+
+### Layout: adicionando gráficos
+
+Com o pacote `dygraphs` é possível criar gráficos interativos de séries temporais fácilmente:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/components_flex1.png")
+```
+
+Outro pacote interessante para gráficos interativos é o `highcharter`, que oferece diversas opções:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/components_flex2.png")
+```
+
+Para gráficos do `R base`, `ggplot2` ou outros que geram um PNG, convém utilizar as opções de chunks para redimensionar a imagem conforme a necessidade:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/components_flex3.png")
+```
+
+Existem algumas opções de pacotes para inserir tabelas na dashboard e, dentre eles, alguns se adaptam melhor:
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("imgs/components_flex4.png")
+```
+
+### Layout: adicionando caixas de valor
+
+Às vezes, pode ser útil resumir um dado em um único valor na dashboard. Para isso, a função `valueBox` cria um elemento de destaque com um título e um ícone opcional:
+
+```{r, echo=FALSE, out.width = "75%", fig.align='center'}
+knitr::include_graphics("imgs/components_flex5.png")
+```
+
+### Layout: adicionando ícones
+
+Os ícones exibidos nas caixas de valor podem ser adicionados através da banco de imagens [Font Awesome](https://fortawesome.github.io/Font-Awesome/icons/).
+
+Para incluir um ícone deve-se usar o nome completo do mesmo, incluindo o prefixo "fa" (por exemplo, "fa-github", "fa-twitter", etc.).
+
+Veja mais opções [neste link](https://pkgs.rstudio.com/flexdashboard/articles/using.html#value-boxes).
+
+## Layout: adicionando velocímetros
+
+Os gráficos do tipo velocímetro exibem valores em um medidor dentro de uma faixa especificada. Por exemplo:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/components_flex6.png")
+```
+
+### Layout: redimensionamento de elementos
+
+Para criar o layout ideal é importante entender e saber como modificar o modo como os elementos (gráficos, tabelas, etc.) são dimensionados na tela da dashboard.
+
+A largura dos gráficos na `flexdashboard` é determinada pela largura da tela do navegador. Se a dashboard tiver uma única coluna, os gráficos ocuparão toda a largura da tela. 
+
+Se tiver várias colunas, a largura de cada coluna será determinada dividindo o total de largura disponível uniformemente (a menos que seja substituído por meio do atributo `data-width` conforme a seguir).
+
+A altura dos gráficos é determinada de duas maneiras, dependendo do layoyut da dashboard:
+
+- Se `vertical_layout: fill`, a altura será determinada pela altura do navegador, com gráficos empilhados verticalmente dividindo a altura disponível uniformemente (a menos que seja substituído pelo atributo `data-height` conforme a seguir).
+
+- Se `vertical_layout: scroll`, a altura será determinada pela opção de chunk `fig.height`, cujo padrão é 5 polegadas (480 pixels).
+
+### Layout: redimensionamento de elementos
+
+É possível modificar o dimensionamento padrão dos elementos aplicando os atributos `data-width` e `data-height` nas linhas, colunas ou até mesmo gráficos individuais. Esses atributos estabelecem o tamanho relativo entre os gráficos dispostos na mesma dimensão (horizontal ou vertical). Por exemplo, para destacar o gráfico da primeira linha:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/sizing_flex1.png")
+```
+
+Da mesma forma, para destacar o gráfico de uma coluna podemos modificar a largura dos elementos:
+
+```{r, echo=FALSE, out.width = "85%", fig.align='center'}
+knitr::include_graphics("imgs/sizing_flex2.png")
+```
+
+O pacote oferece a flexibilidade de redimensionar os elementos conforme a necessidade, possibilitando alterar individualmente os elementos de uma linha ou coluna. Por exemplo:
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("imgs/sizing_flex3.png")
+```
+
+### Layout: múltiplas páginas
+
+Para dashboards com muitos gráficos/tabelas, talvez seja interessante dividir o layout em várias páginas. Para definir uma página, basta usar um cabeçalho de Markdown de nível 1 (==================). Cada página terá sua própria guia de navegação na barra superior. Por exemplo, para uma dashboard com duas páginas:
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("imgs/pages_flex1.png")
+```
+
+### Layout: orientação de páginas
+
+É possível especificar uma orientação de página distinta para cada página, basta adicionar o atributo `data-orientation` no cabeçalho da página. Por exemplo:
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("imgs/pages_flex2.png")
+```
+
+### Layout: navegação de páginas
+
+Se tiver um grande número de páginas (mais de 5), convém organizá-las em menus na barra de navegação superior. Para especificar que uma página deve ser acessada por meio de um menu da barra de navegação use o atributo `data-navmenu`. Por exemplo:
+
+```{r, echo=FALSE, out.width = "100%", fig.align='center'}
+knitr::include_graphics("imgs/pages_flex3.png")
+```
+
+## Dashboard dinâmica
+
+É uma página de internet que responde dinamicamente às **interações** que o usuário faz com a dashboard, ou seja, existe um servidor por trás executando scripts de R.
+
+- Sintaxe avançada
+- Fácil de publicar
+- Análise de dados customizável
+- Carregamento da página é mais lento
+- Pode ser necessário conhecimento de lógica web/outras linguagens
+
+Ao adicionar o **Shiny** a uma **flexdashboard** tornamos a dashboard estática em um **documento interativo**, onde os usuários conseguem alterar filtros e parâmetros, customizando a análise de dados e a aparência da dashboard.
+
+Vale destacar que documentos interativos precisam ser publicados (*deploy*) para que possam ser compartilhados com outros usuários (diferentemente dos documentos estáticos que podem ser anexados em um e-mail, por exemplo).
+
+Em geral, são necessários 4 passos para usar o `shiny` com a `flexdashboard`:
+
+**1)** Adicionar `runtime: shiny` no YAML do documento R Markdown;<br><br>
+**2)** Adicionar uma barra lateral, com o atributo `{.sidebar}`, para exibição dos filtros e controles do `shiny`;
+**3)** Adicionar *inputs* e *outputs* do `shiny` conforme a necessidade;<br><br>
+**4)** Ao inserir gráficos, tabelas, etc., envolver o código com a família de funções `shiny::render***` para que os mesmos respondam dinamicamente aos filtros/inputs.
+
+### Exemplo Básico
+
+A dashboard abaixo gera um gráfico e possibilita a interação através de um input na barra lateral. Para visualizar a dashboard utilize o botão **`Run Document`** no RStudio (visível apenas quando `runtime: shiny` é adicionado). 
+
+Considere a Sintaxe abaixo, sendo que é necessário retirar os #'s para que o código funcione.
+
+```{r markdown, eval=TRUE}
+#---
+#title: "Dashboard dinâmica: exemplo simples"
+#output: flexdashboard::flex_dashboard
+#runtime: shiny
+#---
+
+# Carregar pacotes
+library(ggplot2)
+library(palmerpenguins)
+library(shiny)
+
+# Carregar dados (sempre use o chunk "global" para isto)
+data(penguins)
+
+#__Pinguins da Antártica__
+
+#Conhecendo as principais medidas dos pinguins do Arquipélago Palmer, na Antártica.
+
+# Criar um input do tipo "caixa de seleção" entre várias opções
+# Objetivo: modificar o nº de barras do gráfico de histograma
+#selectInput(
+#  inputId  = "n_barras",        # um nome único para identificar o input
+#  label    = "Nº de barras:",   # um texto de exibição
+#  choices  = c(10, 20, 35, 50), # opções de valores para selecionar
+#  selected = 20                 # valor pré-selecionado
+#  )
+```
+
+O resultado é a figura abaixo:
+
+```{r, echo=FALSE}
+knitr::include_app("https://analisemacro.shinyapps.io/pdr04_shiny_01/", height = "475px")
+```
+
+### Entendendo a lógica
+
+Ao usar o `shiny` em uma `flexdashboard`, você fará uso de **inputs** (por exemplo, caixas de seleção, controles deslizantes/slider, etc.) e **outputs** (gráficos, tabelas, etc.). Os inputs são normalmente exibidos em uma barra lateral e os outputs nos painéis de elementos da `flexdashboard` (onde as visualizações de dados estão localizadas).
+
+Na dashboard de exemplo acima, a função `selectInput` cria um `input` do tipo caixa de seleção com o nome "n_barras". A função `renderPlot` é então capaz de acessar o valor do `input` “n_barras” por meio da expressão `input$n_barras` (sintaxe similar ao procedimento de extrair elementos de um objeto lista no R), tornando um gráfico que seria estático em um gráfico dinâmico e que se atualiza conforme mudanças no `input`.
+
+O `shiny` oferece diversos tipos de inputs que funcionam com a mesma lógica, mas com finalidades diferentes.
+
+```{r, echo=FALSE, out.width="100%", fig.align='center'}
+knitr::include_graphics("imgs/input_types.png")
+```
+
+### Tipos de inputs
+
+| Função               | Descrição |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `actionButton`       | Botão para acionar uma ação ao ser clicado                                      |
+| `checkboxGroupInput` | Lista de caixas de seleção, útil para especificar pequeno grupo de valores      |
+| `checkboxInput`      | Caixa de seleção única que pode ser útil para especificar valores lógicos       |
+| `dateInput`          | Calendário que possibilita selecionar uma data                                  |
+| `dateRangeInput`     | Calendário duplo com intervalo datas "de" e "para"                              |
+| `fileInput`          | Botão que possibilita fazer upload de arquivos para o servidor da dashboard     |
+| `helpText`           | Elemento textual que pode ser criado para especificar informações adicionais    |
+| `numericInput`       | Campo para informar um valor numérico                                           |
+| `radioButtons`       | Botões do tipo esféricos para selecionar um item de uma lista de opções         |
+| `selectInput`        | Uma caixa de seleção do tipo "drop down"                                        |
+| `sliderInput`        | Elemento do tipo "deslizante" para selecionar um valor numérico de um intervalo |
+| `textInput`          | Campo para entrada de texto                                                     |
+
+## Deploy
+
+**Para que outras pessoas também possam ver e interagir com sua dashboard, é necessário então publicar ela em um servidor na internet e compartilhar um link de acesso**. Dessa forma, as pessoas precisam apenas de um navegador de internet para acessar a dashboard. Este processo pode variar conforme o tipo de dashboad:
+
+Para Dashboards estáticas, **envia-se o documento HTML estático (incluindo dependências) ao servidor que irá hospedá-lo** para gerar um link de acesso. Isso pode ser feito de diversas maneiras, a depender do serviço de hospedagem utilizado, sendo possível na maioria dos casos simplesmente "arrastar e soltar (drag & drop)" os arquivos necessários do seu computador para o servidor.
+
+Alguns serviços disponíveis neste formato:
+
+- [GitHub Pages](https://pages.github.com/)
+- [Netlify](https://app.netlify.com/drop)
+
+
+O **GitHub** é um serviço globalmente utilizado por programadores, desenvolvedores, pesquisadores, cientistas e analistas de dados, entre outros, possibilitando criação de **repositórios (público ou privado) de arquivos com controle de versionamento usando o `Git`**. 
+
+Dentre os diversos recursos oferecidos gratuitamente, o GH Pages é geralmente utilizado para criação de sites, portfólios, blogs, documentação de softwares e, nosso foco, hospedagem de dashboards.
+
+Logado em sua conta do [GitHub](https://github.com/):
+
+1. **Acesse** a página de criação de repositórios: **[https://github.com/new](https://github.com/new)**
+2. No campo "**Repository name**" digite um nome para o repositório (pode ser uma abreviação descritiva de sua dashboard, use a criatividade)
+3. No campo "**Description (optional)**" digite, opcionalmente, uma descrição sobre a dashboard (uma frase curta)
+4. Marque a opção "**Public**" para tornar o repositório (e arquivos) público e disponível para qualquer pessoa acessar ou a opção "Private" para acesso restrito<sup>1</sup>
+5. Marque a caixa "**Add a README file**" e clique no botão "**Create repository**"
+
+Após a criação do repositório você será redirecionado para a sua página e, então, podemos fazer o upload dos arquivos da dashboard<sup>1</sup>.
+
+1. Em seu computador, **localize os arquivos da dashboard** que deseja fazer o deploy (usualmente estruturados em um projeto de RStudio)
+2. Certifique-se de que o documento R Markdown tenha sido renderizado com o output da Flexdashboard, gerando um **documento obrigatóriamente nomeado como `index.html`**
+3. Selecione o documento `.html` da dashboard e suas dependências (arquivos de imagens importados, personalizações usando CSS, etc.) e **arraste e solte** (drag & drop) para a página do **repositório GitHub**
+4. Após o upload, clique no botão "**Commit changes**"
+
+Por fim, se gera um link de acesso à dashboard - que pode ser compartilhado com outras pessoas - nesse formato: `https://NOME_DA_SUA_CONTA.github.io/NOME_DO_REPOSITORIO/`.
+
+1. Na página do repositório GitHub, clique no botão "**Settings**"
+2. Localize no menu lateral esquerdo a opção "**Pages**" e clique para acessar
+3. Abaixo de "**Source**", clique na caixa de seleção "**None**" e selecione o *branch* "**main**" (ou *master*, a nomenclatura antiga) e clique em "**Save**"
+4. **Aguarde o processo de deploy** ser concluído (acompanhe na página Actions do repositório)
+5. **Acesse o link** exibido na etapa 3 para verificar o resultado final
+
+Para Dashboards dinâmicas,  **a dashboard precisa de uma sessão de R em execução nos "bastidores"**. Quando você executa uma dashboard usando Shiny localmente, ela usa sua sessão de R local. Dessa forma, para outras pessoas terem o mesmo resultado é necessário enviar os arquivos da dashboard (`.Rmd`, `.rds`, etc.) para um servidor que, além dos arquivos, tenha uma instalação de R que será usada quando a dashboard for acessada.
+
+O [Shinyapps.io](https://www.shinyapps.io/) é o serviço mais recomendável para este tipo de dashboard.
+
+Existem algumas maneiras de publicar uma dashboard dinâmica no Shinyapps.io, dependendo da sua estrutura de pastas/projeto, sendo possível realizar o procedimento pelo `Console` ou pelo botão `Publish` do RStudio. Aqui é demonstrado como realizar o deploy, observando alguns pontos importantes, usando uma única função no `Console`.
+
+O resultado final poderá ser visualizado em um link da sua conta do Shinyapps.io, com uma estrutura similar a esta: `https://NOME_DA_SUA_CONTA.shinyapps.io/NOME_DO_DIRETORIO/`.
+
+O procedimento à seguir exige que o usário já tenha uma conta criada e autenticada no RStudio usando o `rsconnect`.
+
+Para o Deploy da dashboard, a sugestão é que a mesma esteja localizada no **diretório atual de trabalho**, como no exemplo abaixo:
+
+```{r, eval=FALSE}
+# Meu diretório atual
+proj_dir <- getwd()
+proj_dir
+
+# Mudar diretório atual para pasta onde a dashboard está salva
+setwd(paste0(proj_dir, "/docs/index"))
+
+# Fazer o deploy
+rsconnect::deployApp()
+```
+
