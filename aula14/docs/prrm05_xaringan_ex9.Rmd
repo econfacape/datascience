@@ -1,0 +1,24 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Slide com notas de apresentação
+
+
+Esse é o conteúdo exibido no slide durante a apresentação.
+
+![Logo da FACAPE](https://tinyurl.com/49h6wj48)
+
+
+???
+
+E essa é a nota de apresentação, visível somente no modo apresentação (aperte a tecla `p` no teclado).
+
+É possível utilizar **sintaxe** de Markdown _aqui também_:
+
+- Um
+- Dois
+- Três

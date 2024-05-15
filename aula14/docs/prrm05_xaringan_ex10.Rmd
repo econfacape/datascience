@@ -1,0 +1,44 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+### Inserindo tabelas: `tibble`
+
+```{r, message=FALSE, warning=FALSE}
+library(palmerpenguins)
+penguins[1:4]
+```
+
+
+---
+### Inserindo tabelas: `kable`
+
+```{r}
+knitr::kable(
+  x      = head(penguins[1:4]), 
+  format = "html"
+  )
+```
+
+
+---
+### Inserindo tabelas: `datatable`
+
+```{r}
+DT::datatable(
+  data    = penguins[1:4],
+  options = list(pageLength = 5)
+  )
+```
+
+
+---
+### Inserindo tabelas: `gt`
+
+```{r}
+gt::gt(head(penguins[1:4]))
+```
+
