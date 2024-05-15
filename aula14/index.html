@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Apresentações {xaringan}</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="João Ricardo Lima D.Sc. em Economia Aplicada   joao.lima@prof.facape.br " />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <script src="libs/fabric/fabric.min.js"></script>
+    <link href="libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#282f6b"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="libs/mark.js/mark.min.js"></script>
+    <link href="libs/xaringanExtra-search/search.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-search/search.js"></script>
+    <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":true,"autoSearch":true}) })</script>
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copiar","success":"Copiado!","error":"Pressione Ctrl+C para copiar"})</script>
+    <script src="libs/xaringanExtra-progressBar/progress-bar.js"></script>
+    <link href="libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/pymjs/pym.v1.js"></script>
+    <script src="libs/widgetframe-binding/widgetframe.js"></script>
+    <script src="libs/blazy/blazy.min.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Apresentações {xaringan}
+]
+.subtitle[
+## Produção de Relatórios em R Markdown
+]
+.author[
+### João Ricardo Lima<br><span style="font-size: 70%;">D.Sc. em Economia Aplicada <br> <a href="mailto:joao.lima@prof.facape.br" class="email">joao.lima@prof.facape.br</a><br></span>
+]
+.date[
+### <span style="font-size: 70%;">15 de Maio de 2024</span>
+]
+
+---
+
+class:middle
+
+
+
+<style>.xe__progress-bar__container {
+  bottom:0;
+  opacity: 1;
+  position:absolute;
+  right:0;
+  left: 0;
+}
+.xe__progress-bar {
+  height: 0.25em;
+  background-color: #282f6b;
+  width: calc(var(--slide-current) / var(--slide-total) * 100%);
+}
+.remark-visible .xe__progress-bar {
+  animation: xe__progress-bar__wipe 200ms forwards;
+  animation-timing-function: cubic-bezier(.86,0,.07,1);
+}
+@keyframes xe__progress-bar__wipe {
+  0% { width: calc(var(--slide-previous) / var(--slide-total) * 100%); }
+  100% { width: calc(var(--slide-current) / var(--slide-total) * 100%); }
+}</style>
+
+&lt;style type="text/css"&gt;
+pre {
+  white-space: pre-wrap;
+  overflow-y: scroll !important;
+  max-height: 45vh !important;
+  overflow-x: auto;
+  max-width: 100%;
+}
+&lt;/style&gt;
+
+
+
+
+
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="imgs/sasuke.png" alt="&amp;lt;center&amp;gt;&amp;lt;b&amp;gt;Sasuke Uchiha? Sharingan? Xaringan? &amp;lt;/b&amp;gt;&amp;lt;/center&amp;gt;" width="60%" /&gt;
+&lt;p class="caption"&gt;&lt;center&gt;&lt;b&gt;Sasuke Uchiha? Sharingan? Xaringan? &lt;/b&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
+### Antes de começar
+
+Esta aula está baseada em publicações da Análise Macro (http://www.analisemacro.com.br) e da Beatriz Milz (http://www.beatrizmilz.com).
+
+Pacotes de R que devem estar instalados:
+
+
+``` r
+library(xaringan)
+library(xaringanthemer)
+library(leaflet)
+library(plotly)
+library(highcharter)
+library(palmerpenguins)
+library(gt)
+library(pagedown)
+```
+
+---
+class: middle, center, inverse
+# O pacote {xaringan}
+
+
+---
+### O pacote {xaringan}
+
+.pull-left[
+
+&lt;img src="imgs/xaringan.png" width="50%" style="display: block; margin: auto;" /&gt;
+.center[
+Fonte: [xaringan package](https://github.com/yihui/xaringan)
+]
+
+]
+
+.pull-right[
+
+- Possibilita criar slides "ninjas" através do `R Markdown`;&lt;br&gt;&lt;br&gt;
+- Utiliza `JavaScript` e `CSS` internamente;&lt;br&gt;&lt;br&gt;
+- É altamente customizável e possui extensões;&lt;br&gt;&lt;br&gt;
+- Gera slides no formato `HTML` com interatividade;&lt;br&gt;&lt;br&gt;
+- É possível converter o HTML para PDF (estático);&lt;br&gt;&lt;br&gt;
+- É o formato padrão utilizado no material deste curso!
+
+]
+
+
+---
+### Criando uma apresentação {xaringan}
+
+.pull-left[
+
+Para criar seu primeiro slide `xaringan` com o template básico, siga esses passos:
+
+- É recomendável trabalhar dentro de um projeto de RStudio
+- Navegue por `File &gt;  New File &gt; R Markdown &gt; From Template &gt; Ninja Presentation {xaringan} &gt; OK`
+- Salve o arquivo `.Rmd` e compile o documento usando o botão `Knit`
+- Visualize o resultado na janela do RStudio ou abrindo o arquivo HTML gerado no navegador
+
+]
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex1.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+---
+### Arquivos da apresentação {xaringan}
+
+Quando você compilar o arquivo `.Rmd`, automaticamente o `xaringan` cria algumas pastas e arquivos que são utilizados para gerar os slides em HTML, dentre eles:
+
+- `libs/`: arquivos de bibliotecas e pacotes utilizados (CSS, JavaScript, etc.)
+- `*_files`: pasta com imagens e arquivos gerados pelo `.Rmd`
+
+Se você utilizar extensões como o `xaringanthemer` ou `xaringanExtra` podem ser criados automaticamente outros arquivos e pastas.
+
+É possível organizar o diretório usando tambem: 
+
+- img/ - imagens, figuras, etc.
+
+- css/ - para arquivos .css (opcional)
+
+---
+class: middle
+
+## O que pode ser adicionado na apresentação? 
+
+- Texto
+
+- `Markdown`
+
+- Links
+
+- Código R
+
+- Tabelas
+
+- Gráficos
+
+- Qualquer resultado de código de R :) Visualizações, gráficos, tabelas, etc.
+
+
+
+---
+class: middle, center
+
+# Exemplos
+
+&lt;img src="https://media0.giphy.com/media/CjmvTCZf2U3p09Cn0h/giphy-downsized.gif" width="50%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+class: middle
+
+## Texto
+
+O pacote foi criado por Yihui Xie, que é desenvolvedor de software na RStudio. Yihui Xie também desenvolveu os seguintes pacotes: knitr, animation, bookdown, blogdown, pagedown e tinytex.
+
+## Markdown
+
+O pacote `xaringan` foi criado por [**Yihui Xie**](https://yihui.name/), que é ~~um ninja~~ desenvolvedor de software na *RStudio*.
+
+**Código Markdown:**
+
+
+``` r
+# O pacote `xaringan` foi criado por [**Yihui Xie**](https://yihui.name/),
+# que é ~~um ninja~~ desenvolvedor de software na *RStudio*.
+```
+
+
+---
+class: middle
+
+## Links em Markdown
+
+[**Yihui Xie**](https://yihui.name/) também desenvolveu os seguintes pacotes: [knitr](https://yihui.name/knitr/), [animation](https://yihui.name/animation/), [bookdown](https://bookdown.org/), [blogdown](https://github.com/rstudio/blogdown), [pagedown](https://github.com/rstudio/blogdown) e [tinytex](https://yihui.name/tinytex/).
+
+**Código Markdown:**
+
+
+``` r
+# [**Yihui Xie**](https://yihui.name/) também desenvolveu os seguintes pacotes: 
+# [knitr](https://yihui.name/knitr/),
+# [animation](https://yihui.name/animation/),
+# [bookdown](https://bookdown.org/), 
+# [blogdown](https://github.com/rstudio/blogdown),
+# [pagedown](https://github.com/rstudio/blogdown) e
+# [tinytex](https://yihui.name/tinytex/).
+```
+
+
+---
+class: 
+
+## Códigos em R
+
+### Código + Resultado
+
+
+``` r
+nrow(mtcars)
+```
+
+```
+# [1] 32
+```
+--
+### Apenas código
+
+``` r
+nrow(mtcars)
+```
+--
+### Apenas resultado
+
+```
+# [1] 32
+```
+
+
+---
+class: 
+
+### Código inline
+
+A base mtcars possui 32 carros.
+
+**Código Markdown:**
+
+
+``` r
+#   A base mtcars possui `r nrow(mtcars)` carros.
+```
+
+
+---
+class: top
+### Tabelas em Markdown
+
+| Sepal.Length| Sepal.Width| Petal.Length| Petal.Width|Species |
+|------------:|-----------:|------------:|-----------:|:-------|
+|          5.1|         3.5|          1.4|         0.2|setosa  |
+|          4.9|         3.0|          1.4|         0.2|setosa  |
+|          4.7|         3.2|          1.3|         0.2|setosa  |
+|          4.6|         3.1|          1.5|         0.2|setosa  |
+
+- **Código Markdown**:
+
+
+``` r
+# | Sepal.Length| Sepal.Width| Petal.Length| Petal.Width|Species |
+# |------------:|-----------:|------------:|-----------:|:-------|
+# |          5.1|         3.5|          1.4|         0.2|setosa  |
+# |          4.9|         3.0|          1.4|         0.2|setosa  |
+# |          4.7|         3.2|          1.3|         0.2|setosa  |
+# |          4.6|         3.1|          1.5|         0.2|setosa  |
+```
+
+
+---
+class: middle
+
+## Tabelas
+
+### Tabelas em R
+
+
+``` r
+knitr::kable(x = head(iris), format = "html")
+```
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; Sepal.Length &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Sepal.Width &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Petal.Length &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Petal.Width &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Species &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5.1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.4 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; setosa &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+- Outra opção:  `DT::datatable(iris)`  
+
+---
+class: top
+
+## Gráficos
+
+### Gráficos em `R` - `ggplot2`
+
+
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="index_files/figure-html/unnamed-chunk-16-1.png" alt="&amp;lt;center&amp;gt;&amp;lt;b&amp;gt;Fonte: &amp;lt;a href='https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/'&amp;gt;Adaptado de Data Novia&amp;lt;/a&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/center&amp;gt;" width="60%" /&gt;
+&lt;p class="caption"&gt;&lt;center&gt;&lt;b&gt;Fonte: &lt;a href='https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/'&gt;Adaptado de Data Novia&lt;/a&gt;&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+
+---
+class: top
+
+### Gráficos dinâmicos em `R` - `ggplot2` + `gganimate`
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="imgs/gif-gapminder.gif" alt="&amp;lt;center&amp;gt;&amp;lt;b&amp;gt;Fonte: &amp;lt;a href='https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/'&amp;gt;Adaptado de Data Novia&amp;lt;/a&amp;gt;&amp;lt;/b&amp;gt;&amp;lt;/center&amp;gt;" width="45%" /&gt;
+&lt;p class="caption"&gt;&lt;center&gt;&lt;b&gt;Fonte: &lt;a href='https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/'&gt;Adaptado de Data Novia&lt;/a&gt;&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+---
+class: top
+
+### Gráficos interativos em `R` - `highcharter`
+
+
+&lt;center&gt;&lt;iframe width="720" height="500" src="index_files/figure-html/widgets/widget_highcharterplot.html" frameborder="0"&gt;&lt;/iframe&gt;&lt;/center&gt;
+&lt;center&gt;Fonte: &lt;a href='https://rkabacoff.github.io/datavis/Interactive.html'&gt;Adaptado de Datavis with R &lt;/a&gt;&lt;/center&gt;
+
+---
+class: top, center
+
+## Muito legal!
+ 
+&lt;img src="https://media1.giphy.com/media/Nm8ZPAGOwZUQM/giphy.gif" width="50%" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle
+
+# O que mais pode ser adicionado? 
+
+- Equações
+
+- Imagens
+
+- GIF
+
+- Tweets
+
+- Emojis 😄
+
+- Videos 🎥
+
+---
+class: middle
+
+## Equações
+
+### Equação centralizada
+
+
+$$
+INTRAG_i=100*n_i/n_t
+$$
+
+
+**Código Markdown:**
+
+
+``` r
+# $$INTRAG_{i} = 100 * n_{i} / n_{t}$$
+```
+
+---
+class: middle
+
+## Equações
+
+
+### Equação junto ao texto
+
+Ou também na linha `\(INTRAG_{i}=100*n_{i}/n_{t}\)`, junto ao texto!
+
+**Código Markdown:**
+
+
+``` r
+# Ou também na linha $INTRAG_{i} = 100 * n_{i} / n_{t}$, junto ao texto!
+```
+
+---
+class: middle
+
+## Imagens
+
+
+``` r
+knitr::include_graphics("imgs/corinthians.png")
+```
+
+&lt;img src="imgs/corinthians.png" width="30%" style="display: block; margin: auto;" /&gt;
+
+---
+class: top
+### GIFs
+
+
+``` r
+knitr::include_graphics("https://media2.giphy.com/media/S857VNxM6HwlZuYXrU/giphy.gif")
+```
+
+&lt;img src="https://media2.giphy.com/media/S857VNxM6HwlZuYXrU/giphy.gif" width="45%" style="display: block; margin: auto;" /&gt;
+
+- O Addin [giphyr](https://github.com/haozhu233/giphyr) ajuda a procurar Gifs diretamente do RStudio!
+
+
+``` r
+devtools::install_github("haozhu233/giphyr")
+```
+
+---
+Class: middle, center
+
+## Emojis
+
+- Para utilizar emojis, instale o pacote:
+
+``` r
+devtools::install_github("hadley/emo")
+```
+
+
+- Exemplo:
+
+``` r
+# `r emo::ji("purple_heart")`
+```
+
+💜
+
+- O addin `ermoji` ajuda a procurar emojis!
+
+
+``` r
+devtools::install_github("gadenbuie/ermoji")
+```
+
+---
+Class: middle, center
+
+## Videos do YouTube
+
+- Opção Compartilhar &gt; Incorporar: 
+
+&lt;center&gt;&lt;iframe width="720" height="405" src="https://www.youtube.com/embed/WxKYqtF2qDg?si=BT0U7U1Qj859OEln" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen&gt;&lt;/iframe&gt;&lt;/center&gt;
+
+---
+### Formato de saída
+
+Diferentemente dos arquivos HTML, no `xaringan` usa-se o formato de saída:
+
+.pull-left[
+
+
+``` r
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+*output: xaringan::moon_reader
+---
+```
+
+]
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex2.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+---
+class: top
+
+## Alterar o YAML
+
+- O `YAML` possui informações importantes para a apresentação como:
+
+a) título;
+
+b) subtítulo;
+
+c) autor;
+
+d) instituição;
+
+e) data;
+
+etc.
+
+- **output:** indica o formato, por exemplo html_document, pdf_document, etc. No caso do xaringan, o output é `xaringan::moon_reader`
+
+- **libs_dir:** pasta onde colocará bibliotecas necessárias.
+Por exemplo: **lib_dir:** libs indica que a biblioteca que se usa remark-latest.min.js será salva na pasta libs.
+
+---
+class: top
+## Encoding
+
+- Adicionar no **YAML**:
+
+
+``` r
+encoding: "UTF-8"
+```
+
+"Uma codificação de caracteres é um padrão de relacionamento entre um conjunto de caracteres(...) com um conjunto de outra coisa, como por exemplo números ou pulsos elétricos com o objetivo de facilitar o armazenamento de texto em computadores e sua transmissão através de redes de telecomunicação." FONTE: Wikipedia
+
+
+---
+class: top
+# Estilo (.css)
+
+Possibilidades:
+
+- Temas do xaringan
+
+  - Temas com {xaringanthemer}
+
+  - Alterando o .css: arquivo custom.css
+
+Sugestão: Temas com {xaringanthemer} + arquivo custom.css
+
+- O xaringanthemer cria o arquivo .css!
+
+- Para usar: Criar um arquivo com template: Ninja themed presentation
+
+---
+class: top
+# Estilo (.css)
+
+- No YAML:
+
+
+``` r
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    chakra: libs/remark-latest.min.js
+     css: [xaringan-themer.css]
+```
+
+Altere o tema!
+
+
+``` r
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#1381B0",
+  secondary_color = "#FF961C",
+  inverse_header_color = "#FFFFFF"
+)
+```
+
+
+---
+class: top
+# Estilo (.css) - Exemplo
+
+
+``` r
+library(xaringanthemer)
+style_duo_accent(
+  outfile = "xaringan-themer2021.css",
+  primary_color = "#af1313",
+  title_slide_background_color = "#af1313",
+  title_slide_text_color = "#FFFFFF",
+  inverse_text_color = "#af1313",
+  inverse_header_color = "#af1313",
+  secondary_color = "#a7a3b4",
+  title_slide_background_image = "https://i.giphy.com/media/l49JHOl3OFL6c6u1W/giphy.webp", title_slide_background_size = "300",
+  header_font_google = google_font("Jost"),
+  text_font_google   = google_font("Work Sans", "300", "300i"),
+  code_font_google   = google_font("Fira Code"),
+  base_font_size = "25px"
+)
+```
+
+
+---
+class: middle, center, inverse
+# Formatação de slides
+
+
+---
+### Criando slides
+
+O conteúdo dos slides começam onde o YAML termina. Use cabeçalhos Markdown (`#`) para gerar o título e crie novos slides com 3 hífens `---` sequenciais em uma linha. Veja o exemplo:
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Primeiro slide
+
+Bla bla bla
+
+
+---
+## Segundo slide (título menor)
+
+Bla bla bla
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex3.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+
+---
+### Alinhamento do slide
+
+Podemos alinhar horizontal e/ou verticalmente todo o conteúdo do slide com o parâmetro `class`, definido logo abaixo dos hífens. As opções são `left`, `center` e `right` no primeiro caso e `top`, `middle` e `bottom` no segundo. Veja o exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+class: center
+# Primeiro slide 
+
+O slide está alinhado horizontalmente.
+
+
+---
+class: middle
+## Segundo slide
+
+O slide está alinhado verticalmente.
+
+
+---
+class: center, middle
+## Terceiro slide
+
+O slide está alinhado horizontal e verticalmente.
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex4.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Alinhamento de conteúdo
+
+Pode-se alinhar individualmente o texto/palavra/imagem do slide, basta inserir o conteúdo dentro das classes `.left[]`, `.center[]` ou `.right[]`. Por exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+class: center, middle
+# Alinhamento de texto
+
+Bla bla bla normal
+
+.left[Bla bla bla à esquerda]
+
+.center[Bla bla bla no centro]
+
+.right[Bla bla bla à direita]
+
+.left[![Logo da FACAPE](https://tinyurl.com/49h6wj48)]
+```
+
+]
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex5.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Slide de destaque
+
+Para criar um slide de destaque, com o fundo em cor de contraste - igual ao slide nº 4 desta apresentação -, utilize a classe `inverse`. Por exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+
+# Slide normal
+
+Bla bla bla
+
+
+---
+class: center, middle, inverse
+# Slide de destaque
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex13.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+
+
+---
+### Layout do slide
+
+Os slides também podem ser configurados com um layout diferente via outras classes. Para criar um slide com conteúdo de "destaque" pode ser útil uma barra lateral à esqueda com largura limitada e o restantante à direita, por exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Layout do slide
+
+.left-column[
+
+Essa classe cria uma barra lateral (sidebar) à esquerda no slide.
+
+]
+
+.right-column[
+
+No lado direito do slide podemos inserir o conteúdo de "destaque".
+
+.left[![Logo da FACAPE](https://tinyurl.com/49h6wj48)]
+
+]
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex6.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Layout de 2 colunas
+
+Por sua vez, as classes `.pull-left[]` e `.pull-right[]` fornecem um layout de duas colunas, sendo que ambas têm a mesma largura. Abaixo está um exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Layout de 2 colunas
+
+Esse é o conteúdo fora das duas colunas.
+
+
+.pull-left[
+
+Esse conteúdo fica na coluna da esquerda.
+
+- Um
+- Dois
+- Três
+
+]
+
+.pull-right[
+
+E esse na coluna da direita.
+
+.left[![Logo da FACAPE](https://tinyurl.com/49h6wj48)]
+
+]
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex7.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Revelar conteúdo incrementalmente
+
+Para mostrar o conteúdo de forma incremental em um slide, use dois hífens `--` no começo da linha anterior ao conteúdo. Por exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Revelar conteúdo incrementalmente
+
+Esse slide revela o conteúdo de forma incremental:
+
+
+--
+Esse conteúdo 
+
+--
+aparece 
+
+--
+aos poucos!
+
+
+A revelação de uma lista:
+
+--
+- Um
+
+--
+- Dois
+
+--
+- Três
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex8.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Notas de apresentação
+
+É possível criar notas de apresentação de slides para si mesmo quando estiver no modo apresentação (ative através do atalho no teclado `p`): depois do conteúdo do slide, utilize 3 pontos de interrogação `???` e escreva as notas (também aceita sintaxe Markdown). Por exemplo:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Slide com notas de apresentação
+
+
+Esse é o conteúdo exibido no slide durante a apresentação.
+
+.left[![Logo da FACAPE](https://tinyurl.com/49h6wj48)]
+
+
+???
+
+E essa é a nota de apresentação, visível somente no modo apresentação (aperte a tecla `p` no teclado).
+
+É possível utilizar **sintaxe** de Markdown _aqui também_:
+
+- Um
+- Dois
+- Três
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex9.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Inserindo tabelas
+
+Veja exemplos de `tibble`, `kable`, `datatable` e `gt`:
+
+
+.pull-left[
+
+````markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+### Inserindo tabelas: `tibble`
+
+```{r, message=FALSE, warning=FALSE}
+library(palmerpenguins)
+penguins[1:4]
+```
+
+
+---
+### Inserindo tabelas: `kable`
+
+```{r}
+knitr::kable(
+  x      = head(penguins[1:4]), 
+  format = "html"
+  )
+```
+
+
+---
+### Inserindo tabelas: `datatable`
+
+```{r}
+DT::datatable(
+  data    = penguins[1:4],
+  options = list(pageLength = 5)
+  )
+```
+
+
+---
+### Inserindo tabelas: `gt`
+
+```{r}
+gt::gt(head(penguins[1:4]))
+```
+````
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex10.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+
+---
+### Inserindo maps
+
+Veja exemplos de `leaflet` e `highcharter`:
+
+
+.pull-left[
+
+````markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+### Inserindo mapas: `leaflet`
+
+```{r, message=FALSE, warning=FALSE, out.width='100%', fig.height=5}
+library(leaflet)
+leaflet() %&gt;% 
+  addTiles() %&gt;% 
+  setView(lat = -27.59377, lng = -48.5652, zoom = 15)
+```
+
+
+---
+### Inserindo mapas: `highcharter`
+
+```{r, message=FALSE, warning=FALSE, out.width='100%', fig.height=4}
+library(highcharter)
+hcmap("countries/br/br-all", showInLegend = FALSE) %&gt;%
+  hc_add_series(
+    data = data.frame(name = "Florianópolis", lat = -27.59377, lon = -48.5652), 
+    type = "mappoint"
+    ) %&gt;%
+  hc_mapNavigation(enabled = TRUE)
+```
+````
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex11.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+---
+### Inserindo gráficos
+
+Veja exemplos de `ggplot2` e `plotly`:
+
+
+.pull-left[
+
+````markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+### Inserindo gráficos: `ggplot2`
+
+```{r}
+library(ggplot2)
+g1 &lt;- ggplot(palmerpenguins::penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm, color = species) +
+  geom_point() +
+  theme_classic(base_size = 16)
+g1
+```
+
+
+---
+### Inserindo gráficos: `ggplot2`
+
+Mude as opções de chunk para resolução e tamanho apropriados (padrão é `dpi=72`, `fig.retina=2`, ou seja o `dpi` é 72 x 2 = 144).
+
+```{r, fig.retina=3, fig.height=5}
+g1 # fig.retina=3, fig.height=5
+```
+
+
+---
+### Inserindo gráficos: `plotly`
+
+```{r, fig.height=5}
+library(plotly)
+ggplotly(g1)
+```
+````
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex12.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+
+---
+### Imagem de fundo
+
+Para adicionar uma imagem de fundo a um slide, utilize a classe `background-image`:
+
+- `background-image: url(https://blablabla.com.br/img.png)`
+- `background-size:`
+  - `cover` --&gt; redimensiona e corta a imagem para eliminar espaços em branco
+  - `contain` --&gt; apenas redimensiona
+
+Se for uma URL, use: `url(https://blablabla.com.br/img.png)`
+
+Se for uma imagem local, use caminhos relativos: `url(imgs/blablabla.png)`
+
+Veja exemplos no próximo slide!
+
+
+---
+### Imagem de fundo
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+
+class: center, top, inverse
+background-image: url(http://bit.ly/arm-greens)
+# Slide com imagem de fundo
+
+
+`background-image: url(http://bit.ly/arm-greens)`
+
+
+
+---
+class: center, top, inverse
+background-image: url(http://bit.ly/arm-greens)
+background-size: cover
+# Slide com imagem de fundo
+
+
+Tratamento de imagem:&lt;br&gt;
+`background-image: url(http://bit.ly/arm-greens)`&lt;br&gt;
+`background-size: cover`
+
+
+
+---
+class: center, top, inverse
+background-image: url(http://bit.ly/arm-greens)
+background-size: contain
+# Slide com imagem de fundo
+
+
+Tratamento de imagem:&lt;br&gt;
+`background-image: url(http://bit.ly/arm-greens)`&lt;br&gt;
+`background-size: contain`
+
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex14.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+---
+### Slide inicial
+
+Modifique o slide inicial (capa) da apresentação através do parâmetro `nature` no YAML:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: 
+  xaringan::moon_reader:
+    nature:
+      titleSlideClass: ["left", "middle"]
+---
+
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex15.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+
+---
+### Slide inicial
+
+Ou (mais avançado) crie seu próprio slide inicial com a sua cara. Para isso, desabilitamos o slide criado automaticamente através do parâmetro `seal` e escrevemos nossas próprias definições (conhecer um pouquinho de HTML é interessante aqui). Veja esse exemplo&lt;sup&gt;1&lt;/sup&gt;:
+
+
+.pull-left[
+
+
+``` r
+---
+output:
+  xaringan::moon_reader:
+*   seal: false
+---
+
+class: inverse, center, middle
+background-image: url(http://bit.ly/arm-greens)
+background-size: cover
+
+
+# Apresentações em {xaringan}
+
+&lt;img src="https://user-images.githubusercontent.com/163582/45438104-ea200600-b67b-11e8-80fa-d9f2a99a03b0.png" width="150px"/&gt;
+
+
+### APRENDENDO A CRIAR SLIDES NINJA
+
+.large[João Ricardo Lima | Análise Macro | 15 de maio de 2024]
+
+
+
+---
+# Slide 1
+```
+
+.center[
+Fonte: [xaringan package](https://github.com/yihui/xaringan)
+]
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex16.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+
+
+---
+### Usando temas do {xaringan}
+
+Existem diversos temas do próprio pacote para personalização da apresentação (arquivos do tema e de fontes são separados):
+
+
+``` r
+names(xaringan:::list_css())
+```
+
+```
+#  [1] "chocolate-fonts"  "chocolate"        "default-fonts"    "default"         
+#  [5] "duke-blue"        "fc-fonts"         "fc"               "glasgow_template"
+#  [9] "hygge-duke"       "hygge"            "ki-fonts"         "ki"              
+# [13] "kunoichi"         "lucy-fonts"       "lucy"             "metropolis-fonts"
+# [17] "metropolis"       "middlebury-fonts" "middlebury"       "nhsr-fonts"      
+# [21] "nhsr"             "ninjutsu"         "rladies-fonts"    "rladies"         
+# [25] "robot-fonts"      "robot"            "rutgers-fonts"    "rutgers"         
+# [29] "shinobi"          "tamu-fonts"       "tamu"             "uio-fonts"       
+# [33] "uio"              "uo-fonts"         "uo"               "uol-fonts"       
+# [37] "uol"              "useR-fonts"       "useR"             "uwm-fonts"       
+# [41] "uwm"              "wic-fonts"        "wic"
+```
+
+Para usar um tema, edite o YAML com o parâmetro `css`.
+
+
+
+---
+### Usando temas do {xaringan}
+
+Por exemplo, para usar o tema `metropolis`:
+
+
+.pull-left[
+
+```markdown
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: 
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts]
+---
+
+
+# Slide normal
+
+Bla bla bla
+
+
+---
+class: center, middle, inverse
+# Slide de destaque
+
+```
+
+]
+
+
+.pull-right[
+
+&lt;iframe src="docs/prrm05_xaringan_ex17.html" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+]
+
+---
+class: middle, center, inverse
+# Dicas
+
+---
+class: center, middle
+### Atalhos de teclado
+
+Pressione `h` ou `?` para ver os atalhos de teclado disponíveis na apresentação `xaringan`.
+
+Um fluxo de trabalho útil para apresentação: se você tiver duas telas, desative o espelhamento de tela e pressione `c` para clonar:
+
+
+.pull-left[
+
+# <svg aria-hidden="true" role="img" viewBox="0 0 576 512" style="height:1em;width:1.12em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#282f6b;overflow:visible;position:relative;"><path d="M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V288H64V64H512z"/></svg>
+
+Na tela de apresentação:
+
+Mova a janela clonada para essa tela&lt;br&gt;
+e pressione `f` para o modo tela cheia
+
+]
+
+.pull-right[
+
+# <svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#282f6b;overflow:visible;position:relative;"><path d="M128 32C92.7 32 64 60.7 64 96V352h64V96H512V352h64V96c0-35.3-28.7-64-64-64H128zM19.2 384C8.6 384 0 392.6 0 403.2C0 445.6 34.4 480 76.8 480H563.2c42.4 0 76.8-34.4 76.8-76.8c0-10.6-8.6-19.2-19.2-19.2H19.2z"/></svg>
+
+Na tela do seu computador:
+
+Pressione `p` para ativar o modo apresentação
+
+]
+
+---
+Class: top, center
+
+## E como compartilhar a apresentação?
+
+- PDF:
+
+
+``` r
+remotes::install_github('rstudio/pagedown')
+pagedown::chrome_print("index.html")
+```
+
+- HTML - Online :)
+
+  - Em seu site;
+
+  - [GitHub Pages](https://pages.github.com/) - necessita ter o código em um repositório no GitHub
+
+  - [Netlify](https://www.netlify.com/) - necessita ter o código em um repositório no GitHub
+
+- Dica: crie um [bit.ly](https://bitly.com)
+
+
+&lt;!-- Referências Bibliográficas --&gt;
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9",
+"navigation": {
+"scroll": false
+}
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
