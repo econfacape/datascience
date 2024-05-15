@@ -1,0 +1,29 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+### Inserindo mapas: `leaflet`
+
+```{r, message=FALSE, warning=FALSE, out.width='100%', fig.height=5}
+library(leaflet)
+leaflet() %>% 
+  addTiles() %>% 
+  setView(lat = -27.59377, lng = -48.5652, zoom = 15)
+```
+
+
+---
+### Inserindo mapas: `highcharter`
+
+```{r, message=FALSE, warning=FALSE, out.width='100%', fig.height=4}
+library(highcharter)
+hcmap("countries/br/br-all", showInLegend = FALSE) %>%
+  hc_add_series(
+    data = data.frame(name = "Florianópolis", lat = -27.59377, lon = -48.5652), 
+    type = "mappoint"
+    ) %>%
+  hc_mapNavigation(enabled = TRUE)
+```
