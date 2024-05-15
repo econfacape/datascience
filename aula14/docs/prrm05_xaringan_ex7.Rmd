@@ -1,0 +1,29 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Layout de 2 colunas
+
+Esse é o conteúdo fora das duas colunas.
+
+
+.pull-left[
+
+Esse conteúdo fica na coluna da esquerda.
+
+- Um
+- Dois
+- Três
+
+]
+
+.pull-right[
+
+E esse na coluna da direita.
+
+![Logo da FACAPE](https://tinyurl.com/49h6wj48)
+
+]

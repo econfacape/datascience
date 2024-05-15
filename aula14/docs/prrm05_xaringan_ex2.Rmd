@@ -1,0 +1,6 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---

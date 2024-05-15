@@ -1,0 +1,22 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Layout do slide
+
+.left-column[
+
+Essa classe cria uma barra lateral (sidebar) à esquerda no slide.
+
+]
+
+.right-column[
+
+No lado direito do slide pode-se inserir o conteúdo de "destaque".
+
+![Logo da FACAPE](https://tinyurl.com/49h6wj48)
+
+]

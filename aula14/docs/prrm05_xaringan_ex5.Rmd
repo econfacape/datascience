@@ -1,0 +1,19 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+class: center, middle
+# Alinhamento de texto
+
+Bla bla bla normal
+
+.left[Bla bla bla à esquerda]
+
+.center[Bla bla bla no centro]
+
+.right[Bla bla bla à direita]
+
+.left[![Logo da FACAPE](https://tinyurl.com/49h6wj48)]

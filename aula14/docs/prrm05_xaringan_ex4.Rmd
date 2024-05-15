@@ -1,0 +1,25 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+class: center
+# Primeiro slide 
+
+O slide está alinhado horizontalmente.
+
+
+---
+class: middle
+## Segundo slide
+
+O slide está alinhado verticalmente.
+
+
+---
+class: center, middle
+## Terceiro slide
+
+O slide está alinhado horizontal e verticalmente.

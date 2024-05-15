@@ -1,0 +1,32 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+# Revelar conteúdo incrementalmente
+
+Esse slide revela o conteúdo de forma incremental:
+
+
+--
+Esse conteúdo 
+
+--
+aparece 
+
+--
+aos poucos!
+
+
+A revelação de uma lista:
+
+--
+- Um
+
+--
+- Dois
+
+--
+- Três
