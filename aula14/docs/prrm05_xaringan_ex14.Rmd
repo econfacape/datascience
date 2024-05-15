@@ -1,0 +1,40 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+
+class: center, top, inverse
+background-image: url(http://bit.ly/arm-greens)
+# Slide com imagem de fundo
+
+
+`background-image: url(http://bit.ly/arm-greens)`
+
+
+
+---
+class: center, top, inverse
+background-image: url(http://bit.ly/arm-greens)
+background-size: cover
+# Slide com imagem de fundo
+
+
+Tratamento de imagem:<br>
+`background-image: url(http://bit.ly/arm-greens)`<br>
+`background-size: cover`
+
+
+
+---
+class: center, top, inverse
+background-image: url(http://bit.ly/arm-greens)
+background-size: contain
+# Slide com imagem de fundo
+
+
+Tratamento de imagem:<br>
+`background-image: url(http://bit.ly/arm-greens)`<br>
+`background-size: contain`

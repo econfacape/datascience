@@ -1,0 +1,24 @@
+---
+output:
+  xaringan::moon_reader:
+    seal: false #<<
+---
+
+class: inverse, center, middle
+background-image: url(http://bit.ly/arm-greens)
+background-size: cover
+
+
+# Apresentações em {xaringan}
+
+<img src="https://user-images.githubusercontent.com/163582/45438104-ea200600-b67b-11e8-80fa-d9f2a99a03b0.png" width="150px"/>
+
+
+### APRENDENDO A CRIAR SLIDES NINJA
+
+.large[Joao Ricardo Lima | FACAPE | 15 de maio de 2024]
+
+
+
+---
+# Slide 1

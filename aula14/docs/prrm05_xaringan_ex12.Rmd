@@ -1,0 +1,41 @@
+---
+title: "Slides ninja com {xaringan}"
+author: "João Ricardo Lima"
+date: "15 de maio de 2024"
+output: xaringan::moon_reader
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+### Inserindo gráficos: `ggplot2`
+
+```{r}
+library(ggplot2)
+g1 <- ggplot(palmerpenguins::penguins) +
+  aes(x = bill_length_mm, y = bill_depth_mm, color = species) +
+  geom_point() +
+  theme_classic(base_size = 16)
+g1
+```
+
+
+---
+### Inserindo gráficos: `ggplot2`
+
+Mude as opções de chunk para resolução e tamanho apropriados (padrão é `dpi=72`, `fig.retina=2`, ou seja o `dpi` é 72 x 2 = 144).
+
+```{r, fig.retina=3, fig.height=5}
+g1 # fig.retina=3, fig.height=5
+```
+
+
+---
+### Inserindo gráficos: `plotly`
+
+```{r, fig.height=5}
+library(plotly)
+ggplotly(g1)
+```
