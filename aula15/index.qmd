@@ -1,0 +1,366 @@
+---
+title: "TRABALHANDO COM SQL (Structured Query Language)"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+---
+
+# Banco de Dados
+
+[^1] Uma grande quantidade de dados fica armazenado em bancos de dados, por isso é essencial saber como acessá-los. Sempre é melhor poder acessar o banco de dados diretamente para obter os dados necessários, quando precisar, do que pedir para outra pessoa fazer isto.
+
+[^1]: Todo este material foi retirado de diversas postagens e cursos da Análise Macro (www.analisemacro.com.br) e o capítulo sobre Bancos de Dados do livro "R for Data Science" de Hadley Wickahm: https://r4ds.hadley.nz/databases.html
+
+O termo banco de dados (*database*), para a maioria das pessoas, pode significar uma **coleção de dados ou itens** (listas de qualquer tipo, como por exemplo pagamentos mensais, clientes, compras, etc).
+
+Porém, o termo é estritamente definido como uma **coleção de registros integrados que formam um método de coleta e organização de dados**. E obviamente, implica na utilização de uma tecnologia, como por exemplo, planilhas contendo dados de clientes, arquivos de texto contendo dados sobre voos ou bancos de dados relacionais.
+
+Um **registro** é a representação de um **objeto físico ou conceitual**. Por exemplo, o envio de pedidos para clientes de uma empresa. Cada registro desta pesquisa representa um cliente. Os registros possuem **atributos**, como por exemplo, nome, endereço e região. As observações (o registro de cada atributo) são os dados.
+
+Um banco de dados pode possuir diferentes tamanhos, de simples coleções de poucos registros para sistemas que possuem milhões. A usabilidade do banco de dados pode ser definida com base no seu tamanho, no equipamento em que é utilizado e no tamanho da organização que o mantém. Sendo assim, os separamos em três tipos:
+
+Um banco de dados pode possuir **diferentes tamanhos**, de simples coleções de poucos registros para sistemas que possuem milhões. A **usabilidade** do banco de dados pode ser **definida** com base no seu **tamanho**, no **equipamento** em que é utilizado e no **tamanho da organização que o mantém**. Sendo assim, os separamos em três tipos:
+
+ - **Banco de dados pessoal**: é desenhado para uma única pessoa para ser utilizado em um único computador. Possui uma estrutura simples e tamanho relativamente pequeno.
+
+ - **Banco de dados de uma organização ou grupo de trabalho**: Esse tipo de banco de dados é geralmente maior que um pessoal e mais complexo. Necessita ser utilizado por diversas pessoas que tentam acessar o mesmo dados ao mesmo tempo
+
+ - **Banco de dados de uma empresa**: São enormes, guardando informações sobre a organização inteira.
+
+
+## Formatos dos dados
+
+É comum encontrar dados coletados em diferentes formatos, como CSV, JSON por meio de APIs, XML em um banco de dados NoSQL, e diferentes outros. 
+
+Os dados podem ser armazenados em diferentes formas e estruturas. 
+
+Podem ser de formas **não estruturadas**, como por exemplo: documentos em texto, imagens e áudios. 
+
+E em forma **estruturada**, em formato tabular, como uma planilha, contendo linhas e colunas.
+
+A maioria dos softwares para a análise de dados realiza aplicações em dados estruturados, que é o que iremos utilizar neste curso.
+
+
+## Metadados
+
+Um banco de dados consiste em ambos os dados e os metadados. 
+
+Metadados são as **informações que descrevem a estrutura dos dados no banco de dados**. É uma forma de entender como os dados estão dispostos para facilitar as consultas.
+
+Os banco de dados guardam os metadados em um local chamado **dicionário de dados**, que contém definições e representações de elementos de dados (tabelas, colunas, restrições, etc).
+
+## Tamanho de banco de dados e complexidade
+
+Um banco de dados pode possuir **diferentes tamanhos**, de simples coleções de poucos registros para sistemas que possuem milhões. A **usabilidade** do banco de dados pode ser **definida** com base no seu **tamanho**, no **equipamento** em que é utilizado e no **tamanho da organização que o mantém**. Sendo assim, os separamos em três tipos:
+
+ - **Banco de dados pessoal**: é desenhado para uma única pessoa para ser utilizado em um único computador. Possui uma estrutura simples e tamanho relativamente pequeno.
+
+ - **Banco de dados de uma organização ou grupo de trabalho**: Esse tipo de banco de dados é geralmente maior que um pessoal e mais complexo. Necessita ser utilizado por diversas pessoas que tentam acessar o mesmo dados ao mesmo tempo
+
+ - **Banco de dados de uma empresa**: São enormes, guardando informações sobre a organização inteira.
+
+## Bancos de dados Relacionais
+
+Dados estruturados, como mencionado, possuem formatos tabulares, com **linhas (registros)** e **colunas (atributos)**. Esse formato em bancos de dados relacionais são definidos como tabela. Cada tabela pode armazenar diferentes subconjuntos e tipos de dados em níveis diferentes de detalhes.
+
+## Bancos de dados Relacionais
+
+Um banco de dados relacional é uma **coleção de tabelas** que se relacionam entre si. Vamos utilizar como exemplo duas tabelas de **PEDIDOS** e **CLIENTES**.
+
+```{r, out.width = "100%", fig.alt="", fig.cap="", echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/clientes.png")
+```
+  
+```{r, out.width = "100%", fig.alt="", fig.cap="", echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/pedidos.png")
+```
+
+Veja que na primeira tabela, **PEDIDOS**, contém a coluna chamada **ID_CLIENTE**. Essa coluna também está contida na tabela **CLIENTES**. As informações se relacionam de forma que seja possível ligar os dados entre as duas tabelas.
+
+Com isso, através das informações sobre os pedidos, é possível localizar as informações sobre os clientes que realizaram os pedidos.
+
+## Por que Tabelas Separadas?
+
+As tabelas são construídas de formas separadas devido ao conceito de **normalização**. Basicamente, é a separação de diferentes tipos de dados em suas próprias tabelas. Se houvesse todas as informações em apenas uma tabela, ela seria **redundante, inchada e causando aumento da manutenção e diminuição do desempenho**.
+
+```{r, out.width = "100%", fig.alt="", fig.cap="", echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/redundante.png")
+```
+
+Veja que se houvesse as informações do clientes na tabela **PEDIDOS**, ocasionaria o aumento de linhas relacionadas a Re Construcao. Isso é **redundante**, e toma espaço inútil no armazenamento, além de que ocasiona um aumento na manutenção, caso seja necessário mudanças nos dados.
+
+os **bancos de dados SQL** dominam o mercado e são os mais utilizados por sistemas de bancos de dados em empresas.
+
+Este material vai mostrar o básico do pacote DBI: como usá-lo para conectar-se a um banco de dados e depois recuperar dados com uma consulta `SQL` (Linguagem de Consulta Estruturada). `SQL` é a linguagem usada para gerenciar bancos de dados e é uma linguagem importante para todos os cientistas de dados aprenderem. 
+
+
+```{r, echo=FALSE, out.width="60%", fig.align='center'}
+knitr::include_graphics("imgs/cenarios.png")
+```
+
+Basicamente existem dois cenários para se defrontar: 
+
+- A pessoa tem diversos arquivos de dados para analisar e precisa armazenar tudo em um banco de dados SQL;
+
+- A pessoa já tem um banco de dados SQL criado e precisa fazer consultas de dados de uma tabela no banco SQL;
+
+# O que é um banco de dados SQL?
+
+Em termos simples, é um arquivo, que geralmente possui a extensão ".db", onde pode-se armazenar dados de forma estruturada, organizados em tabelas que são consultáveis, sem necessidade de carregar tudo para a memória. As tabelas podem ter relação entre si ou não e as colunas preservam propriedades interessantes como o tipo (numérica, textual, data, etc.).
+
+Basicamente, os pacotes mais importantes para serem instalados são o `DBI` e o  `dbplyr`. `DBI` é uma interface de baixo nível que se conecta a bancos de dados e executa SQL; `dbplyr` é uma interface de alto nível que traduz seu código **dplyr** em consultas SQL e depois as executa com DBI.
+
+```{r}
+library(DBI)
+library(dbplyr)
+library(tidyverse)
+```
+
+
+No nível mais simples, pode-se pensar em um **banco de dados** como uma coleção de `data frames`, chamados de tabelas na terminologia de banco de dados. Assim como um data frame, uma tabela de banco de dados é uma coleção de colunas nomeadas, onde cada valor da coluna é do mesmo tipo. Existem três diferenças de nível entre data frames e tabelas de banco de dados:
+
+- As tabelas do banco de dados são armazenadas em disco e podem ser grandes. Os dataframes são armazenados na memória e são limitados (embora esse limite ainda seja muito grande para muitos problemas).
+
+- As tabelas do banco de dados quase sempre possuem índices. Muito parecido com o índice de um livro, um índice de banco de dados torna possível encontrar rapidamente linhas de interesse sem ter que olhar cada linha. Data frames e tibbles não têm índices, mas data.tables sim, o que é um dos motivos pelos quais são tão rápidos.
+
+- A maioria dos bancos de dados clássicos são otimizados para coletar dados rapidamente, e não para analisar dados existentes. Esses bancos de dados são chamados de **orientados a linhas** porque os dados são armazenados linha por linha, em vez de coluna por coluna como R. Mais recentemente, houve muito desenvolvimento de bancos de dados **orientados a colunas** que tornam a análise dos dados existentes muito mais rápida.
+
+Os bancos de dados são executados por sistemas de gerenciamento de banco de dados (abreviadamente SGBDs), que vêm em três formas básicas:
+
+- Os SGBDs **cliente-servidor** são executados em um poderoso servidor central, que você conecta a partir do seu computador (o cliente). Eles são ótimos para compartilhar dados com várias pessoas em uma organização. SGBDs **cliente-servidor** populares incluem PostgreSQL, MariaDB, SQL Server e Oracle.
+
+- SGBDs em **nuvem**, como Snowflake, RedShift da Amazon e BigQuery do Google, são semelhantes aos SGBDs cliente-servidor, mas são executados na nuvem. Isso significa que eles podem lidar facilmente com conjuntos de dados extremamente grandes e fornecer automaticamente mais recursos de computação conforme necessário.
+
+- SGBDs **em processo**, como SQLite ou duckdb, são executados inteiramente em seu computador. Eles são ótimos para trabalhar com grandes conjuntos de dados onde você é o usuário principal.
+
+No mercado, existem diversos tipos de SGDB, construídos por diferentes empresas. Algumas com focos em computadores de alto poder computacional e outras com foco em computadores pessoais e notebooks.
+
+A questão, é que por mais que haja diferenças nos *softwares* de SGDB, o SQL é utilizado como linguagem principal para se comunicar com os bancos de dados através desses sistemas.
+
+Para que não seja confuso o ensino sobre SGBD, é possível separá-los em dois tipos de categorias: leves e centralizados.
+
+- **Banco de Dados Leves**: Para soluções simples ou para um número pequeno de usuários, um banco de dados leve é o melhor para se utilizar. Os dois mais comuns são: **SQLite** e **Microsoft Access**.
+
+- **Bancos de dados Centralizados**: é necessário diversos usuários utilizarem o banco de dados simultaneamente, é necessário o uso de bancos de dados centralizados.
+
+Entre as opções encontram-se: **MySQL, Microsoft SQL Server, Oracle, PostgreSQL, Teradata, MariaDB**.
+
+Para se conectar ao banco de dados do R, é preciso usar alguns pacotes:
+
+- O DBI (interface de banco de dados) porque fornece um conjunto de funções genéricas que se conectam ao banco de dados, carregam dados, executam consultas SQL, etc.
+
+- Um pacote personalizado para o SGBD ao qual está se conectando. Este pacote traduz os comandos genéricos do DBI nas especificações necessárias para um determinado SGBD. Geralmente há um pacote para cada SGBD, por ex. RPostgres para PostgreSQL e RMariaDB para MySQL.
+
+- Caso o usuário não consiga encontrar um pacote específico para o seu SGBD, geralmente poderá usar o pacote `odbc`, usando o protocolo ODBC suportado por muitos SGBD's. `odbc` requer um pouco mais de configuração porque também é preciso instalar um driver ODBC e informar ao pacote `odbc` onde encontrá-lo.
+
+Concretamente, você cria uma conexão de banco de dados usando `r `DBI::dbConnect()`. O primeiro argumento seleciona o SGBD, depois o segundo e os argumentos subsequentes descrevem como se conectar a ele (ou seja, onde ele reside e as credenciais necessárias para acessá-lo). O código a seguir mostra alguns exemplos típicos:
+
+### Exemplos com Código em R
+
+```{r, eval=FALSE}
+#con <- DBI::dbConnect(
+#  RMariaDB::MariaDB(), 
+#  username = "foo"
+#)
+#con <- DBI::dbConnect(
+#  RPostgres::Postgres(), 
+#  hostname = "databases.mycompany.com", 
+#  port = 1234
+#)
+```
+
+No caso real abaixo, importa-se um arquivo CSV (dados do TSE) para o R, usando o `{readr}` e depois se cria e se conecta a um banco de dados SQLite (simples e muito utilizado), usando o `{DBI}` e `{RSQLite}`.
+
+```{r}
+dados <- readr::read_csv2(file = "dados/tse.csv", 
+                          locale = readr::locale(encoding = "latin1"))
+
+conexao_sql <- DBI::dbConnect(
+  drv    = RSQLite::SQLite(),         # tipo do banco SQL
+  dbname = "dados/eleicao2022.sqlite" # caminho onde ficará salvo
+  )
+```
+
+Em seguida, deve-se armazenar os dados do CSV em uma tabela a ser criada no banco SQLite, usando dbWriteTable().
+
+O SQLite também pode ser instalado através de Softwares de editores de SQL. O mais utilizado no caso é o SQLitestudio. Através desse editor, é possível navegar através das tabelas de um arquivo de bancos de dados e operacionalizar as consultas do arquivo, além de realizar a organização do mesmo.
+
+O SQLitestudio é muito simples de utilizar, é necessário somente o download através do link: [https://sqlitestudio.pl/]() e ao baixar, extrair os arquivos em uma pasta do computador e clicar em SQLiteStudio.exe que o programa é aberto. Não necessita de instalação, simplesmente é baixar e usar.
+
+```{r}
+DBI::dbWriteTable(
+    conn   = conexao_sql,    # conexão com o banco SQL
+    name   = "votacao_acre", # nome da tabela que será criada
+    value  = dados,           # dados que serão armazenados na tabela
+    overwrite = TRUE 
+    )
+```
+
+Outra questão é que se pode verificar se os dados foram carregados corretamente usando algumas outras funções DBI: dbListTables() lista todas as tabelas no banco de dados, dbListFields para ver os nomes das colunas de uma tabela e dbReadTable() recupera o conteúdo de uma tabela.
+
+```{r}
+DBI::dbListTables(conexao_sql)
+
+DBI::dbListFields(conn = conexao_sql, name = "votacao_acre")
+
+conexao_sql |> 
+  DBI::dbReadTable(name = "votacao_acre") |> 
+  dplyr::as_tibble()
+```
+
+
+Outra questão é fazer uma consulta **com** sintaxe SQL, usando o `{DBI:dbGetQuery()}`:
+
+```{r}
+consulta <- "
+  SELECT NM_MUNICIPIO, NR_SECAO, NM_VOTAVEL, QT_VOTOS
+  FROM votacao_acre 
+  WHERE NM_MUNICIPIO == 'RIO BRANCO'
+"
+conexao_sql |> 
+  DBI::dbGetQuery(statement = consulta) |> 
+  dplyr::as_tibble()
+```
+
+## O Básico do SQL
+
+Os componentes de nível superior do SQL são chamados de `statements` ou instruções. Os `statements` mais comuns incluem **CREATE** para definir novas tabelas, **INSERT** para adicionar dados e **SELECT** para recuperar dados. O foco aqui é no `statement` SELECT, também chamadas de consultas, porque são quase exclusivamente o que se usa como cientista de dados.
+
+Uma consulta é composta de cláusulas. Existem cinco cláusulas importantes: SELECT, FROM, WHERE, ORDER BY e GROUP BY. Toda consulta deve ter as cláusulas SELECT e FROM e a consulta mais simples é SELECT * FROM table, que seleciona todas as colunas da tabela especificada. Isto é o que o dbplyr gera para uma tabela não adulterada:
+
+```{r}
+# Cria um objeto tabular com fonte de dados do banco SQL
+acre_sql <- dplyr::tbl(src = conexao_sql, from = "votacao_acre")
+
+acre_sql |> show_query()
+```
+
+O `statement` SELECT é a instrução DML (manipula os dados) mais comum da linguagem SQL. A instrução SELECT permite extrair/consultar colunas de tabelas. Referencia-se FROM como se fosse “de onde”, e digita-se o nome da tabela da qual queremos extrair a(s) coluna(s), por exemplo.
+
+WHERE e ORDER BY controlam quais linhas são incluídas e como elas são ordenadas:
+
+```{r}
+acre_sql |> 
+    filter(NM_VOTAVEL == 'FRANCISCO DE PAIVA MELO JUNIOR') |> 
+    arrange(QT_VOTOS) 
+```
+
+Em outras palavras, a cláusula WHERE possibilita retirar registros que não são relevantes ou extrair informações úteis através de uma filtragem da tabela do banco de dados por meio da escolha de uma condição. 
+
+Existem alguns detalhes importantes a serem observados aqui:
+
+a) | torna-se OR e & torna-se AND.
+
+b) SQL usa = para comparação, não ==. SQL não tem atribuição, portanto não há potencial para confusão nisso.
+
+c) SQL usa apenas '' para strings, não "". Em SQL, "" é usado para identificar variáveis, como `` de R.
+
+d) Outro operador SQL útil é IN, que está muito próximo do %in% de R:
+
+GROUP BY converte a consulta em um resumo, fazendo com que a agregação aconteça:
+
+```{r}
+acre_sql |> 
+    group_by(NM_VOTAVEL) |> 
+    summarize(QT_VOTOS = sum(QT_VOTOS, na.rm = TRUE))
+```
+
+Existem duas diferenças importantes entre verbos dplyr e cláusulas SELECT:
+
+Em SQL, maiúsculas e minúsculas não importam. Pode-se escrever select, SELECT ou até mesmo SeLeCt.
+
+No SQL, a ordem é importante: você deve sempre escrever as cláusulas na ordem SELECT, FROM, WHERE, GROUP BY, ORDER BY. 
+
+
+## JOINS
+
+Quando estamos lidando com banco de dados relacionais, também trabalhamos com banco de dados normalizados, isto é, tabelas que possuem colunas chaves que remetem a outras tabelas. Com isso, podemos utilizar uma das principais funcionalidades do SQL: os JOINS.
+
+Os JOINS são comandos que permitem juntar duas ou mais tabelas diferentes, quase como se fosse o PROCV do Excel, entretanto, mais poderoso. 
+
+Chamamos de JOINS no plural pois há diferentes tipos de JOINS, com cada comando permitindo executar uma forma de juntar os dados. Vamos começar falando sobre o INNER JOIN.
+
+
+### INNER JOIN
+
+O INNER JOIN basicamente junta todas as observações em comum das duas colunas das duas tabelas.
+
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("imgs/inner_join.png")
+```
+
+Na Figura acima, consulta-se os campos das tabelas CUSTOMER e CUSTOMER_ORDER, isso ocorre pois se está selecionando todas as colunas a partir de uma união das duas tabelas.
+
+Primeiro, ao selecionar as colunas de ambas as tabelas, tem-se apenas uma única diferença: como há duas colunas com o mesmo nome, deve-se referenciar qual está sendo utilizada, portanto, o uso de CUSTOMER.CUSTOMER_ID.
+
+A questão principal aqui é de onde se exceuta a união, no caso, sendo em conjunto com o comando FROM, referenciando a tabela principal e em seguida a tabela a ser juntada com INNER JOIN.
+
+O resultado será que todas as observações em comum das duas tabelas nas duas colunas serão juntadas. E  se houver uma observação em uma tabela e na outra não? Ela será excluída da query!
+
+Deve-se especificar que se quer igualar as duas colunas de ambas as tabelas, por isso, utilizamos ON CUSTOMER.CUSTOMER_ID = CUSTOMER_ORDER.CUSTOMER_ID.
+
+### LEFT JOIN
+
+Se forem analisados os resultados da junção por meio do INNER JOIN, pode-ser verificar que algumas chaves foram excluídas, obviamente. Entretanto, caso não se queira que isso aconteça, pode-se utilizar outros tipos de JOINS, como no caso, o LEFT JOIN.
+
+A diferença do LEFT JOIN é que ao invés de juntar dados iguais em ambas as tabelas, a junção se dá inteiramente pelos dados da tabela referenciada à esquerda do comando.
+
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("imgs/left_join.png")
+```
+
+### RIGHT JOIN
+
+O RIGHT JOIN é semelhante ao LEFT JOIN, a única diferença é que há uma mudança da direção de qual tabela utilizar no comando. Ao invés da esquerda, como no LEFT JOIN, utiliza a da direita.
+
+### OUTER JOIN
+
+Permite incluir todos os registros de ambos as tabelas em uma junção, como se fosse a operação de LEFT e RIGHT JOIN simultaneamente.
+
+Tanto RIGHT quanto OUTER não são suportados pelo SQLite.
+
+## Exemplo com Código no R
+
+```{r}
+con <- DBI::dbConnect(duckdb::duckdb())
+
+dbplyr::copy_nycflights13(con)
+flights <- tbl(con, "flights")
+planes <- tbl(con, "planes")
+
+flights |> 
+  left_join(planes |> rename(year_built = year), by = "tailnum")
+
+```
+
+Quando concluir seu trabalho com o banco de dados SQL é importante **encerrar a conexão**, assim o arquivo não fica "aberto" em segundo plano:
+
+```{r}
+DBI::dbDisconnect(conexao_sql)
+```
