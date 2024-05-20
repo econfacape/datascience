@@ -341,7 +341,7 @@ dados_focus = pd.read_csv(
         filepath_or_buffer = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$top=100&$filter=Indicador%20eq%20'C%C3%A2mbio'%20and%20Data%20ge%20'2024-01-01'%20and%20DataReferencia%20eq%20'2024'%20and%20baseCalculo%20gt%200&$format=text/csv&$select=Indicador,Data,DataReferencia,Media,baseCalculo",
     decimal = ",",
     sep = ",",
-    encoding = "latin_1"
+    encoding = "utf-8"
 )
 dados_focus
 ```
