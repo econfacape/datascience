@@ -34,7 +34,9 @@ jupyter: python3
 
 ## Dados textuais
 
-Essa é uma aula de introdução à manipulação de dados textuais, daqui em diante chamados de *strings*, com foco em expressões regulares (*regex*). Expressões regulares são úteis pois *strings*, geralmente, contêm informações não estruturadas e *regex* é uma linguagem concisa para descrever e manipular padrões em *strings*.
+[^1]Essa é uma aula de introdução à manipulação de dados textuais, daqui em diante chamados de *strings*, com foco em expressões regulares (*regex*). Expressões regulares são úteis pois *strings*, geralmente, contêm informações não estruturadas e *regex* é uma linguagem concisa para descrever e manipular padrões em *strings*.
+
+[^1]: Todo este material foi retirado de diversas postagens e cursos da Análise Macro (www.analisemacro.com.br)
 
 Para tratar *strings* utilizaremos as funções básicas do Python e as bibliotecas `re` e `pandas`:
 
@@ -43,7 +45,7 @@ import re
 import pandas as pd
 ```
 
-Você já aprendeu previamente a criar objetos que representam textos, vamos criar alguns:
+Criar objetos que representam textos é bastante simples, como os mostrados abaixo:
 
 ```{python}
 texto1 = "Essa é uma string"
@@ -113,7 +115,7 @@ pd.Series(txt3) + "-" + pd.Series(txt4)
 
 ## Como filtrar *strings*?
 
-Para extrair partes de uma *string* podemos utilizar o índice dos caracteres da mesma (`"string"[indice]`):
+Para extrair partes de uma *string* pode-se utilizar o índice dos caracteres da mesma (`"string"[indice]`):
 
 ```{python}
 texto1[0] # 1º caracter
@@ -155,9 +157,9 @@ texto2.upper().capitalize()
 
 ## Padrões de correspondência com *regex*
 
-*Regex* é uma linguagem que permite descrever padrões em *strings*. É difícil e demorado para entender (não é uma linguagem *humana*), mas depois de algum treinamento notamos que é um recurso extremamente útil. Vamos aprender sobre *regex* de uma forma intuitiva e didática primeiro, depois avançamos para exemplos práticos.
+*Regex* é uma linguagem que permite descrever padrões em *strings*. É difícil e demorado para entender (não é uma linguagem *humana*), mas depois de algum treinamento nota-se que é um recurso extremamente útil. O estudo do *regex* se inicia de uma forma intuitiva e didática primeiro, depois se avança para exemplos práticos.
 
-Para essa primeira parte definimos uma função para visualizar um padrão de uma *regex* em um texto (você já aprendeu a definir funções, a única novidade aqui é a função `re.finditer()`, sobre a qual abordaremos adiante):
+Para essa primeira parte define-se uma função para visualizar um padrão de uma *regex* em um texto (a novidade aqui é a função `re.finditer()`, que será abordada posteriormente):
 
 ```{python}
 # Função para visualizar padrão em um texto
@@ -182,9 +184,9 @@ txt5 = ["maça", "banana", "ameixa"]
 str_view(txt5[2], "am")
 ```
 
-A `str_view()` é uma função apenas didática que serve para visualizar um padrão em uma *string*. Aqui procuramos pelo padrão "*am*" e a função destaca este padrão nos elementos (se encontrado) com os símbolos `<>`.
+A `str_view()` é uma função apenas didática que serve para visualizar um padrão em uma *string*. Aqui procura-se pelo padrão "*am*" e a função destaca este padrão nos elementos (se encontrado) com os símbolos `<>`.
 
-Tornando o padrão procurado um pouco mais complexo, podemos usar o "`.`" para procurar por qualquer caracter (antes e depois do "*a*"):
+Tornando o padrão procurado um pouco mais complexo, pode-se usar o "`.`" para procurar por qualquer caracter (antes e depois do "*a*"):
 
 ```{python}
 str_view(txt5[0], ".a.")
@@ -208,7 +210,7 @@ list(map(lambda x: str_view(x, "a$"), txt5))
 Conforme a [documentação](https://docs.python.org/3/library/re.html) da biblioteca `re`, existem diversos caracteres especiais úteis para encontrar padrões:
 
 ```{python}
-# Para encontrar números, usamos:
+# Para encontrar números, usa-se:
 str_view("Python é 10!", "\d")
 
 str_view("Python é 10!", "\w") # alfanuméricos
@@ -247,10 +249,10 @@ txt6.str.replace(pat = "\s", repl = "\n", regex = True)
 
 ## Trabalhando com Tabelas no Python
 
-Aqui é explorado as **operações básicas do pandas** para trabalhar com tabelas:
+Aqui são exploradas as **operações básicas do pandas** para trabalhar com tabelas:
 
 - Colunas:
-  - **Renomear colunas** &rarr; *isso é o que veremos hoje!*
+  - **Renomear colunas** 
   - Selecionar colunas
   - Criar e alterar colunas
 - Linhas:
@@ -258,14 +260,14 @@ Aqui é explorado as **operações básicas do pandas** para trabalhar com tabel
 - Linhas e Colunas:
   - Sumarizar valores
 
-Estas são operações do dia a dia de uma análise de dados e veremos como utilizar **a biblioteca `pandas`** para facilitar o trabalho.
+Estas são operações do dia a dia de uma análise de dados e será visto como utilizar **a biblioteca `pandas`** para facilitar o trabalho.
 
-Grande parte dos procedimentos que precisamos fazer para **transformar dados brutos em informação útil** podem ser feitos com funções da biblioteca `pandas`, através dos objetos `Series` ou `DataFrame`.
+Grande parte dos procedimentos necessários fazer para **transformar dados brutos em informação útil** podem ser feitos com funções da biblioteca `pandas`, através dos objetos `Series` ou `DataFrame`.
 
-Algumas **funções que iremos explorar** adiante, por componente de uma tabela sobre o qual o verbo se aplica:
+Algumas **funções a serem exploradas** adiante, por componente de uma tabela sobre o qual o verbo se aplica:
 
 - Colunas:
-  - **`rename()` muda o nome das colunas** &rarr; *isso é o que veremos hoje!*
+  - **`rename()` muda o nome das colunas**
   - `filter()` seleciona as colunas
   - `assign()` adiciona e altera valores das colunas
 - Linhas:
@@ -296,10 +298,10 @@ Para renomear colunas usa-se a função `rename()` através da sintaxe `tabela.r
 
 ```{python}
 # Renomeando uma coluna
-dados_sgs.rename(columns = {"24422": "idp"}).tail()
+dados_sgs.rename(columns = {"valor": "idp"}).tail()
 ```
 
-Seguindo a mesma sintaxe, podemos renomear quantas colunas desejarmos:
+Seguindo a mesma sintaxe, pode-se renomear quantas colunas forem desejadas:
 
 ```{python}
 # Dados de expectativas do IPCA (Focus/BCB)
@@ -329,7 +331,7 @@ dados_focus.set_axis(
   ).tail()
 ```
 
-Uma dica bastante útil para quando você tiver nomes de colunas mal formatados ou pouco convencionais: use a biblioteca `pyjanitor` para converter e limpar, com algumas convenções e boas práticas, todos os nomes de colunas automaticamente:
+Uma dica bastante útil para quando existir nomes de colunas mal formatados ou pouco convencionais: usar a biblioteca `pyjanitor` para converter e limpar, com algumas convenções e boas práticas, todos os nomes de colunas automaticamente:
 
 ```{python}
 import janitor #!pip install pyjanitor ou python3 -m pip install pyjanitor
@@ -369,15 +371,15 @@ dados_focus.filter(items = ["DataReferencia", "Indicador", "Media"], axis = "col
 
 ## Como criar e alterar colunas?
 
-Para criar ou alterar colunas de uma tabela podemos usar a função `assign()` com a sintaxe `tabela.assign(nome_coluna = valores_coluna)`, onde `nome_coluna` pode ser uma coluna nova ou preexistente e `valores_coluna` deve ser uma pandas `Series`, um `scalar` ou um `callable`, ou seja, uma função que é executada e retorna os valores para serem atribuídos na coluna. 
+Para criar ou alterar colunas de uma tabela pode-se usar a função `assign()` com a sintaxe `tabela.assign(nome_coluna = valores_coluna)`, onde `nome_coluna` pode ser uma coluna nova ou preexistente e `valores_coluna` deve ser uma pandas `Series`, um `scalar` ou um `callable`, ou seja, uma função que é executada e retorna os valores para serem atribuídos na coluna. 
 
-Por exemplo, vamos supor que você queira adicionar uma coluna que identifica os valores, ou seja, com o nome da variável:
+Por exemplo, suponha que se queira adicionar uma coluna que identifica os valores com o nome da variável:
 
 ```{python}
 dados_sgs.assign(variavel = "IDP")
 ```
 
-Seguindo a mesma lógica, podemos criar quantas colunas forem necessárias, com novos valores ou valores modificados de colunas preexistentes. Repare que você pode usar funções `lambda` que fazem rerefência às colunas e retornam uma `Series` de valores:
+Seguindo a mesma lógica, pode-se criar quantas colunas forem necessárias, com novos valores ou valores modificados de colunas preexistentes. 'Repare que você pode. É possível usar funções `lambda` que fazem referência às colunas e retornam uma `Series` de valores:
 
 ```{python}
 # Criando N colunas
@@ -386,11 +388,11 @@ dados_sgs.assign(
   idp_bilhao = dados_sgs["valor"] / 1000,       # atribuindo uma pandas Series
   idp_log    = lambda x: np.log(x.idp_bilhao),  # com função lambda que retorna pandas Series
   idp_lag1   = lambda x: x.valor.shift(1),
-  idp_lag2   = lambda x: x.valor.shift(1),
+  idp_lag2   = lambda x: x.valor.shift(2),
   )
 ```
 
-Além de criar novas colunas, você pode alterar os valores de uma coluna preexistente:
+Além de criar novas colunas, pode-se alterar os valores de uma coluna preexistente:
 
 ```{python}
 # Alterando colunas
@@ -430,7 +432,7 @@ Há alternativas para este código, sendo que a abordagem exposta é preferível
 
 ## Como aplicar filtros em linhas?
 
-Para filtrar determinadas linhas de uma tabela usamos a função `query()` com a sintaxe `tabela.query("condicao")`, onde `condicao` é uma expressão lógica dentro de uma *string*, na linguagem interna do `pandas`, aplicada aos valores de uma coluna. As linhas que serão mantidas após o `query()` são as linhas onde `condicao` é verdadeiro (`True`). Para exemplificar, suponha que você queira todas as linhas de uma tabela que possui o valor `2023` na coluna `DataReferencia`, para tal filtro use uma condição de igualdade:
+Para filtrar determinadas linhas de uma tabela usa-se a função `query()` com a sintaxe `tabela.query("condicao")`, onde `condicao` é uma expressão lógica dentro de uma *string*, na linguagem interna do `pandas`, aplicada aos valores de uma coluna. As linhas que serão mantidas após o `query()` são as linhas onde `condicao` é verdadeiro (`True`). Para exemplificar, suponha que se queira todas as linhas de uma tabela que possui o valor `IPCA` na coluna `Indicador`. Para tal filtro deve ser usado uma condição de igualdade:
 
 ```{python, echo=FALSE}
 pd.set_option("display.max_columns", None)
@@ -441,16 +443,16 @@ pd.set_option("display.max_columns", None)
 dados_focus.query("Indicador == 'IPCA'")
 ```
 
-Você pode definir múltiplas condições para uma ou mais colunas, separando-as por operadores lógicos como `&`, `|` ou seus nomes no inglês `and` e `or`, respectivamente. Somente as linhas onde todas as condições são verdadeiras serão retornadas:
+É possível definir múltiplas condições para uma ou mais colunas, separando-as por operadores lógicos como `&`, `|` ou seus nomes no inglês `and` e `or`, respectivamente. Somente as linhas onde todas as condições são verdadeiras serão retornadas:
 
 ```{python}
 # Filtrando por múltiplas condições
 dados_focus.query("Indicador != 'IPCA' and Data >= Data.max()")
 ```
 
-## Operaçoes com Grupos de Dados
+## Operações com Grupos de Dados
 
-A função groupby() divide o DataFrame de modo que uma operação (função) aplicada na sequência é realiza pelos grupos definidos. Por exemplo, a seguir aplicamos um filtro para obter as primeiras linhas de cada grupo com a função head():
+A função groupby() divide o DataFrame de modo que uma operação (função) aplicada na sequência é realiza pelos grupos definidos. Por exemplo, a seguir aplica-se um filtro para obter as primeiras linhas de cada grupo com a função head():
 
 ```{python}
 # Define grupos e filtra linhas dos grupos
@@ -468,7 +470,7 @@ import numpy as np
 np.mean(dados_focus["Media"])
 ```
 
-Ao usar groupby e agg() em conjunto, as operações que poderiam parecer complicadas se tornam bastante simples. Por exemplo, se você quiser obter a média mensal de respondentes no Focus, basta definir o(s) grupo(s), acessar a coluna sobre a qual deve ser aplicada a operação e apontar a função em agg():
+Ao usar groupby e agg() em conjunto, as operações que poderiam parecer complicadas se tornam bastante simples. Por exemplo, se quer obter a média mensal de expectativa do IPCA no Focus. Para isto, basta definir o(s) grupo(s), acessar a coluna sobre a qual deve ser aplicada a operação e apontar a função em agg():
 
 ```{python}
 (

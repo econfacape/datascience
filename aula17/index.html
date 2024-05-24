@@ -3093,7 +3093,7 @@ vertical-align: -.125em;
   <li><a href="#como-selecionar-colunas" id="toc-como-selecionar-colunas" class="nav-link" data-scroll-target="#como-selecionar-colunas">Como selecionar colunas?</a></li>
   <li><a href="#como-criar-e-alterar-colunas" id="toc-como-criar-e-alterar-colunas" class="nav-link" data-scroll-target="#como-criar-e-alterar-colunas">Como criar e alterar colunas?</a></li>
   <li><a href="#como-aplicar-filtros-em-linhas" id="toc-como-aplicar-filtros-em-linhas" class="nav-link" data-scroll-target="#como-aplicar-filtros-em-linhas">Como aplicar filtros em linhas?</a></li>
-  <li><a href="#operaçoes-com-grupos-de-dados" id="toc-operaçoes-com-grupos-de-dados" class="nav-link" data-scroll-target="#operaçoes-com-grupos-de-dados">Operaçoes com Grupos de Dados</a></li>
+  <li><a href="#operações-com-grupos-de-dados" id="toc-operações-com-grupos-de-dados" class="nav-link" data-scroll-target="#operações-com-grupos-de-dados">Operações com Grupos de Dados</a></li>
   <li><a href="#como-sumarizar-os-dados" id="toc-como-sumarizar-os-dados" class="nav-link" data-scroll-target="#como-sumarizar-os-dados">Como sumarizar os dados?</a></li>
   </ul>
 </nav>
@@ -3135,14 +3135,14 @@ vertical-align: -.125em;
 
 <section id="dados-textuais" class="level2">
 <h2 class="anchored" data-anchor-id="dados-textuais">Dados textuais</h2>
-<p>Essa é uma aula de introdução à manipulação de dados textuais, daqui em diante chamados de <em>strings</em>, com foco em expressões regulares (<em>regex</em>). Expressões regulares são úteis pois <em>strings</em>, geralmente, contêm informações não estruturadas e <em>regex</em> é uma linguagem concisa para descrever e manipular padrões em <em>strings</em>.</p>
+<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>Essa é uma aula de introdução à manipulação de dados textuais, daqui em diante chamados de <em>strings</em>, com foco em expressões regulares (<em>regex</em>). Expressões regulares são úteis pois <em>strings</em>, geralmente, contêm informações não estruturadas e <em>regex</em> é uma linguagem concisa para descrever e manipular padrões em <em>strings</em>.</p>
 <p>Para tratar <em>strings</em> utilizaremos as funções básicas do Python e as bibliotecas <code>re</code> e <code>pandas</code>:</p>
-<div id="99b27f9d" class="cell" data-execution_count="1">
+<div id="78e605b6" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Você já aprendeu previamente a criar objetos que representam textos, vamos criar alguns:</p>
-<div id="1d331744" class="cell" data-execution_count="2">
+<p>Criar objetos que representam textos é bastante simples, como os mostrados abaixo:</p>
+<div id="f42d7526" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>texto1 <span class="op">=</span> <span class="st">&quot;Essa é uma string&quot;</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>texto2 <span class="op">=</span> <span class="st">&#39;Para incluir &quot;aspas duplas&quot; em uma string deve-se utilizar aspas simples&#39;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(texto1)</span>
@@ -3153,16 +3153,16 @@ Para incluir &quot;aspas duplas&quot; em uma string deve-se utilizar aspas simpl
 </div>
 </div>
 <p>Para inserir outros caracateres especiais em uma <em>string</em> é necessário utilizar a contrabarra para “escapar” o caracter, assim o Python não gera um erro ou entende o caracter de maneira inesperada. Exemplos:</p>
-<div id="42bcc7bc" class="cell" data-execution_count="3">
+<div id="222a5f0b" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;string com </span><span class="ch">\&quot;</span><span class="st">aspas</span><span class="ch">\&quot;</span><span class="st"> dentro&quot;</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>string com &quot;aspas&quot; dentro</code></pre>
 </div>
 </div>
-<div id="4c0178cd" class="cell" data-execution_count="4">
+<div id="13e8ff92" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#print(&quot;c:\users\jotaerre&quot;) # gera um erro pois a &quot;\&quot; é um caracter especial</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="f2fa2ccb" class="cell" data-execution_count="5">
+<div id="11ee1a3a" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;c:</span><span class="ch">\\</span><span class="st">users</span><span class="ch">\\</span><span class="st">jotaerre&quot;</span>) <span class="co"># adicione uma contrabarra para escapar uma contrabarra</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>c:\users\jotaerre</code></pre>
@@ -3173,7 +3173,7 @@ Para incluir &quot;aspas duplas&quot; em uma string deve-se utilizar aspas simpl
 <section id="como-contar-caracteres" class="level2">
 <h2 class="anchored" data-anchor-id="como-contar-caracteres">Como contar caracteres?</h2>
 <p>A função <code>len()</code> informa o número de caracteres em uma <em>string</em> e <code>Series.str.len()</code> em uma <code>pandas</code> Series:</p>
-<div id="d5f24dd4" class="cell" data-execution_count="6">
+<div id="24b2207b" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(<span class="st">&quot;c:</span><span class="ch">\\</span><span class="st">Mac&quot;</span>) <span class="co"># contrabarra não conta</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>pd.Series([<span class="st">&quot;c:</span><span class="ch">\\</span><span class="st">Mac&quot;</span>, <span class="st">&quot;Ciencia de Dados&quot;</span>, <span class="st">&quot;JotaErre&quot;</span>]).<span class="bu">str</span>.<span class="bu">len</span>()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
@@ -3187,16 +3187,16 @@ dtype: int64</code></pre>
 <section id="como-combinar-strings" class="level2">
 <h2 class="anchored" data-anchor-id="como-combinar-strings">Como combinar <em>strings</em>?</h2>
 <p>Para concatenar duas ou mais <em>strings</em> use o <code>+</code>:</p>
-<div id="6fe5c970" class="cell" data-execution_count="7">
+<div id="eb79d93a" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>txt1 <span class="op">=</span> <span class="st">&quot;Última atualização&quot;</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>txt2 <span class="op">=</span> pd.to_datetime(<span class="st">&quot;today&quot;</span>).ctime()</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>txt1 <span class="op">+</span> <span class="st">&quot;: &quot;</span> <span class="op">+</span> txt2</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
-<pre><code>&#39;Última atualização: Fri May 24 15:57:40 2024&#39;</code></pre>
+<pre><code>&#39;Última atualização: Fri May 24 16:48:58 2024&#39;</code></pre>
 </div>
 </div>
 <p>E para concatenar <em>strings</em> utilizando um separador use <code>join()</code>, seguindo a sintaxe <code>&quot;separador&quot;.join([&quot;texto 1&quot;, &quot;texto 2&quot;])</code>:</p>
-<div id="ccea7439" class="cell" data-execution_count="8">
+<div id="e6871d90" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>txt3 <span class="op">=</span> [<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>, <span class="st">&quot;d&quot;</span>, <span class="st">&quot;e&quot;</span>]</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;, &quot;</span>.join(txt3)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -3204,7 +3204,7 @@ dtype: int64</code></pre>
 </div>
 </div>
 <p>Por fim, em um exemplo mais avançado, para concatenar duas listas de <em>strings</em> elemento a elemento, primeiro combine os elementos tal como <code>[(lista_X[0], lista_Y[0]), (lista_X[1], lista_Y[1]), ..., (lista_X[n], lista_Y[n])]</code> com a função <code>zip()</code> e em seguida itere <code>join()</code> sobre este resultado:</p>
-<div id="bd516829" class="cell" data-execution_count="9">
+<div id="afda3f33" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>txt4 <span class="op">=</span> [<span class="st">&quot;1&quot;</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;3&quot;</span>, <span class="st">&quot;4&quot;</span>, <span class="st">&quot;5&quot;</span>]</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(<span class="bu">map</span>(<span class="st">&quot;-&quot;</span>.join, <span class="bu">zip</span>(txt3, txt4)))</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
@@ -3212,7 +3212,7 @@ dtype: int64</code></pre>
 </div>
 </div>
 <p>Este processo é muito mais simples ao trabalhar com <code>pandas</code> Series:</p>
-<div id="afbc8290" class="cell" data-execution_count="10">
+<div id="d02f5f00" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>pd.Series(txt3) <span class="op">+</span> <span class="st">&quot;-&quot;</span> <span class="op">+</span> pd.Series(txt4)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="10">
 <pre><code>0    a-1
@@ -3226,8 +3226,8 @@ dtype: object</code></pre>
 </section>
 <section id="como-filtrar-strings" class="level2">
 <h2 class="anchored" data-anchor-id="como-filtrar-strings">Como filtrar <em>strings</em>?</h2>
-<p>Para extrair partes de uma <em>string</em> podemos utilizar o índice dos caracteres da mesma (<code>&quot;string&quot;[indice]</code>):</p>
-<div id="93f3ee03" class="cell" data-execution_count="11">
+<p>Para extrair partes de uma <em>string</em> pode-se utilizar o índice dos caracteres da mesma (<code>&quot;string&quot;[indice]</code>):</p>
+<div id="c6dca9f8" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>texto1[<span class="dv">0</span>] <span class="co"># 1º caracter</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>texto1[<span class="dv">0</span>:<span class="dv">6</span>] <span class="co"># do 1º caracter até o 5º caracter, ou seja inicio:fim (fim não incluso)</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>texto1[<span class="op">-</span><span class="dv">1</span>] <span class="co"># valores negativos contam de trás pra frente (último caracter)</span></span>
@@ -3238,7 +3238,7 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>Em <code>pandas</code> Series o procedimento é semelhante com <code>str.slice()</code>:</p>
-<div id="34b7e4f9" class="cell" data-execution_count="12">
+<div id="b054358b" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>pd.Series([texto1, texto2]).<span class="bu">str</span>.<span class="bu">slice</span>(start <span class="op">=</span> <span class="op">-</span><span class="dv">1</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>pd.Series([texto1, texto2]).<span class="bu">str</span>.<span class="bu">slice</span>(stop <span class="op">=</span> <span class="dv">5</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>pd.Series([texto1, texto2]).<span class="bu">str</span>.<span class="bu">slice</span>(start <span class="op">=</span> <span class="op">-</span><span class="dv">3</span>, stop <span class="op">=</span> <span class="op">-</span><span class="dv">1</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -3252,21 +3252,21 @@ dtype: object</code></pre>
 <section id="caixa-alta-caixa-baixa-e-sentença" class="level2">
 <h2 class="anchored" data-anchor-id="caixa-alta-caixa-baixa-e-sentença">Caixa alta, caixa baixa e sentença</h2>
 <p>A função <code>lower()</code> permite converter a <em>string</em> para letras minúsculas:</p>
-<div id="c08555ed" class="cell" data-execution_count="13">
+<div id="5204d957" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>texto2.lower()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>&#39;para incluir &quot;aspas duplas&quot; em uma string deve-se utilizar aspas simples&#39;</code></pre>
 </div>
 </div>
 <p>A função <code>upper()</code> permite converter a <em>string</em> para letras maiúsculas:</p>
-<div id="c340ad8e" class="cell" data-execution_count="14">
+<div id="12bfdd5c" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>texto2.upper()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
 <pre><code>&#39;PARA INCLUIR &quot;ASPAS DUPLAS&quot; EM UMA STRING DEVE-SE UTILIZAR ASPAS SIMPLES&#39;</code></pre>
 </div>
 </div>
 <p>A função <code>capitalize()</code> permite converter a <em>string</em> para uma sentença (primeira letra maiúscula):</p>
-<div id="a26fc164" class="cell" data-execution_count="15">
+<div id="d80ba412" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>texto2.upper().capitalize()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="15">
 <pre><code>&#39;Para incluir &quot;aspas duplas&quot; em uma string deve-se utilizar aspas simples&#39;</code></pre>
@@ -3275,9 +3275,9 @@ dtype: object</code></pre>
 </section>
 <section id="padrões-de-correspondência-com-regex" class="level2">
 <h2 class="anchored" data-anchor-id="padrões-de-correspondência-com-regex">Padrões de correspondência com <em>regex</em></h2>
-<p><em>Regex</em> é uma linguagem que permite descrever padrões em <em>strings</em>. É difícil e demorado para entender (não é uma linguagem <em>humana</em>), mas depois de algum treinamento notamos que é um recurso extremamente útil. Vamos aprender sobre <em>regex</em> de uma forma intuitiva e didática primeiro, depois avançamos para exemplos práticos.</p>
-<p>Para essa primeira parte definimos uma função para visualizar um padrão de uma <em>regex</em> em um texto (você já aprendeu a definir funções, a única novidade aqui é a função <code>re.finditer()</code>, sobre a qual abordaremos adiante):</p>
-<div id="a6412fab" class="cell" data-execution_count="16">
+<p><em>Regex</em> é uma linguagem que permite descrever padrões em <em>strings</em>. É difícil e demorado para entender (não é uma linguagem <em>humana</em>), mas depois de algum treinamento nota-se que é um recurso extremamente útil. O estudo do <em>regex</em> se inicia de uma forma intuitiva e didática primeiro, depois se avança para exemplos práticos.</p>
+<p>Para essa primeira parte define-se uma função para visualizar um padrão de uma <em>regex</em> em um texto (a novidade aqui é a função <code>re.finditer()</code>, que será abordada posteriormente):</p>
+<div id="18c78975" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Função para visualizar padrão em um texto</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> str_view(texto, regex):</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    padroes <span class="op">=</span> <span class="bu">list</span>(re.finditer(regex, texto))</span>
@@ -3291,16 +3291,16 @@ dtype: object</code></pre>
 <span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> texto</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>O padrão mais simples é a busca por um padrão exato em uma <em>string</em>, por exemplo:</p>
-<div id="6f802b11" class="cell" data-execution_count="17">
+<div id="d2f34081" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>txt5 <span class="op">=</span> [<span class="st">&quot;maça&quot;</span>, <span class="st">&quot;banana&quot;</span>, <span class="st">&quot;ameixa&quot;</span>]</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>str_view(txt5[<span class="dv">2</span>], <span class="st">&quot;am&quot;</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
 <pre><code>&#39;&lt;am&gt;eixa&#39;</code></pre>
 </div>
 </div>
-<p>A <code>str_view()</code> é uma função apenas didática que serve para visualizar um padrão em uma <em>string</em>. Aqui procuramos pelo padrão “<em>am</em>” e a função destaca este padrão nos elementos (se encontrado) com os símbolos <code>&lt;&gt;</code>.</p>
-<p>Tornando o padrão procurado um pouco mais complexo, podemos usar o “<code>.</code>” para procurar por qualquer caracter (antes e depois do “<em>a</em>”):</p>
-<div id="94505f20" class="cell" data-execution_count="18">
+<p>A <code>str_view()</code> é uma função apenas didática que serve para visualizar um padrão em uma <em>string</em>. Aqui procura-se pelo padrão “<em>am</em>” e a função destaca este padrão nos elementos (se encontrado) com os símbolos <code>&lt;&gt;</code>.</p>
+<p>Tornando o padrão procurado um pouco mais complexo, pode-se usar o “<code>.</code>” para procurar por qualquer caracter (antes e depois do “<em>a</em>”):</p>
+<div id="ed568605" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>str_view(txt5[<span class="dv">0</span>], <span class="st">&quot;.a.&quot;</span>)</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(<span class="bu">map</span>(<span class="kw">lambda</span> x: str_view(x, <span class="st">&quot;.a.&quot;</span>), txt5)) <span class="co"># iterando para todos os items da lista</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
@@ -3313,7 +3313,7 @@ dtype: object</code></pre>
 <li><code>$</code> procura por padrão no final da <em>string</em>.</li>
 </ul>
 <p>Exemplos:</p>
-<div id="bf315434" class="cell" data-execution_count="19">
+<div id="5e03f5fb" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(<span class="bu">map</span>(<span class="kw">lambda</span> x: str_view(x, <span class="st">&quot;^a&quot;</span>), txt5))</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(<span class="bu">map</span>(<span class="kw">lambda</span> x: str_view(x, <span class="st">&quot;a$&quot;</span>), txt5))</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="19">
@@ -3321,8 +3321,8 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>Conforme a <a href="https://docs.python.org/3/library/re.html">documentação</a> da biblioteca <code>re</code>, existem diversos caracteres especiais úteis para encontrar padrões:</p>
-<div id="ffcc8405" class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Para encontrar números, usamos:</span></span>
+<div id="ce57a8f6" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Para encontrar números, usa-se:</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>str_view(<span class="st">&quot;Python é 10!&quot;</span>, <span class="st">&quot;\d&quot;</span>)</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>str_view(<span class="st">&quot;Python é 10!&quot;</span>, <span class="st">&quot;\w&quot;</span>) <span class="co"># alfanuméricos</span></span>
@@ -3341,7 +3341,7 @@ dtype: object</code></pre>
 <li><code>pandas.Series.str.replace()</code> para substituir um padrão encontrado em uma <em>string</em>.</li>
 </ul>
 <p>Exemplos (consulte a documentação para detalhes):</p>
-<div id="2f5834a1" class="cell" data-execution_count="21">
+<div id="03c7c48d" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pandas Series de exemplo</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>txt6 <span class="op">=</span> pd.Series([<span class="st">&quot;Python é 10!&quot;</span>, <span class="st">&quot;python é 10&quot;</span>, <span class="st">&quot;Pythoné10!&quot;</span>])</span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -3354,7 +3354,7 @@ dtype: object</code></pre>
 dtype: bool</code></pre>
 </div>
 </div>
-<div id="dd920fee" class="cell" data-execution_count="22">
+<div id="39adb9fb" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extraindo letras maiúsculas do início da string</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>txt6.<span class="bu">str</span>.extract(pat <span class="op">=</span> <span class="st">&quot;(^[A-Z])&quot;</span>, expand <span class="op">=</span> <span class="va">False</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
@@ -3364,7 +3364,7 @@ dtype: bool</code></pre>
 dtype: object</code></pre>
 </div>
 </div>
-<div id="906e9a92" class="cell" data-execution_count="23">
+<div id="3a8873d5" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Substituindo espaços por quebras de linha na string</span></span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>txt6.<span class="bu">str</span>.replace(pat <span class="op">=</span> <span class="st">&quot;\s&quot;</span>, repl <span class="op">=</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>, regex <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
@@ -3377,11 +3377,11 @@ dtype: object</code></pre>
 </section>
 <section id="trabalhando-com-tabelas-no-python" class="level2">
 <h2 class="anchored" data-anchor-id="trabalhando-com-tabelas-no-python">Trabalhando com Tabelas no Python</h2>
-<p>Aqui é explorado as <strong>operações básicas do pandas</strong> para trabalhar com tabelas:</p>
+<p>Aqui são exploradas as <strong>operações básicas do pandas</strong> para trabalhar com tabelas:</p>
 <ul>
 <li>Colunas:
 <ul>
-<li><strong>Renomear colunas</strong> → <em>isso é o que veremos hoje!</em></li>
+<li><strong>Renomear colunas</strong></li>
 <li>Selecionar colunas</li>
 <li>Criar e alterar colunas</li>
 </ul></li>
@@ -3394,13 +3394,13 @@ dtype: object</code></pre>
 <li>Sumarizar valores</li>
 </ul></li>
 </ul>
-<p>Estas são operações do dia a dia de uma análise de dados e veremos como utilizar <strong>a biblioteca <code>pandas</code></strong> para facilitar o trabalho.</p>
-<p>Grande parte dos procedimentos que precisamos fazer para <strong>transformar dados brutos em informação útil</strong> podem ser feitos com funções da biblioteca <code>pandas</code>, através dos objetos <code>Series</code> ou <code>DataFrame</code>.</p>
-<p>Algumas <strong>funções que iremos explorar</strong> adiante, por componente de uma tabela sobre o qual o verbo se aplica:</p>
+<p>Estas são operações do dia a dia de uma análise de dados e será visto como utilizar <strong>a biblioteca <code>pandas</code></strong> para facilitar o trabalho.</p>
+<p>Grande parte dos procedimentos necessários fazer para <strong>transformar dados brutos em informação útil</strong> podem ser feitos com funções da biblioteca <code>pandas</code>, através dos objetos <code>Series</code> ou <code>DataFrame</code>.</p>
+<p>Algumas <strong>funções a serem exploradas</strong> adiante, por componente de uma tabela sobre o qual o verbo se aplica:</p>
 <ul>
 <li>Colunas:
 <ul>
-<li><strong><code>rename()</code> muda o nome das colunas</strong> → <em>isso é o que veremos hoje!</em></li>
+<li><strong><code>rename()</code> muda o nome das colunas</strong></li>
 <li><code>filter()</code> seleciona as colunas</li>
 <li><code>assign()</code> adiciona e altera valores das colunas</li>
 </ul></li>
@@ -3417,7 +3417,7 @@ dtype: object</code></pre>
 </section>
 <section id="exemplo-prático" class="level2">
 <h2 class="anchored" data-anchor-id="exemplo-prático">Exemplo Prático</h2>
-<div id="c11c6e5e" class="cell" data-execution_count="24">
+<div id="4ae54fd5" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importar bibliotecas</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -3476,9 +3476,9 @@ dtype: object</code></pre>
 <section id="como-renomear-colunas" class="level2">
 <h2 class="anchored" data-anchor-id="como-renomear-colunas">Como renomear colunas?</h2>
 <p>Para renomear colunas usa-se a função <code>rename()</code> através da sintaxe <code>tabela.rename(columns = {&quot;nome_anterior&quot;: &quot;novo_nome&quot;)</code>. Por exemplo, para renomear uma única coluna:</p>
-<div id="ba37c7b9" class="cell" data-execution_count="25">
+<div id="4448d218" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Renomeando uma coluna</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>dados_sgs.rename(columns <span class="op">=</span> {<span class="st">&quot;24422&quot;</span>: <span class="st">&quot;idp&quot;</span>}).tail()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>dados_sgs.rename(columns <span class="op">=</span> {<span class="st">&quot;valor&quot;</span>: <span class="st">&quot;idp&quot;</span>}).tail()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="25">
 <div>
 <div>
@@ -3488,7 +3488,7 @@ dtype: object</code></pre>
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">valor</th>
+<th data-quarto-table-cell-role="th">idp</th>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">Date</th>
@@ -3523,8 +3523,8 @@ dtype: object</code></pre>
 </div>
 </div>
 </div>
-<p>Seguindo a mesma sintaxe, podemos renomear quantas colunas desejarmos:</p>
-<div id="df91f673" class="cell" data-execution_count="26">
+<p>Seguindo a mesma sintaxe, pode-se renomear quantas colunas forem desejadas:</p>
+<div id="a55cadc0" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Dados de expectativas do IPCA (Focus/BCB)</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>dados_focus <span class="op">=</span> pd.read_csv(</span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  filepath_or_buffer <span class="op">=</span> <span class="st">&quot;https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$top=200&amp;$filter=Indicador</span><span class="sc">%20e</span><span class="st">q%20&#39;IPCA&#39;%20and%20Data</span><span class="sc">%20g</span><span class="st">t%20&#39;2024-01-01&#39;%20and%20DataReferencia</span><span class="sc">%20e</span><span class="st">q%20&#39;2024&#39;%20and%20baseCalculo</span><span class="sc">%20g</span><span class="st">t</span><span class="sc">%200%</span><span class="st">20or%20Indicador</span><span class="sc">%20e</span><span class="st">q%20&#39;IGP-M&#39;%20and%20Data</span><span class="sc">%20g</span><span class="st">t%20&#39;2024-01-01&#39;%20and%20DataReferencia</span><span class="sc">%20e</span><span class="st">q%20&#39;2024&#39;%20and%20baseCalculo</span><span class="sc">%20g</span><span class="st">t%200&amp;$format=text/csv&amp;$select=Indicador,Data,DataReferencia,Media,baseCalculo&quot;</span>,</span>
@@ -3597,7 +3597,7 @@ dtype: object</code></pre>
 </div>
 </div>
 </div>
-<div id="3819ccfe" class="cell" data-execution_count="27">
+<div id="c0236a36" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Renomeando N colunas</span></span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>dados_focus.rename(</span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  columns <span class="op">=</span> {<span class="st">&quot;Indicador&quot;</span>: <span class="st">&quot;indic&quot;</span>, <span class="st">&quot;Data&quot;</span>: <span class="st">&quot;data&quot;</span>}</span>
@@ -3716,7 +3716,7 @@ dtype: object</code></pre>
 </div>
 </div>
 <p>Para renomear diversas colunas pode ser útil utilizar uma lista com os novos nomes das colunas que irão substituir os nomes antigos, sem necessidade de dizer explicitamente os nomes antigos. A função <code>set_axis()</code> é interessante para isso, basta apontar a lista de novos nomes e sobre qual eixo da tabela ela deve ser aplicada:</p>
-<div id="da9a832a" class="cell" data-execution_count="28">
+<div id="ca70c350" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Renomeando todas as colunas com um vetor</span></span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>dados_focus.set_axis(</span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  labels <span class="op">=</span> [<span class="st">&quot;indicador&quot;</span>, <span class="st">&quot;data&quot;</span>, <span class="st">&quot;data_ref&quot;</span>, <span class="st">&quot;media&quot;</span>, <span class="st">&quot;base_calc&quot;</span>], </span>
@@ -3786,8 +3786,8 @@ dtype: object</code></pre>
 </div>
 </div>
 </div>
-<p>Uma dica bastante útil para quando você tiver nomes de colunas mal formatados ou pouco convencionais: use a biblioteca <code>pyjanitor</code> para converter e limpar, com algumas convenções e boas práticas, todos os nomes de colunas automaticamente:</p>
-<div id="85eaf097" class="cell" data-execution_count="29">
+<p>Uma dica bastante útil para quando existir nomes de colunas mal formatados ou pouco convencionais: usar a biblioteca <code>pyjanitor</code> para converter e limpar, com algumas convenções e boas práticas, todos os nomes de colunas automaticamente:</p>
+<div id="33d9f937" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> janitor <span class="co">#!pip install pyjanitor ou python3 -m pip install pyjanitor</span></span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>dados_focus.clean_names()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="29">
@@ -3913,7 +3913,7 @@ dtype: object</code></pre>
 </ul>
 <p>Existe ainda outras alternativas para acessar uma coluna de um <code>DataFrame</code> — por exemplo, o acesso direto do atributo com a sintaxe <code>tabela.nome_da_coluna</code>. Veja a <a href="https://pandas.pydata.org/docs/user_guide/">documentação</a> para explorar todas as possibilidades.</p>
 <p>Para selecionar uma única coluna de um <code>DataFrame</code> pelo nome use:</p>
-<div id="582808d5" class="cell" data-execution_count="30">
+<div id="745180ea" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Selecionando uma coluna</span></span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>dados_focus[<span class="st">&quot;Data&quot;</span>] <span class="co"># retorna pandas Series</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="30">
@@ -3932,7 +3932,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 <p>De forma similar, para selecionar várias colunas pelo nome use:</p>
-<div id="d1fdcd81" class="cell" data-execution_count="31">
+<div id="7eba80b3" class="cell" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Selecionando várias colunas</span></span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>dados_focus[[<span class="st">&quot;DataReferencia&quot;</span>, <span class="st">&quot;Indicador&quot;</span>, <span class="st">&quot;Media&quot;</span>]] <span class="co"># retorna pandas DataFrame</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="31">
@@ -4025,7 +4025,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 <p>O método anterior é simples e prático, mas se for necessário encadear operações (primeiro renomear colunas, depois selecionar, etc…), pode ser mais interessante utilizar o <code>filter()</code> e ir encadeando as operações com o ponto (<code>.</code>):</p>
-<div id="c2eb6e0d" class="cell" data-execution_count="32">
+<div id="e1614051" class="cell" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Selecionando várias colunas</span></span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>dados_focus.<span class="bu">filter</span>(items <span class="op">=</span> [<span class="st">&quot;DataReferencia&quot;</span>, <span class="st">&quot;Indicador&quot;</span>, <span class="st">&quot;Media&quot;</span>], axis <span class="op">=</span> <span class="st">&quot;columns&quot;</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="32">
@@ -4120,9 +4120,9 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </section>
 <section id="como-criar-e-alterar-colunas" class="level2">
 <h2 class="anchored" data-anchor-id="como-criar-e-alterar-colunas">Como criar e alterar colunas?</h2>
-<p>Para criar ou alterar colunas de uma tabela podemos usar a função <code>assign()</code> com a sintaxe <code>tabela.assign(nome_coluna = valores_coluna)</code>, onde <code>nome_coluna</code> pode ser uma coluna nova ou preexistente e <code>valores_coluna</code> deve ser uma pandas <code>Series</code>, um <code>scalar</code> ou um <code>callable</code>, ou seja, uma função que é executada e retorna os valores para serem atribuídos na coluna.</p>
-<p>Por exemplo, vamos supor que você queira adicionar uma coluna que identifica os valores, ou seja, com o nome da variável:</p>
-<div id="657ae101" class="cell" data-execution_count="33">
+<p>Para criar ou alterar colunas de uma tabela pode-se usar a função <code>assign()</code> com a sintaxe <code>tabela.assign(nome_coluna = valores_coluna)</code>, onde <code>nome_coluna</code> pode ser uma coluna nova ou preexistente e <code>valores_coluna</code> deve ser uma pandas <code>Series</code>, um <code>scalar</code> ou um <code>callable</code>, ou seja, uma função que é executada e retorna os valores para serem atribuídos na coluna.</p>
+<p>Por exemplo, suponha que se queira adicionar uma coluna que identifica os valores com o nome da variável:</p>
+<div id="06eec1d5" class="cell" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>dados_sgs.assign(variavel <span class="op">=</span> <span class="st">&quot;IDP&quot;</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="33">
 <div>
@@ -4225,15 +4225,15 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 </div>
-<p>Seguindo a mesma lógica, podemos criar quantas colunas forem necessárias, com novos valores ou valores modificados de colunas preexistentes. Repare que você pode usar funções <code>lambda</code> que fazem rerefência às colunas e retornam uma <code>Series</code> de valores:</p>
-<div id="be950d88" class="cell" data-execution_count="34">
+<p>Seguindo a mesma lógica, pode-se criar quantas colunas forem necessárias, com novos valores ou valores modificados de colunas preexistentes. ’Repare que você pode. É possível usar funções <code>lambda</code> que fazem referência às colunas e retornam uma <code>Series</code> de valores:</p>
+<div id="69997ba0" class="cell" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Criando N colunas</span></span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>dados_sgs.assign(</span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  variavel   <span class="op">=</span> <span class="st">&quot;IDP&quot;</span>,                           <span class="co"># com escalar</span></span>
 <span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  idp_bilhao <span class="op">=</span> dados_sgs[<span class="st">&quot;valor&quot;</span>] <span class="op">/</span> <span class="dv">1000</span>,       <span class="co"># atribuindo uma pandas Series</span></span>
 <span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  idp_log    <span class="op">=</span> <span class="kw">lambda</span> x: np.log(x.idp_bilhao),  <span class="co"># com função lambda que retorna pandas Series</span></span>
 <span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  idp_lag1   <span class="op">=</span> <span class="kw">lambda</span> x: x.valor.shift(<span class="dv">1</span>),</span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  idp_lag2   <span class="op">=</span> <span class="kw">lambda</span> x: x.valor.shift(<span class="dv">1</span>),</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  idp_lag2   <span class="op">=</span> <span class="kw">lambda</span> x: x.valor.shift(<span class="dv">2</span>),</span>
 <span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="34">
 <div>
@@ -4278,7 +4278,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>74.8336</td>
 <td>4.315267</td>
 <td>77099.4</td>
-<td>77099.4</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2023-03-01</td>
@@ -4287,7 +4287,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>75.2583</td>
 <td>4.320926</td>
 <td>74833.6</td>
-<td>74833.6</td>
+<td>77099.4</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">2023-04-01</td>
@@ -4296,7 +4296,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>67.3990</td>
 <td>4.210630</td>
 <td>75258.3</td>
-<td>75258.3</td>
+<td>74833.6</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2023-05-01</td>
@@ -4305,7 +4305,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>68.3179</td>
 <td>4.224172</td>
 <td>67399.0</td>
-<td>67399.0</td>
+<td>75258.3</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">2023-06-01</td>
@@ -4314,7 +4314,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>66.9924</td>
 <td>4.204579</td>
 <td>68317.9</td>
-<td>68317.9</td>
+<td>67399.0</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2023-07-01</td>
@@ -4323,7 +4323,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>66.9166</td>
 <td>4.203447</td>
 <td>66992.4</td>
-<td>66992.4</td>
+<td>68317.9</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">2023-08-01</td>
@@ -4332,7 +4332,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>64.4440</td>
 <td>4.165797</td>
 <td>66916.6</td>
-<td>66916.6</td>
+<td>66992.4</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2023-09-01</td>
@@ -4341,7 +4341,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>60.4365</td>
 <td>4.101593</td>
 <td>64444.0</td>
-<td>64444.0</td>
+<td>66916.6</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">2023-10-01</td>
@@ -4350,7 +4350,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>60.3603</td>
 <td>4.100332</td>
 <td>60436.5</td>
-<td>60436.5</td>
+<td>64444.0</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2023-11-01</td>
@@ -4359,7 +4359,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>62.1974</td>
 <td>4.130313</td>
 <td>60360.3</td>
-<td>60360.3</td>
+<td>60436.5</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">2023-12-01</td>
@@ -4368,7 +4368,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>64.2297</td>
 <td>4.162466</td>
 <td>62197.4</td>
-<td>62197.4</td>
+<td>60360.3</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2024-01-01</td>
@@ -4377,7 +4377,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>66.4395</td>
 <td>4.196292</td>
 <td>64229.7</td>
-<td>64229.7</td>
+<td>62197.4</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">2024-02-01</td>
@@ -4386,7 +4386,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>64.2834</td>
 <td>4.163301</td>
 <td>66439.5</td>
-<td>66439.5</td>
+<td>64229.7</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2024-03-01</td>
@@ -4395,7 +4395,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <td>66.5298</td>
 <td>4.197650</td>
 <td>64283.4</td>
-<td>64283.4</td>
+<td>66439.5</td>
 </tr>
 </tbody>
 </table>
@@ -4404,8 +4404,8 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 </div>
-<p>Além de criar novas colunas, você pode alterar os valores de uma coluna preexistente:</p>
-<div id="2f5a2c35" class="cell" data-execution_count="35">
+<p>Além de criar novas colunas, pode-se alterar os valores de uma coluna preexistente:</p>
+<div id="9e67ffc3" class="cell" data-execution_count="35">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Alterando colunas</span></span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>dados_sgs.assign(</span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  valor_copia     <span class="op">=</span> dados_sgs[<span class="st">&quot;valor&quot;</span>],</span>
@@ -4531,10 +4531,10 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 <p>Para alterar diversas colunas com uma mesma operação (por exemplo, arredondar todas as colunas numéricas) e mantendo as demais colunas da tabela inalteradas, é possível utilizar diversas abordagens de códigos. Talvez a forma mais simples seja utilizar a função <code>pipe()</code> em conjunto com <code>assign()</code>:</p>
-<div id="2817cfb2" class="cell" data-execution_count="36">
+<div id="c19a8110" class="cell" data-execution_count="36">
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">&quot;display.max_columns&quot;</span>, <span class="va">None</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="80fee6d4" class="cell" data-execution_count="37">
+<div id="87b294df" class="cell" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Lista com nomes das colunas que quero arrendondar</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>colunas <span class="op">=</span> [<span class="st">&quot;Media&quot;</span>]</span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4668,11 +4668,11 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </section>
 <section id="como-aplicar-filtros-em-linhas" class="level2">
 <h2 class="anchored" data-anchor-id="como-aplicar-filtros-em-linhas">Como aplicar filtros em linhas?</h2>
-<p>Para filtrar determinadas linhas de uma tabela usamos a função <code>query()</code> com a sintaxe <code>tabela.query(&quot;condicao&quot;)</code>, onde <code>condicao</code> é uma expressão lógica dentro de uma <em>string</em>, na linguagem interna do <code>pandas</code>, aplicada aos valores de uma coluna. As linhas que serão mantidas após o <code>query()</code> são as linhas onde <code>condicao</code> é verdadeiro (<code>True</code>). Para exemplificar, suponha que você queira todas as linhas de uma tabela que possui o valor <code>2023</code> na coluna <code>DataReferencia</code>, para tal filtro use uma condição de igualdade:</p>
-<div id="4021482d" class="cell" data-execution_count="38">
+<p>Para filtrar determinadas linhas de uma tabela usa-se a função <code>query()</code> com a sintaxe <code>tabela.query(&quot;condicao&quot;)</code>, onde <code>condicao</code> é uma expressão lógica dentro de uma <em>string</em>, na linguagem interna do <code>pandas</code>, aplicada aos valores de uma coluna. As linhas que serão mantidas após o <code>query()</code> são as linhas onde <code>condicao</code> é verdadeiro (<code>True</code>). Para exemplificar, suponha que se queira todas as linhas de uma tabela que possui o valor <code>IPCA</code> na coluna <code>Indicador</code>. Para tal filtro deve ser usado uma condição de igualdade:</p>
+<div id="c35664ee" class="cell" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">&quot;display.max_columns&quot;</span>, <span class="va">None</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="900888de" class="cell" data-execution_count="39">
+<div id="727c0125" class="cell" data-execution_count="39">
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filtrando por uma condição</span></span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>dados_focus.query(<span class="st">&quot;Indicador == &#39;IPCA&#39;&quot;</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="39">
@@ -4788,8 +4788,8 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 </div>
-<p>Você pode definir múltiplas condições para uma ou mais colunas, separando-as por operadores lógicos como <code>&amp;</code>, <code>|</code> ou seus nomes no inglês <code>and</code> e <code>or</code>, respectivamente. Somente as linhas onde todas as condições são verdadeiras serão retornadas:</p>
-<div id="c0eab8c0" class="cell" data-execution_count="40">
+<p>É possível definir múltiplas condições para uma ou mais colunas, separando-as por operadores lógicos como <code>&amp;</code>, <code>|</code> ou seus nomes no inglês <code>and</code> e <code>or</code>, respectivamente. Somente as linhas onde todas as condições são verdadeiras serão retornadas:</p>
+<div id="adf77099" class="cell" data-execution_count="40">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filtrando por múltiplas condições</span></span>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>dados_focus.query(<span class="st">&quot;Indicador != &#39;IPCA&#39; and Data &gt;= Data.max()&quot;</span>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="40">
@@ -4825,10 +4825,10 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </div>
 </section>
-<section id="operaçoes-com-grupos-de-dados" class="level2">
-<h2 class="anchored" data-anchor-id="operaçoes-com-grupos-de-dados">Operaçoes com Grupos de Dados</h2>
-<p>A função groupby() divide o DataFrame de modo que uma operação (função) aplicada na sequência é realiza pelos grupos definidos. Por exemplo, a seguir aplicamos um filtro para obter as primeiras linhas de cada grupo com a função head():</p>
-<div id="7c157371" class="cell" data-execution_count="41">
+<section id="operações-com-grupos-de-dados" class="level2">
+<h2 class="anchored" data-anchor-id="operações-com-grupos-de-dados">Operações com Grupos de Dados</h2>
+<p>A função groupby() divide o DataFrame de modo que uma operação (função) aplicada na sequência é realiza pelos grupos definidos. Por exemplo, a seguir aplica-se um filtro para obter as primeiras linhas de cada grupo com a função head():</p>
+<div id="5272bdc6" class="cell" data-execution_count="41">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define grupos e filtra linhas dos grupos</span></span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>dados_focus.groupby(by <span class="op">=</span> <span class="st">&quot;Indicador&quot;</span>).head()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="41">
@@ -4939,7 +4939,7 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <section id="como-sumarizar-os-dados" class="level2">
 <h2 class="anchored" data-anchor-id="como-sumarizar-os-dados">Como sumarizar os dados?</h2>
 <p>Para obter a média de uma determinada coluna numérica</p>
-<div id="3c277266" class="cell" data-execution_count="42">
+<div id="434e7ef9" class="cell" data-execution_count="42">
 <div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4948,8 +4948,8 @@ Name: Data, Length: 190, dtype: object</code></pre>
 <pre><code>3.3735205263157897</code></pre>
 </div>
 </div>
-<p>Ao usar groupby e agg() em conjunto, as operações que poderiam parecer complicadas se tornam bastante simples. Por exemplo, se você quiser obter a média mensal de respondentes no Focus, basta definir o(s) grupo(s), acessar a coluna sobre a qual deve ser aplicada a operação e apontar a função em agg():</p>
-<div id="e63d1a3c" class="cell" data-execution_count="43">
+<p>Ao usar groupby e agg() em conjunto, as operações que poderiam parecer complicadas se tornam bastante simples. Por exemplo, se quer obter a média mensal de expectativa do IPCA no Focus. Para isto, basta definir o(s) grupo(s), acessar a coluna sobre a qual deve ser aplicada a operação e apontar a função em agg():</p>
+<div id="b20fa380" class="cell" data-execution_count="43">
 <div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>(</span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  dados_focus</span>
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>  .assign(ano_mes <span class="op">=</span> <span class="kw">lambda</span> x: pd.to_datetime(x.Data).dt.to_period(<span class="st">&quot;M&quot;</span>))</span>
@@ -5003,7 +5003,13 @@ Name: Data, Length: 190, dtype: object</code></pre>
 </div>
 </section>
 
-</main>
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Notas de rodapé</h2>
+
+<ol>
+<li id="fn1"><p>Todo este material foi retirado de diversas postagens e cursos da Análise Macro (www.analisemacro.com.br)<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
