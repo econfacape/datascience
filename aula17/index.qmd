@@ -1,0 +1,482 @@
+---
+title: "TRATAMENTO DE DADOS NO PYTHON"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+jupyter: python3
+---
+
+## Dados textuais
+
+Essa é uma aula de introdução à manipulação de dados textuais, daqui em diante chamados de *strings*, com foco em expressões regulares (*regex*). Expressões regulares são úteis pois *strings*, geralmente, contêm informações não estruturadas e *regex* é uma linguagem concisa para descrever e manipular padrões em *strings*.
+
+Para tratar *strings* utilizaremos as funções básicas do Python e as bibliotecas `re` e `pandas`:
+
+```{python}
+import re
+import pandas as pd
+```
+
+Você já aprendeu previamente a criar objetos que representam textos, vamos criar alguns:
+
+```{python}
+texto1 = "Essa é uma string"
+texto2 = 'Para incluir "aspas duplas" em uma string deve-se utilizar aspas simples'
+print(texto1)
+print(texto2)
+```
+
+
+Para inserir outros caracateres especiais em uma *string* é necessário utilizar a contrabarra para "escapar" o caracter, assim o Python não gera um erro ou entende o caracter de maneira inesperada. Exemplos:
+
+```{python, error=TRUE}
+print("string com \"aspas\" dentro")
+```
+
+```{python, error=TRUE}
+#print("c:\users\jotaerre") # gera um erro pois a "\" é um caracter especial
+```
+
+```{python, error=TRUE}
+print("c:\\users\\jotaerre") # adicione uma contrabarra para escapar uma contrabarra
+```
+
+Pense nessa contrabarra como uma instrução interna do Python dizendo para — quando esse objeto for salvo em um arquivo de texto ou usado como uma legenda em um gráfico, por exemplo — incluir o caracter especial ao usar a *string* em um trecho de código adiante. Note também que a representação impressa da *string* não é a mesma que a própria *string*.
+
+## Como contar caracteres?
+
+A função `len()` informa o número de caracteres em uma *string* e `Series.str.len()` em uma `pandas` Series:
+
+```{python}
+len("c:\\Mac") # contrabarra não conta
+pd.Series(["c:\\Mac", "Ciencia de Dados", "JotaErre"]).str.len()
+```
+
+
+## Como combinar *strings*?
+
+Para concatenar duas ou mais *strings* use o `+`:
+
+```{python, error=TRUE}
+txt1 = "Última atualização"
+txt2 = pd.to_datetime("today").ctime()
+txt1 + ": " + txt2
+```
+
+E para concatenar *strings* utilizando um separador use `join()`, seguindo a sintaxe `"separador".join(["texto 1", "texto 2"])`:
+
+```{python, error=TRUE}
+txt3 = ["a", "b", "c", "d", "e"]
+", ".join(txt3)
+```
+
+
+Por fim, em um exemplo mais avançado, para concatenar duas listas de *strings* elemento a elemento, primeiro combine os elementos tal como `[(lista_X[0], lista_Y[0]), (lista_X[1], lista_Y[1]), ..., (lista_X[n], lista_Y[n])]` com a função `zip()` e em seguida itere `join()` sobre este resultado:
+
+```{python, error=TRUE}
+txt4 = ["1", "2", "3", "4", "5"]
+list(map("-".join, zip(txt3, txt4)))
+```
+
+Este processo é muito mais simples ao trabalhar com `pandas` Series:
+
+```{python}
+pd.Series(txt3) + "-" + pd.Series(txt4)
+```
+
+
+## Como filtrar *strings*?
+
+Para extrair partes de uma *string* podemos utilizar o índice dos caracteres da mesma (`"string"[indice]`):
+
+```{python}
+texto1[0] # 1º caracter
+texto1[0:6] # do 1º caracter até o 5º caracter, ou seja inicio:fim (fim não incluso)
+texto1[-1] # valores negativos contam de trás pra frente (último caracter)
+texto1[-3:-1] # do antepenúltimo ao penúltimo
+texto1[-3:] # do antepenúltimo ao último
+```
+
+Em `pandas` Series o procedimento é semelhante com `str.slice()`:
+
+```{python}
+pd.Series([texto1, texto2]).str.slice(start = -1)
+pd.Series([texto1, texto2]).str.slice(stop = 5)
+pd.Series([texto1, texto2]).str.slice(start = -3, stop = -1)
+```
+
+
+## Caixa alta, caixa baixa e sentença
+
+A função `lower()` permite converter a *string* para letras minúsculas:
+
+```{python}
+texto2.lower()
+```
+
+A função `upper()` permite converter a *string* para letras maiúsculas:
+
+```{python}
+texto2.upper()
+```
+
+A função `capitalize()` permite converter a *string* para uma sentença (primeira letra maiúscula):
+
+```{python}
+texto2.upper().capitalize()
+```
+
+
+## Padrões de correspondência com *regex*
+
+*Regex* é uma linguagem que permite descrever padrões em *strings*. É difícil e demorado para entender (não é uma linguagem *humana*), mas depois de algum treinamento notamos que é um recurso extremamente útil. Vamos aprender sobre *regex* de uma forma intuitiva e didática primeiro, depois avançamos para exemplos práticos.
+
+Para essa primeira parte definimos uma função para visualizar um padrão de uma *regex* em um texto (você já aprendeu a definir funções, a única novidade aqui é a função `re.finditer()`, sobre a qual abordaremos adiante):
+
+```{python}
+# Função para visualizar padrão em um texto
+def str_view(texto, regex):
+    padroes = list(re.finditer(regex, texto))
+    if padroes:
+        for p in reversed(padroes):
+            inicio = p.start()
+            fim = p.end()
+            texto = texto[:inicio] + "<" + texto[inicio:fim] + ">" + texto[fim:]
+    else: 
+      texto = ""
+    return texto
+
+```
+
+
+O padrão mais simples é a busca por um padrão exato em uma *string*, por exemplo:
+
+```{python}
+txt5 = ["maça", "banana", "ameixa"]
+str_view(txt5[2], "am")
+```
+
+A `str_view()` é uma função apenas didática que serve para visualizar um padrão em uma *string*. Aqui procuramos pelo padrão "*am*" e a função destaca este padrão nos elementos (se encontrado) com os símbolos `<>`.
+
+Tornando o padrão procurado um pouco mais complexo, podemos usar o "`.`" para procurar por qualquer caracter (antes e depois do "*a*"):
+
+```{python}
+str_view(txt5[0], ".a.")
+list(map(lambda x: str_view(x, ".a."), txt5)) # iterando para todos os items da lista
+```
+
+
+Para procurar por um padrão no começo ou no final de uma *string* utilize as âncoras:
+
+- `^` procura por padrão no começo da *string*;
+- `$` procura por padrão no final da *string*.
+
+Exemplos:
+
+```{python}
+list(map(lambda x: str_view(x, "^a"), txt5))
+list(map(lambda x: str_view(x, "a$"), txt5))
+```
+
+
+Conforme a [documentação](https://docs.python.org/3/library/re.html) da biblioteca `re`, existem diversos caracteres especiais úteis para encontrar padrões:
+
+```{python}
+# Para encontrar números, usamos:
+str_view("Python é 10!", "\d")
+
+str_view("Python é 10!", "\w") # alfanuméricos
+
+str_view("Python é 10!", "\s") # espaços
+
+str_view("Python é 10!", "[^\w\s]") # pontuações: [^] significa qualquer caracter exceto a regex em seguida
+```
+
+
+Algumas funções úteis que a biblioteca `pandas` oferece para manipular *strings*. Em resumo:
+
+- `pd.Series.str.contains()` para verificar se um padrão é encontrado em uma *string*;
+- `pd.Series.str.extract()` para extrair um grupo de padrão encontrado de uma *string*;
+- `pandas.Series.str.replace()` para substituir um padrão encontrado em uma *string*.
+
+Exemplos (consulte a documentação para detalhes):
+
+```{python}
+# pandas Series de exemplo
+txt6 = pd.Series(["Python é 10!", "python é 10", "Pythoné10!"])
+
+# Verificando se há números seguidos de uma pontuação no final da string
+txt6.str.contains(pat = "[\d]!$")
+```
+
+```{python}
+# Extraindo letras maiúsculas do início da string
+txt6.str.extract(pat = "(^[A-Z])", expand = False)
+```
+
+```{python}
+# Substituindo espaços por quebras de linha na string
+txt6.str.replace(pat = "\s", repl = "\n", regex = True)
+```
+
+## Trabalhando com Tabelas no Python
+
+Aqui é explorado as **operações básicas do pandas** para trabalhar com tabelas:
+
+- Colunas:
+  - **Renomear colunas** &rarr; *isso é o que veremos hoje!*
+  - Selecionar colunas
+  - Criar e alterar colunas
+- Linhas:
+  - Filtrar linhas
+- Linhas e Colunas:
+  - Sumarizar valores
+
+Estas são operações do dia a dia de uma análise de dados e veremos como utilizar **a biblioteca `pandas`** para facilitar o trabalho.
+
+Grande parte dos procedimentos que precisamos fazer para **transformar dados brutos em informação útil** podem ser feitos com funções da biblioteca `pandas`, através dos objetos `Series` ou `DataFrame`.
+
+Algumas **funções que iremos explorar** adiante, por componente de uma tabela sobre o qual o verbo se aplica:
+
+- Colunas:
+  - **`rename()` muda o nome das colunas** &rarr; *isso é o que veremos hoje!*
+  - `filter()` seleciona as colunas
+  - `assign()` adiciona e altera valores das colunas
+- Linhas:
+  - `query()` filtra linhas baseado em valores de colunas
+- Linhas e Colunas:
+  - `groupby()` em conjunto com outras funções (i.e., matemáticas), sumarizam valores de colunas por grupos de linhas
+
+Esse é um resumo, para saber detalhes veja a documentação da biblioteca.
+
+## Exemplo Prático
+
+```{python, results='hide'}
+# Importar bibliotecas
+import pandas as pd
+import numpy as np
+from bcb import sgs
+
+# Dados do IDP/BP - acum. 12m - US$ (milhões) (SGS/BCB)
+dados_sgs = sgs.get(codes = {"valor": 24422}, start = "2023-01-01", end = "2024-03-01")
+
+# Exibe dados
+dados_sgs.tail()
+```
+
+## Como renomear colunas?
+
+Para renomear colunas usa-se a função `rename()` através da sintaxe `tabela.rename(columns = {"nome_anterior": "novo_nome")`. Por exemplo, para renomear uma única coluna:
+
+```{python}
+# Renomeando uma coluna
+dados_sgs.rename(columns = {"24422": "idp"}).tail()
+```
+
+Seguindo a mesma sintaxe, podemos renomear quantas colunas desejarmos:
+
+```{python}
+# Dados de expectativas do IPCA (Focus/BCB)
+dados_focus = pd.read_csv(
+  filepath_or_buffer = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?$top=200&$filter=Indicador%20eq%20'IPCA'%20and%20Data%20gt%20'2024-01-01'%20and%20DataReferencia%20eq%20'2024'%20and%20baseCalculo%20gt%200%20or%20Indicador%20eq%20'IGP-M'%20and%20Data%20gt%20'2024-01-01'%20and%20DataReferencia%20eq%20'2024'%20and%20baseCalculo%20gt%200&$format=text/csv&$select=Indicador,Data,DataReferencia,Media,baseCalculo",
+  decimal = ","
+  )
+
+
+dados_focus.tail()
+```
+
+```{python}
+# Renomeando N colunas
+dados_focus.rename(
+  columns = {"Indicador": "indic", "Data": "data"}
+  )
+```
+
+Para renomear diversas colunas pode ser útil utilizar uma lista com os novos nomes das colunas que irão substituir os nomes antigos, sem necessidade de dizer explicitamente os nomes antigos. A função `set_axis()` é interessante para isso, basta apontar a lista de novos nomes e sobre qual eixo da tabela ela deve ser aplicada:
+
+```{python}
+# Renomeando todas as colunas com um vetor
+dados_focus.set_axis(
+  labels = ["indicador", "data", "data_ref", "media", "base_calc"], 
+  axis = "columns"
+  ).tail()
+```
+
+Uma dica bastante útil para quando você tiver nomes de colunas mal formatados ou pouco convencionais: use a biblioteca `pyjanitor` para converter e limpar, com algumas convenções e boas práticas, todos os nomes de colunas automaticamente:
+
+```{python}
+import janitor #!pip install pyjanitor ou python3 -m pip install pyjanitor
+dados_focus.clean_names()
+```
+
+## Como selecionar colunas?
+
+Existem duas principais formas de selecionar colunas de um `DataFrame`, que podem ser sumarizadas por estas sintaxes:
+
+- `tabela["nome_da_coluna"]` ou `tabela[["nome_da_coluna1", "nome_da_coluna2", "etc"]]`
+- `tabela.filter(items = ["nome_da_coluna1", "nome_da_coluna2", "etc"], axis = "columns")`
+
+Existe ainda outras alternativas para acessar uma coluna de um `DataFrame` — por exemplo, o acesso direto do atributo com a sintaxe `tabela.nome_da_coluna`. Veja a [documentação](https://pandas.pydata.org/docs/user_guide/) para explorar todas as possibilidades.
+
+Para selecionar uma única coluna de um `DataFrame` pelo nome use:
+
+```{python}
+# Selecionando uma coluna
+dados_focus["Data"] # retorna pandas Series
+```
+
+
+De forma similar, para selecionar várias colunas pelo nome use:
+
+```{python}
+# Selecionando várias colunas
+dados_focus[["DataReferencia", "Indicador", "Media"]] # retorna pandas DataFrame
+```
+
+O método anterior é simples e prático, mas se for necessário encadear operações (primeiro renomear colunas, depois selecionar, etc...), pode ser mais interessante utilizar o `filter()` e ir encadeando as operações com o ponto (`.`):
+
+```{python}
+# Selecionando várias colunas
+dados_focus.filter(items = ["DataReferencia", "Indicador", "Media"], axis = "columns")
+```
+
+## Como criar e alterar colunas?
+
+Para criar ou alterar colunas de uma tabela podemos usar a função `assign()` com a sintaxe `tabela.assign(nome_coluna = valores_coluna)`, onde `nome_coluna` pode ser uma coluna nova ou preexistente e `valores_coluna` deve ser uma pandas `Series`, um `scalar` ou um `callable`, ou seja, uma função que é executada e retorna os valores para serem atribuídos na coluna. 
+
+Por exemplo, vamos supor que você queira adicionar uma coluna que identifica os valores, ou seja, com o nome da variável:
+
+```{python}
+dados_sgs.assign(variavel = "IDP")
+```
+
+Seguindo a mesma lógica, podemos criar quantas colunas forem necessárias, com novos valores ou valores modificados de colunas preexistentes. Repare que você pode usar funções `lambda` que fazem rerefência às colunas e retornam uma `Series` de valores:
+
+```{python}
+# Criando N colunas
+dados_sgs.assign(
+  variavel   = "IDP",                           # com escalar
+  idp_bilhao = dados_sgs["valor"] / 1000,       # atribuindo uma pandas Series
+  idp_log    = lambda x: np.log(x.idp_bilhao),  # com função lambda que retorna pandas Series
+  idp_lag1   = lambda x: x.valor.shift(1),
+  idp_lag2   = lambda x: x.valor.shift(1),
+  )
+```
+
+Além de criar novas colunas, você pode alterar os valores de uma coluna preexistente:
+
+```{python}
+# Alterando colunas
+dados_sgs.assign(
+  valor_copia     = dados_sgs["valor"],
+  valor           = lambda x: np.log(x.valor), # coluna original alterada
+  valor_revertido = lambda x: np.exp(x.valor)
+  )
+```
+
+Para alterar diversas colunas com uma mesma operação (por exemplo, arredondar todas as colunas numéricas) e mantendo as demais colunas da tabela inalteradas, é possível utilizar diversas abordagens de códigos. Talvez a forma mais simples seja utilizar a função `pipe()` em conjunto com `assign()`:
+
+```{python, echo=FALSE}
+pd.set_option("display.max_columns", None)
+```
+
+```{python}
+# Lista com nomes das colunas que quero arrendondar
+colunas = ["Media"]
+
+# Aplica np.round() sobre colunas do DataFrame
+dados_focus.pipe(
+  lambda y: y.assign(**y[colunas].applymap(np.round))
+  )
+```
+
+Entendendo o código anterior:
+
+- `colunas` é a lista das colunas que queremos modificar
+- `dados_focus.pipe()` serve para aplicar uma função sobre o `DataFrame` ou suas `Series` (colunas)
+- `lambda y: ` é a função temporária que estamos definindo e que será aplicada sobre `colunas`
+- `y.assign()` chama a função de modificar/criar colunas sobre o `DataFrame` `y`, ou seja, é a "referência" ao objeto `dados_focus`
+- `y[colunas].applymap(np.round)` seleciona as `colunas` para aplicar a modificação de arredondamento, isso é feito iterativamente com `applymap(np.round)`
+- `**` serve para "descompactar" o resultado do código à direita, ou seja, `assign()` espera pares de argumentos (`nome_coluna = valores_coluna`) e `**` transforma o resultado de `applymap()` em um dicionário de argumentos nomeados.
+
+Há alternativas para este código, sendo que a abordagem exposta é preferível em rotinas onde são necessárias operações encadeadas (sequências de tratamentos de dados), com uma função sendo aplicada sobre o resultado da anterior. 
+
+## Como aplicar filtros em linhas?
+
+Para filtrar determinadas linhas de uma tabela usamos a função `query()` com a sintaxe `tabela.query("condicao")`, onde `condicao` é uma expressão lógica dentro de uma *string*, na linguagem interna do `pandas`, aplicada aos valores de uma coluna. As linhas que serão mantidas após o `query()` são as linhas onde `condicao` é verdadeiro (`True`). Para exemplificar, suponha que você queira todas as linhas de uma tabela que possui o valor `2023` na coluna `DataReferencia`, para tal filtro use uma condição de igualdade:
+
+```{python, echo=FALSE}
+pd.set_option("display.max_columns", None)
+```
+
+```{python}
+# Filtrando por uma condição
+dados_focus.query("Indicador == 'IPCA'")
+```
+
+Você pode definir múltiplas condições para uma ou mais colunas, separando-as por operadores lógicos como `&`, `|` ou seus nomes no inglês `and` e `or`, respectivamente. Somente as linhas onde todas as condições são verdadeiras serão retornadas:
+
+```{python}
+# Filtrando por múltiplas condições
+dados_focus.query("Indicador != 'IPCA' and Data >= Data.max()")
+```
+
+## Operaçoes com Grupos de Dados
+
+A função groupby() divide o DataFrame de modo que uma operação (função) aplicada na sequência é realiza pelos grupos definidos. Por exemplo, a seguir aplicamos um filtro para obter as primeiras linhas de cada grupo com a função head():
+
+```{python}
+# Define grupos e filtra linhas dos grupos
+dados_focus.groupby(by = "Indicador").head()
+```
+
+## Como sumarizar os dados?
+
+Para obter a média de uma determinada coluna numérica
+
+```{python}
+import pandas as pd
+import numpy as np
+
+np.mean(dados_focus["Media"])
+```
+
+Ao usar groupby e agg() em conjunto, as operações que poderiam parecer complicadas se tornam bastante simples. Por exemplo, se você quiser obter a média mensal de respondentes no Focus, basta definir o(s) grupo(s), acessar a coluna sobre a qual deve ser aplicada a operação e apontar a função em agg():
+
+```{python}
+(
+  dados_focus
+  .assign(ano_mes = lambda x: pd.to_datetime(x.Data).dt.to_period("M"))
+  .groupby("ano_mes")
+  .Media
+  .agg(media_mensal = np.mean)
+)
+```
+
