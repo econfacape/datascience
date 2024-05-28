@@ -510,7 +510,7 @@ from dateutil.parser import parse
 import pandas as pd
 
 dados = (
-    pd.read_csv("https://aluno.analisemacro.com.br/download/45137/?tmstv=1671200110")
+    pd.read_csv("dados/empregados.csv")
     .assign(data = lambda x: pd.to_datetime(x.data))
     .set_index("data")
     )
