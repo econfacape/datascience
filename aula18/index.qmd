@@ -1,0 +1,552 @@
+---
+title: "TRATAMENTO DE DADOS NO PYTHON - PARTE 2"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+#jupyter: python3
+---
+
+## Formatos Long e Wide
+
+[^1] **Tabelas de dados podem ser organizadas de diversas maneiras**, conforme a necessidade, contexto ou, até mesmo, as preferências individuais do usuário. No entanto, para padronizar a organização de dados em tabelas e evitar situações caóticas, existem alguns **princípios** que devem ser seguidos **para facilitar a interpretação e a manipulação de dados tabulares**:
+
+1. Cada variável tem sua própria coluna
+2. Cada observação tem sua própria linha
+3. Cada valor tem sua própria célula
+
+[^1]: Todo este material foi retirado de diversas postagens e cursos da Análise Macro (www.analisemacro.com.br)
+
+
+Existem dois tipos de transformações (opostas) em tabelas, que são úteis para organizá-las de modo a seguir (ou não) os 3 princípios destacados:
+
+- `pivot()`: faz a tabela ser mais "longa" ao aumentar o nº de linhas e diminuir o nº de colunas. 
+- `melt()`: faz a tabela ser mais "larga" ao diminuir o nº de linhas e aumentar o nº de colunas. 
+
+**Exemplo de transformação _long_:**
+
+```{r, echo=FALSE, out.width="140%"}
+knitr::include_graphics("imgs/long.png")
+```
+
+**Exemplo de transformação _wide_:**
+
+```{r, echo=FALSE, out.width="130%"}
+knitr::include_graphics("imgs/wide.png")
+```
+
+## Dados de exemplo
+
+
+```{python}
+# Importar bibliotecas
+import pandas as pd
+import janitor
+
+# Dados do IPCA (Sidra/IBGE)
+dados_sidra = pd.read_json(
+    path_or_buf = "https://apisidra.ibge.gov.br/values/t/7060/n1/all/v/all/p/all/c315/7169/d/v63%202,v66%204,v69%202,v2265%202?formato=json"
+    )
+
+# Dados de expectativas de inflação (Focus/BCB)
+dados_focus = pd.read_csv(
+  filepath_or_buffer = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/ExpectativasMercadoAnuais?%24filter=%28Indicador%20eq%20%27IPCA%27%20or%20Indicador%20eq%20%27IGP-M%27%29%20and%20Data%20ge%20%272021-01-01%27%20and%20Data%20le%20%272024-04-12%27&%24format=text/csv&%24orderby=Data%20desc",
+  decimal = ","
+  )
+```
+
+
+Para exemplificar essas transformações, tem-se a tabela de dados do IPCA, extraida do Sidra/IBGE, que vem com as variáveis (var. mensal, acumulada, peso, etc.) empilhadas em uma única coluna, quebrando o primeiro princípio:
+
+```{python}
+tabela = (
+    dados_sidra
+    .rename(columns = {"V": "valor", "D3C": "mes", "D2N": "variavel"})
+    .query("valor != 'Valor'")
+    .filter(items = ["mes", "variavel", "valor"])
+)
+tabela
+```
+
+Para organizar essa tabela, conforme os 3 princípios, deve-se aplicar uma transformação de modo que resulte em uma coluna para cada uma das 4 variáveis que estão, atualmente, empilhadas. Ou seja, o objetivo é diminuir o nº de linhas e aumentar o nº de colunas. Isso pode ser feito com a função `pivot()`:
+
+```{python}
+# Formato wide: para quando é necessário colocar cada variável em uma coluna
+tabela.pivot(
+  index = "mes",         # coluna que unicamente identifica as observações
+  columns = "variavel",  # coluna onde os nomes das variáveis estão
+  values = "valor"       # coluna onde os valores das células estão
+  )
+```
+
+Um exemplo inverso pode ser visto com os dados de expectativas do Focus. Após alguns tratamentos, muda-se a organização da tabela para simular o problema de ter mais de uma observação nas linhas (isso é menos frequente, mas acontece). Observe:
+
+```{python}
+# Dados de exemplo 2: expectativas Focus para o IPCA
+dados = (
+    dados_focus
+    .query("Indicador == 'IPCA' and DataReferencia in [2024, 2025] and baseCalculo == 0")
+    .filter(items = ["Data", "DataReferencia", "Mediana"], axis = "columns")
+    .pivot(index = "Data", columns = "DataReferencia", values = "Mediana")
+    .reset_index()
+)
+dados
+```
+
+```{python}
+dados
+```
+
+Note que os nomes de colunas `2024` e `2025` são, na verdade, **valores** de uma variável que se refere ao horizonte de expectativas (`DataReferencia`); e os valores nestas colunas representam os valores da variável `Mediana`, uma das estatísticas do Focus. 
+
+Assim, tem-se o problema de mais de uma observação por linha, de modo que para organizar a tabela, deve-se aplicar uma transformação que diminua o nº de colunas e aumente o nº de linhas. A função `melt()` faz isso:
+
+```{python}
+# Formato long: para quando cada linha representa mais de uma observação
+dados.melt(
+  id_vars = ["Data"], # colunas que identificam as observações
+  value_vars = [2024, 2025],       # colunas para transformar pro formato longo
+  var_name = "data_ref",           # nome da coluna que armazenará os nomes de [2024, 2025]
+  value_name = "mediana"           # nome da coluna que armazenará os valores de [2024, 2025]
+  )
+```
+
+## Cruzamento de Dados
+
+Um cruzamento é uma maneira de conectar cada linha em `X` a zero, uma ou mais linhas em `Y`. O diagrama a seguir mostra as correspondências pelas "chaves" indicadas como pontos. O número de pontos é o número de correspondências e, ao mesmo tempo, é o número de linhas na tabela resultante.
+
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("imgs/inner_join.png")
+```
+
+Este é o tipo mais simples de cruzamento, chamado de **inner join**. Esse cruzamento retorna pares de observações somente para quando as chaves das tabelas corresponderem. Ou seja, as linhas sem correspondência não são incluídas no resultado final.
+
+Um **inner join** mantém as observações que aparecem em ambas as tabelas. Um **outer join** mantém as observações que aparecem em pelo menos uma das tabelas. Existem três tipos de **outer joins**:
+
+- **left join** mantém todas as observações em `x`.
+- **right join** mantém todas as observações em `y`.
+- **full join** mantém todas as observações em `x` e `y`.
+
+De forma ilustrada, estes cruzamentos podem ser representados assim:
+
+```{r, echo=FALSE, out.width="70%", fig.align='center'}
+knitr::include_graphics("imgs/outer_join.png")
+```
+
+## Dados de exemplo
+
+```{python}
+# Importar bibliotecas
+import pandas as pd
+import ipeadatapy as ipea
+from bcb import sgs
+
+# Dados do saldo do CAGED (Ipeadata)
+dados_ipeadata = ipea.timeseries("CAGED12_SALDON12")
+
+# Dados do IDP/BP - acum. 12m - US$ (milhões) (SGS/BCB)
+dados_sgs = sgs.get(codes = {"idp": 24422}, 
+  start = "2019-11-01", 
+  end = "2024-03-01")
+```
+
+
+### Cruzamento *inner join*
+
+Para verificar como o **inner join** funciona, primeiro cria-se duas tabelas para as séries temporais do CAGED e do IDP, ou seja, a "chave" será a coluna `data`:
+
+```{python}
+# Dados de exemplo:
+tabela_caged = (
+  dados_ipeadata
+  .reset_index()
+  .rename(columns = {"DATE": "data", "VALUE (Pessoa)": "caged"})
+#  .filter(items = ["data", "caged"], axis = "columns").query("data <= '2020-06-01'")
+  .set_index("data")
+)
+tabela_caged
+```
+
+
+```{python}
+tabela_idp = (
+  dados_sgs
+  .reset_index()
+  .rename(columns = {"Date": "data"})
+  .set_index("data")
+)
+tabela_idp
+```
+
+
+Para fazer o cruzamento usamos a função `join()` do `pandas`, usando a sintaxe `tabela_x.join(other = tabela_y, how = "inner")`. Por padrão o `index` das tabelas será usado como chave.
+
+```{python}
+# Inner Join: cruzar tabelas mantendo todas as linhas "em comum" de x e y
+tabela_caged.join(other = tabela_idp, how = "inner")
+```
+
+No cruzamento do tipo **inner join** é bastante fácil perder observações que poderiam ser importantes para sua análise, pois as linhas sem correspondência não são incluídas no resultado final.
+
+
+### Cruzamentos *outer join*
+
+O mais utilizado é o **left join**.
+
+```{python}
+# Left Join: cruzar tabelas mantendo todas as linhas de x
+tabela_caged.join(other = tabela_idp, how = "left")
+```
+
+
+Por sua vez, o **right join**:
+
+```{python}
+# Right Join: cruzar tabelas mantendo todas as linhas de y
+tabela_caged.join(other = tabela_idp, how = "right")
+```
+
+
+E por último, o **full join**:
+
+```{python}
+# Full Join: cruzar tabelas mantendo todas as linhas de x ou y
+tabela_caged.join(other = tabela_idp, how = "outer")
+```
+
+
+## Trabalhando com Datas no Python
+
+Existem diversas formas de representar datas no Python, a mais comum é o formato internacional "YYYY-MM-DD", padrão na biblioteca `pandas`
+
+```{python}
+# Importar bibliotecas
+import pandas as pd
+import datetime
+import numpy as np
+
+hoje = pd.to_datetime("2024-05-27")
+hoje
+```
+
+O tipo de um objeto escalar neste formato é `Timestamp` e em uma pandas `Series` é `datetime64[ns]`:
+
+```{python}
+type(hoje)
+```
+
+```{python}
+pd.Series(hoje).info()
+```
+
+## Criando datas com diferentes formatos
+
+A função `to_datetime()` possibilita criar datas e interpreta formatos variados e não padronizados. Por exemplo:
+
+```{python}
+# Cria um objeto datetime do pandas a partir de datas de variados formatos
+pd.to_datetime(["2024-05-27", "2024/05/28", "20240529", np.datetime64("2024-05-26"), datetime.datetime(2024, 5, 27)], format='mixed')
+```
+
+Se precisar, e em caso de erros, é importante especificar o formato atual da data ([link](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior)) para que a função consiga convertê-la para o padrão internacional:
+
+```{python}
+pd.to_datetime("28/02/2023", format = "%d/%m/%Y")
+```
+
+## Alterando a representação da data
+
+Podemos mudar a representação da data para um formato diferente, conforme a necessidade, usando `to_period()` e `to_timestamp()`. Por exemplo:
+
+```{python}
+# Converte data para outras frequências
+hoje.to_period(freq = "M") # mensal
+hoje.to_period(freq = "Q") # trimestral
+hoje.to_period(freq = "Y") # anual
+```
+
+```{python}
+# Retorna data para formato internacional
+hoje.to_period(freq = "M").to_timestamp(freq = "D") # converte para YYYY-MM-DD 
+hoje.to_period(freq = "Q").to_timestamp(freq = "D", how = "End") # converte para YYYY-MM-DD com dia no final do período
+```
+
+## Criando sequências de datas
+
+Com a função `date_range()` é possível criar sequências de datas com frequência fixa ([neste link](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases) a lista de códigos de frequências úteis). Por exemplo:
+
+```{python}
+# Sequência de datas de frequência mensal de início a fim
+pd.date_range(start = "2023-01-01", end = "2023-12-01", freq = "MS")
+```
+
+```{python}
+# Sequência de datas de frequência mensal de início + nº de períodos
+pd.date_range(start = "2023-01-01", periods = 12, freq = "MS")
+```
+
+## Componentes de datas
+
+Existem diversos componentes úteis que podem ser acessados de um `Timestamp` ou uma coleção de `Timestamp`, como um `DatetimeIndex`:
+
+```{python}
+# Cria sequência de datas
+datas = pd.date_range(start = "2023-01-01", periods = 2, freq = "MS")
+```
+
+Extrai componentes das datas:
+
+```{python}
+datas.year   # ano
+datas.month  # mês
+datas.day    # dia
+```
+
+Em caso de ter uma pandas `Series` com datas, use o acessor `.dt` para acessar estes componentes:
+
+```{python}
+pd.Series(datas).dt.month
+```
+
+## Identificando e Tratando Dados Faltantes
+
+```{python}
+# Importar bibliotecas
+import pandas as pd
+import numpy as np
+import ipeadatapy as ipea
+from bcb import sgs
+
+# Dados do saldo do CAGED (Ipeadata)
+dados_ipeadata = (
+  ipea.timeseries("CAGED12_SALDON12")
+  .rename_axis("data", axis = "index")
+  .rename(columns = {"VALUE (Pessoa)": "caged"})
+  .filter(items = ["caged"], axis = "columns")
+  .query("data <= '2020-06-01'")
+)
+
+# Dados do IDP/BP - acum. 12m - US$ (milhões) (SGS/BCB)
+dados_sgs = (
+  sgs.get(
+    codes = {"idp": 24422}, 
+    start = "2019-11-01", 
+    end = "2020-03-01")
+  .rename_axis("data", axis = "index")
+)
+
+# Cruzamento de dados
+tabela = dados_ipeadata.join(other = dados_sgs, how = "outer")
+```
+
+```{python}
+tabela
+```
+
+Como identificar se há `NaN` em uma tabela? Por código, basta usar `isna()` sobre uma coluna ou `DataFrame`, o retorno é `True` ou `False`, ou fazer um filtro para trazer somentes os casos verdadeiros:
+
+```{python}
+# Testa quais observações são NaN
+tabela.isna()
+```
+
+```{python}
+# Filtrando linhas com NaN (uma única coluna)
+tabela.query("caged.isna()")
+```
+
+A mesma lógica pode ser seguida para mais de uma coluna. Neste caso, o operador `or` pode ser útil no filtro, pois retorna valores lógicos `True` para quaisquer das linhas das colunas especificadas quem possuam `NaN`:
+
+```{python}
+# Filtrando linhas com NaN (+ de 1 coluna)
+tabela.query("caged.isna() or idp.isna()")
+```
+
+Caso não senqueira apenas identificar quais linhas de quais colunas possuem `NaN`, mas sim contabilizar os `NaN` por cada variável, deve-se usar um *for-loop*: a ideia é somar o número de `NaN` por coluna, a função lambda `np.sum(x.isna())` faz isso. Optou-se por usar a função `apply()` para o *loop*, mas é possível usar abordagens diferentes e obter os mesmos resultados:
+
+```{python}
+# Quantos NaN existem por coluna? Use um for-loop:
+tabela.apply(lambda x: np.sum(x.isna()))
+```
+
+O mesmo resultado poderia ter sido obtido usando outras ferramentas do `pandas`:
+
+```{python}
+tabela.agg(func = lambda x: np.sum(x.isna()), axis = "index")
+```
+
+## Tratando *NaN*: remoção
+
+Se foram identificada as linhas com `NaN` em uma coluna e o objetivo é removê-las, deve-se usar a função `dropna()`:
+
+```{python}
+# Removendo linhas com NaN (de uma única coluna)
+tabela.dropna(subset = ["caged"])
+```
+
+```{python}
+# Removendo linhas com NaN (de todas as colunas)
+tabela.dropna()
+```
+
+## Tratando *NaN*: substituição
+
+Se remover as linhas com `NaN` não for viável, deve-se substituir as obsevações ausentes por outros valores. Os valores que entrarão no lugar dos `NaN` são definidos por critério do usuário, mas é comum usar a média da variável ou o valor da observação anterior (para séries temporais). Isso pode ser feito com a função `fillna()` do `pandas`:
+
+```{python}
+( # Substituindo valores NaN
+  tabela
+  # substituir NaN pela média histórica
+  .fillna(value = {"caged": tabela.caged.mean()})
+  # substituir NaN pelo último valor observado
+  .fillna(method = "ffill")
+)
+```
+
+Outra possibilidade é o uso da função `combine_first()` do `pandas` que possibilita substituir `NaN` de uma coluna com base em valores ao lado (de outra coluna):
+
+```{python}
+# Substituindo valores NaN de uma coluna por valores de outra coluna
+tabela.assign(
+  # substitui NaN de idp por valores em caged
+  idp = tabela.idp.combine_first(tabela.caged)
+)
+```
+
+Note que a substituição acima não faz sentido em uma análise de dados, pois são variáveis distintas, constituindo apenas um exemplo didático.
+
+## Como Deflacionar uma série
+
+```{python}
+# Importar bibliotecas
+import pandas as pd
+import ipeadatapy as ipea
+
+# Dados de valores nominais: salário mínimo vigente (R$, Ipeadata)
+dados_nominais = (
+  ipea.timeseries("MTE12_SALMIN12")
+  .rename_axis("data", axis = "index")
+  .rename(columns = {"VALUE (R$)": "nominal"})
+  .filter(items = ["nominal"], axis = "columns")
+  .query("data >= '2000-01-01'")
+)
+
+# Dados de índice de preços: INPC (índice 12/1993 = 100, Sidra/IBGE)
+dados_indice = (
+  pd.read_json(
+    path_or_buf = "https://apisidra.ibge.gov.br/values/t/1736/n1/all/v/2289/p/all/d/v2289%2013?formato=json"
+    )
+  .rename(columns = {"V": "indice", "D3C": "data"})
+  .query("indice != 'Valor'")
+  .filter(items = ["data", "indice"])
+  .assign(
+    data = lambda x: pd.to_datetime(x.data, format = "%Y%m"),
+    indice = lambda x: x.indice.astype(float)
+    )
+  .set_index("data")
+)
+```
+
+
+```{python}
+dados_nominais
+```
+
+```{python}
+dados_indice
+```
+
+Após ter os dados necessários já tratados, basta cruzar as tabelas e aplicar a fórmula de deflacionamento, que envolve calcular um fator de deflacionamento usando uma data base (neste exemplo é o último mês observado) e multiplicar este fator pela série nominal:
+
+$$Vr_{i:j} = (\frac{I_{j}}{I_{i}}) * V_{i}$$
+onde:<br>
+$Vr_{i:j}$ é o valor real, ou deflacionado, no período $i$ na data-base $j$<br>
+$I_{j}$ é o índice de preços fixado na data-base $j$<br>
+$I_{i}$ é o índice de preços no período $i$<br>
+$V_{i}$ é o valor ou preço nominal no período $i$<br>
+
+
+```{python}
+# Cruzar tabelas
+tabela = dados_nominais.join(other = dados_indice, how = "inner")
+
+# Deflacionar a série com data base = último mês observado
+indice_data_base = tabela.query("data == data.max()").indice.values
+tabela.assign(real = lambda x: (indice_data_base / x.indice) * x.nominal).tail()
+```
+
+## Como fazer um ajuste sazonal?
+
+```{python}
+# Importar bibliotecas
+#pip install python-dateutil
+from statsmodels.tsa.seasonal import seasonal_decompose
+from dateutil.parser import parse
+import pandas as pd
+
+dados = (
+    pd.read_csv("https://aluno.analisemacro.com.br/download/45137/?tmstv=1671200110")
+    .assign(data = lambda x: pd.to_datetime(x.data))
+    .set_index("data")
+    )
+dados
+```
+
+```{python}
+# Performa o ajuste sazonal
+ajuste = seasonal_decompose(dados['empregados_no_varejo'], model='additive', period=12)
+#x13.x13_arima_analysis(endog = dados.empregados_no_varejo, freq = "M")
+
+ajuste.observed
+ajuste.seasonal
+```
+
+
+```{python}
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+plt.rcParams.update({'figure.figsize': (16,12)})
+
+ajuste.plot().suptitle('Decomposição Aditiva', fontsize=16)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+plt.show()
+```
+
+```{python}
+# Visualização de dados
+(
+    dados
+    .assign(ajuste = ajuste.observed-ajuste.seasonal)
+    .plot(title = "Empregados no Varejo (BSL/US)", xlabel = "", figsize = (10, 5))
+    .legend(["Série sazonal", "Série dessazonalizada"])
+)
+```
+
+
