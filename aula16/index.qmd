@@ -66,6 +66,8 @@ O ponto forte está na sua capacidade de fácil integração (Google Drive, Gith
 
 Para acessar, basta ir no site https://colab.research.google.com/, ter uma conta Google e criar um novo notebook.
 
+A outra possibilidade é ir no site do Python (https://www.python.org/), fazer download do arquivo e depois ir no terminal do Mac/OS ou no Prompt do Windows e instalar o Jupiter (python3 -m pip install jupyter). Depois de instalado, no termina/prompt é digitar `python3 -m notebook` para abrir um Jupyter no navegador e usar em uma interface muito parecida com a do Google Colab.
+ 
 <br>
 
 ### Quarto
@@ -194,6 +196,41 @@ knitr::include_graphics("imgs/ciclo_dados_bibliotecas.png")
 
 <br>
 
+## Panda Series
+
+```{python}
+import pandas as pd
+
+series_obj = pd.Series([4,5,6,3])
+
+series_obj
+```
+
+sendo possível criar os valores dos índices
+
+```{python}
+series_obj2 = pd.Series([4,7,8,-2], index = ['a', 'b', 'c', 'd'])
+series_obj2
+```
+
+```{python}
+series_obj2.mean()
+series_obj2 * 2
+series_obj2['a']
+```
+
+
+## Panda DataFrame
+
+```{python}
+data_raw = {'cursos': ['machine learning', 'econometria', 'séries', 'visualização'],
+            'carga horaria': [90, 60, 90, 40],
+            'desconto': [True, False, True, False]}
+            
+data_raw
+```
+
+
 ## Importando Arquivos
 
 Para importar um arquivo CSV *offline* pode-se usar a biblioteca `pandas` no Python:
@@ -210,6 +247,10 @@ Por padrão, a função tenta adivinhar os tipos das colunas e utiliza a primeir
 
 ```{python}
 tabela
+tabela.describe()
+tabela.columns
+tabela.index
+tabela.head()
 ```
 
 <br>
@@ -302,8 +343,14 @@ Com uma série no Banco Central:
 ```{python}
 # Coletar dados da SELIC no SGS/BCB
 from bcb import sgs # nome da biblioteca é "bcb"
+import seaborn as sns # para fazer o gráfio
+
 dados_sgs = sgs.get(codes = 432, start = "2020-01-01")
 dados_sgs
+
+#Gráfico da Série
+sns.set_theme()
+dados_sgs.plot(figsize=(15,10))
 ```
 
 <br>
@@ -343,9 +390,43 @@ dados_focus = pd.read_csv(
     sep = ",",
     encoding = "utf-8"
 )
-dados_focus
+
+#Tipos de Encondings
+#encoding=’latin1′
+#encoding=’ISO-8859-1′
+#encoding=’utf-8′
+#encoding=’cp1252′
+
+dados_focus.tail()
 ```
-              
+
+
+Contudo, existe uma forma mais simples para fazer, demonstrada abaixo:
+
+```{python}
+from bcb import Expectativas
+expec = Expectativas()
+expec.describe()
+
+expec.describe('ExpectativasMercadoAnuais')
+```
+
+
+```{python}
+ep = expec.get_endpoint('ExpectativasMercadoAnuais')
+
+#Realizando o Filtro
+(ep.query()
+ .filter(ep.Indicador == 'Câmbio', ep.DataReferencia == 2024)
+ .filter(ep.Data >= '2022-01-01')
+ .filter(ep.baseCalculo == 1)
+ .select(ep.Data, ep.Media, ep.Mediana)
+ .orderby(ep.Data.desc())
+ .limit(10)
+ .collect())
+```
+
+
 Em relação aos dados do IPEADATA, suponha que o objetivo seja coletar a série do saldo do Novo CAGED. 
 
 - **Passo 1**: utilize a função `list_series()` para localizar a série desejada e obter o código da mesma (retorna um `DataFrame`);
@@ -387,3 +468,68 @@ dados_sidra = pd.read_json(
 dados_sidra.tail()
 ```
 
+
+## Introdução ao NumPy
+
+O NumPy, abreviatura de Numerical Python, é a biblioteca básica mais importante para o uso da análise de dados com Python. Os recursos do uso desse pacote permitem ao usuário realizar operações matemáticas, manipulação de vetores e dados entre outras diversas funcionalidade. Abaixo são mostrados os pontos básicos mais importante do NumPy.
+
+Entre os principais recursos que pode se encontrar com NumPy, estão:
+
+
+*   ndarray: um vetor multidimensional, que oferece operações aritméticas rápidas;
+*   funções matemáticas para operações com vetores;
+*   alinhamento e manipulação de dados.
+
+### ndarray
+
+o objeto ndarray é uma classe de objeto no Python que permite a utilização de conjunto de dados como um vetor ou um conjunto de vetores, ou seja, permite realizar operações matemáticas e estatísticas, bem como também é possível manejar os dados de forma mais facilitada.
+
+Um exemplo de calculo que pode-se utilizar é multiplicar um número inteiro com um vetor de dados. Assim como na matemática, o valor escalar repete a operação em todos os valores do vetores (algo que não ocorre sem o NumPy sem definir uma operação de fluxo com for), isto é chamado de vetorização.
+
+```{python}
+import numpy as np
+
+data = np.random.randn(2, 3)
+
+data
+
+data * 5
+
+data + data
+
+data.dtype
+```
+
+Para controlar o array, um modo simples de criar um vetor ordenado é utilizar arange. Para fatiar os valores, utiliza-se o colchete define o fatiamento conforme a coodernada do valor dentro do array.
+
+```{python}
+arr1 =  np.array([1, 2, 3, 4, 5])
+
+arr1
+
+np.arange(10)
+
+arr1[1:3]
+
+arr3d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
+
+arr3d
+```
+
+Para realizar cálculos estatístico, o próprio NumPy oferece meios de realizar os cálculos.
+
+```{python}
+arr1.mean()
+
+# Soma
+arr1.sum()
+
+# Desvio Padrão
+arr1.std()
+
+# Mínimo
+arr1.min()
+
+# Máximo
+arr1.max()
+```
