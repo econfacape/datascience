@@ -1,0 +1,184 @@
+---
+title: "INTRODUÇÃO AO PYTHON - OUTROS TÓPICOS IMPORTANTES"
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 8
+    fig-height: 5
+    fig-dpi: 300
+    fig-align: center
+    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+jupyter: python3
+---
+
+## Visualizando dados com o Matplotlib e Seaborn
+
+```{python}
+#Bibliotecas
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from bcb import sgs
+```
+
+```{python}
+ipca = sgs.get({'IPCA': 433}, start = "2010-01-01")
+desemprego = sgs.get({'desemprego': 24369})  #pnad continua
+data = desemprego.merge(ipca, on = 'Date', how = 'left')
+data
+```
+
+```{python}
+plt.plot(ipca)
+plt.style.use('default')
+```
+
+```{python}
+plt.plot(desemprego)
+plt.style.use('default')
+```
+
+
+```{python}
+# Fazendo um Histograma dos dados
+
+plt.hist(x=ipca['IPCA'],
+          color = 'darkblue',
+          bins = 20)
+plt.title("valores de jan de 2010 a abril de 2024")
+plt.suptitle("Histograma da variação mensal do IPCA")
+plt.style.use('ggplot')
+```
+
+
+```{python}
+plt.scatter(x=data['desemprego'], y = data['IPCA'])
+plt.title("Relação Desemprego x IPCA")
+plt.style.use('classic')
+```
+
+```{python}
+sns.set_theme()
+sns.lineplot(data=ipca)
+```
+
+```{python}
+sns.displot(data = ipca, x= 'IPCA', kde = True)
+```
+
+```{python}
+sns.regplot(data = data, x = 'desemprego', y = 'IPCA')
+```
+
+## Exemplo Prático usando o Yahoo! Finance
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import pandas_datareader.data as web
+import seaborn as sns
+import yfinance as yf
+
+#Lembrar de pegar o Ticker dentro do Site do Yahoo!Finance
+# outra opção: tickers = ['^BVSP', 'BRL=X']
+dolar_ibov = yf.download("^BVSP BRL=X", 
+                        start = "2023-01-04",
+                        end = "2024-05-01", 
+                        auto_adjust=True)['Close']
+                        
+#Eliminando os NA's
+dolar_ibov = dolar_ibov.dropna()
+
+sns.set()
+
+dolar_ibov.plot(subplots = True, figsize = (20, 6))
+```
+
+```{python}
+# Gráfico de uma correlação móvel no tempo das duas variáveis
+
+dolar_ibov['BRL=X'].rolling(22).corr(dolar_ibov['^BVSP']).plot(figsize = (20,6))
+```
+
+```{python}
+petrobras = yf.download("PETR4.SA")['Close']
+                        
+#Eliminando os NA's
+petrobras = petrobras.dropna()
+
+petrobras.plot(figsize = (22,8))
+plt.title('Evolução do preço das ações da Petrobras')
+```
+
+
+
+## Ambiente Controlado dentro do Python
+
+O `def` cria uma função. No exemplo abaixo, 
+
+```{python}
+def f(x):
+  return 10*x + 40
+f(2)
+```
+
+```{python}
+def iguala30(x):
+  if x > 30:
+    print("maior")
+  else:
+    print("menor")
+
+iguala30(31)
+```
+
+```{python}
+iguala30(22)
+```
+
+No caso dos loopings, deve-se usar `while` ou `for`:
+
+```{python}
+def repetir(n):
+  i = 5
+  while(i < n):
+      print(i)
+      i = i + 1
+  else:
+      print("Fim da Repetição")
+      
+repetir(10)
+```
+
+```{python}
+def carac(x):
+  for a in x:
+    print(a, len(a))
+    
+carac(['comida', 'café', 'chocolate'])
+```
+
