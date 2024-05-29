@@ -403,6 +403,13 @@ dados_sgs.assign(
   )
 ```
 
+Uma outra opção é fazer:
+
+```{python}
+dados_sgs['nova_coluna'] = dados_sgs['valor'] + dados_sgs['valor']
+dados_sgs
+```
+
 Para alterar diversas colunas com uma mesma operação (por exemplo, arredondar todas as colunas numéricas) e mantendo as demais colunas da tabela inalteradas, é possível utilizar diversas abordagens de códigos. Talvez a forma mais simples seja utilizar a função `pipe()` em conjunto com `assign()`:
 
 ```{python, echo=FALSE}
@@ -430,6 +437,20 @@ Entendendo o código anterior:
 
 Há alternativas para este código, sendo que a abordagem exposta é preferível em rotinas onde são necessárias operações encadeadas (sequências de tratamentos de dados), com uma função sendo aplicada sobre o resultado da anterior. 
 
+## Como excluir uma coluna de um DataFrame?
+
+```{python}
+dados_focus.drop('baseCalculo', axis = 1) #axis para informar que é coluna e não linha
+```
+
+
+## Como Ordenar os valores de uma coluna?
+
+```{python}
+dados_focus.sort_values(by = ['Media'])
+```
+
+
 ## Como aplicar filtros em linhas?
 
 Para filtrar determinadas linhas de uma tabela usa-se a função `query()` com a sintaxe `tabela.query("condicao")`, onde `condicao` é uma expressão lógica dentro de uma *string*, na linguagem interna do `pandas`, aplicada aos valores de uma coluna. As linhas que serão mantidas após o `query()` são as linhas onde `condicao` é verdadeiro (`True`). Para exemplificar, suponha que se queira todas as linhas de uma tabela que possui o valor `IPCA` na coluna `Indicador`. Para tal filtro deve ser usado uma condição de igualdade:
@@ -441,6 +462,13 @@ pd.set_option("display.max_columns", None)
 ```{python}
 # Filtrando por uma condição
 dados_focus.query("Indicador == 'IPCA'")
+```
+
+outra opção é fazer:
+
+```{python}
+filtro = dados_focus['Indicador'] == 'IGP-M'
+dados_focus[filtro] 
 ```
 
 É possível definir múltiplas condições para uma ou mais colunas, separando-as por operadores lógicos como `&`, `|` ou seus nomes no inglês `and` e `or`, respectivamente. Somente as linhas onde todas as condições são verdadeiras serão retornadas:
