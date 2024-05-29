@@ -242,7 +242,55 @@ tabela_caged.join(other = tabela_idp, how = "outer")
 
 ## Trabalhando com Datas no Python
 
-Existem diversas formas de representar datas no Python, a mais comum é o formato internacional "YYYY-MM-DD", padrão na biblioteca `pandas`
+No Python, pode-se definir os tipos de dados para datas para os seguintes tipos:
+
+*  **data**: armazena uma data de calendário
+*   **time**: armazena a hora do dia na forma de horas, minutos, segundos e microssegundos
+*   **datetime**: armazena data e hora
+*   **timedelta**: diferença entre dois valores de datas
+*   **tzinfo**: fuso horário (time zone)
+
+Para especificação de formatos de datas, é comum usar o padrão %Y para ano com quatro dígitos, %m para mês com dois dígitos e %d para dia com dois dígitos, formando o padrão %Y-%m-%d, comum para a importação de diversos dados em séries temporais ao redor do mundo. Ainda é possível que seja adicionado %H, que representa as horas em formato de 24h.
+
+Existem diversos outros formatos para anos, meses, dias e horas, seguindo a lista abaixo:
+
+**ano**
+
+*   %y: ano de dois dígitos (22)
+*   %Y: ano de quatro dígitos (2022)
+
+**mês**
+
+*   %b: Mês abreviado (Mar)
+*   %B: Nomes completos de meses (March)
+*   %m: Mês como número (03 ou 3)
+
+**dia**
+
+*   %d: Dia do mês (30)
+
+**dia da semana**
+
+*   %a: Nome abreviado (Wed)
+*   %A: Nome completo
+*   %w: número (3 - Sunday sempre como 0 até Saturday como 6)
+
+**horas**
+
+*   %H: 24 horas (00 até 23)
+*   %I: 12 horas (01 até 12)
+*   %M: minutos (01 até 59)
+
+**segundos**
+
+*   %S: segundos de 00 até 59
+
+**AM/PM**
+
+*   %p: utilizado junto com horas em formatos de 12 horas
+
+Existem diversas formas de representar datas no Python, a mais comum é o formato internacional "YYYY-MM-DD", padrão na biblioteca `pandas`.
+
 
 ```{python}
 # Importar bibliotecas
