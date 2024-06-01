@@ -597,4 +597,49 @@ plt.show()
 )
 ```
 
+## Exemplo Tratamento de Dados Macroeconômicos
+
+```{python}
+import sidrapy
+import numpy as np
+import pandas as pd
+import datetime
+
+ipca_raw = sidrapy.get_table(table_code= "1419",
+                            territorial_level = "1",
+                            ibge_territorial_code= "all",
+                            period = "all")
+                            
+ipca_raw
+```
+
+```{python}
+# Substitui as colunas pela primeira observação
+ipca_raw.columns = ipca_raw.iloc[0]
+
+# Retira a primeira observação
+ipca_raw = ipca_raw.iloc[1:, :]
+
+ipca_raw.info()
+```
+
+```{python}
+#Seleciona apenas as colunas de interesse
+ipca = ipca_raw.rename(columns = {"Valor" : "value",
+                                "Mês (Código)" : "date",
+                                "Variável" : "variable"})[["value", "date", "variable"]]
+```
+
+```{python}
+#Seleciona apenas a Coluna IPCA
+ipca = ipca[ipca.variable.eq('IPCA - Variação mensal')]
+
+#Ajusta a data e o index
+ipca.index = pd.to_datetime(ipca['date'], format='%Y%m', errors='coerce')
+
+#Deleta as colunas
+ipca.drop(columns = ['date', 'variable'])
+
+ipca
+```
 
