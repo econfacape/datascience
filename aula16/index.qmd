@@ -434,10 +434,22 @@ Em relação aos dados do IPEADATA, suponha que o objetivo seja coletar a série
 ```{python}
 # Extrair tabela com todas séries e códigos disponíveis
 import ipeadatapy as ipea
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+#Maneira usando Metadados
+ipea.metadata()
+ipea.metadata(big_theme = 'Macroeconômico', frequency = 'Mensal', 
+                      country = 'BRA', source = 'BM&FBovespa')
+
+# Outra forma
 series_ipeadata = ipea.list_series()
+
+ipea.list_series('Caged')
 
 # Filtrar séries com o termo "CAGED"
 series_ipeadata[series_ipeadata.CODE.str.contains("CAGED")]
+ipea.describe('CAGED12_SALDON12')
 ```
 
 - **Passo 2**: aponte na função `timeseries()` o código da séries de interesse:
@@ -446,11 +458,27 @@ series_ipeadata[series_ipeadata.CODE.str.contains("CAGED")]
 dados_ipeadata = ipea.timeseries(series = "CAGED12_SALDON12")
 dados_ipeadata.head()
 dados_ipeadata.tail()
+
+#Gráficos
+#dados_ipedata.plt.plot('RAW DATE', 'VALUE (Pessoa)'), kind = 'bar', figsize = (15,10))
 ```
 
 Dessa forma simples se tem acesso rápido e fácil a diversas séries. Importante consultar os detalhes dos argumentos na documentação da biblioteca e, sobre as séries, pela função `metadata()` ou no site da instituição.
 
 No caso dos dados do SIDRA, o mais fácil é consultar no SIDRA, obter o link e importar com o `pandas`. 
+
+A biblioteca oferece uma única função, get_table(), que permite, através de seus argumentos, específicar a série e seus parâmetros para a importação.
+
+Os diferente tipos de parâmetros definem a tabela e suas dimensões (períodos, variáveis, unidades territorias e classificações/categorias). Iremos elencar a baixo cada parâmetro, como obter e onde se insere na função (para mais observações ver a página de [ajuda](https://apisidra.ibge.gov.br/home/ajuda) da API do SIDRA).
+
+- **t (table_code)** - é o código da tabela referente ao indicador e a pesquisa;
+- **p (period)** - utilizado para específicar o período;
+- **v (variable)** - para específicar as variáveis desejadas;
+- **n (territorial_level)** - especifica os níveis territoriais;
+- **n/ (ibge_territorial_code)** - inserido dentro do nível terrorial, especificar o código territorial do IBGE;
+- **c/ (classification/categories)** - especifica as classificações da tabela e suas respectivas categorias.
+
+Para obter a tabela e os códigos, o primeiro passo será entrar na interface do SIDRA e buscar a pesquisa/indicador de interesse através do site e em seu buscador https://sidra.ibge.gov.br/home/
 
 - **Passo 1**: localize no site [https://sidra.ibge.gov.br/](https://sidra.ibge.gov.br/) a tabela de interesse e aplique os filtros desejados (neste caso marcamos "Variável" = "'Area Colhida"; "Produto das lavouras temporárias e permanentes" = "Manga"; "Ano" = 2003 a 2022 e "Unidade Territorial" = "Sao Francisco Pernambucano e Vale Sao Franciscano da Bahia");
 - **Passo 2**: clique no botão de compartilhar, na parte inferior, chamado “Links de compartilhar” e no primeiro campo na tela que se abre, "Parâmetros para a API", copie o link que aparece;
@@ -466,6 +494,173 @@ dados_sidra = pd.read_json(
   path_or_buf = "https://apisidra.ibge.gov.br/values/t/5457/n8/2602,2902/v/216/p/last%2020/c782/0?formato=json"
   )
 dados_sidra.tail()
+```
+
+
+## Outro Exemplo
+
+Usada a série do PIB sem ajuste sazonal e com ajuste sazonal, referente a tabela 1620 e 1621, respectivamente, que se trata da série das Contas Nacionais Trimestrais.
+
+- **t (table_code)** = 1620
+- **n (territorial_level)** = 1
+- **n/ (ibge_territorial_code)** = all
+- **v (variable)** = all
+- **p (period)** = all
+- **c/ (categories)** = 11255/90707
+
+```{python}
+# Importa as bibliotecas necessárias
+import sidrapy
+import numpy as np
+import pandas as pd
+import datetime as dt
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Importa os dados do SIDRA
+pib_sa_raw = sidrapy.get_table(table_code= "1620",
+                            territorial_level = "1",
+                            ibge_territorial_code = "all",
+                            period = "all",
+                            classification = "11255/90707")
+
+pib_sa_raw.head()
+```
+
+```{python}
+# Substitui as colunas pela primeira observação
+pib_sa_raw.columns = pib_sa_raw.iloc[0]
+
+# Retira a primeira observação
+pib_sa_raw = pib_sa_raw.iloc[1:, :]
+
+# Altera para float a coluna do valor
+pib_sa_raw['Valor'] = pib_sa_raw['Valor'].astype(float)
+
+pib_sa_raw.head()
+```
+
+```{python}
+# Renomeia e seleciona as colunas de interesse
+pib_sa = pib_sa_raw.rename(columns = {"Valor" : "pib_sa",
+                                "Trimestre (Código)" : "date"})[['pib_sa', 'date']]
+
+pib_sa                                
+```
+
+
+```{python}
+# Lidar com a coluna de trimestre para transformar em data
+pib_sa['date'] = pib_sa['date'].str[:-2] + pib_sa['date'].str[-2:].replace({"01" : "03",
+                                                                  "02" : "06",
+                                                                  "03" : "09",
+
+                                                                  "04" : "12"})
+                                                                  
+pib_sa
+```
+
+```{python}
+# Transforma em formato date a coluna de data e insere no índice
+pib_sa.index = pd.to_datetime(pib_sa['date'],
+                              format = "%Y%m")
+                              
+# Retira a coluna de data
+pib_sa = pib_sa.drop(columns = ['date'])
+
+pib_sa
+```
+
+```{python}
+# Importa os dados do pib com ajuste sazonal
+pib_raw = sidrapy.get_table(table_code= "1621",
+                            territorial_level = "1",
+                            ibge_territorial_code= "all",
+                            period = "all",
+                            classification = "11255/90707")
+
+pib_raw.head()
+
+# Substitui as colunas pela primeira observação
+pib_raw.columns = pib_raw.iloc[0]
+
+# Retira a primeira observação
+pib_raw = pib_raw.iloc[1:, :]
+
+# Altera para float a coluna do valor
+pib_raw['Valor'] = pib_raw['Valor'].astype(float)
+
+# Renomeia e seleciona as colunas
+pib = pib_raw.rename(columns = {"Valor" : "pib",
+                                "Trimestre (Código)" : "date"})[['pib', 'date']]
+
+
+# Procedimento para lidar com a coluna de trimestre para transformar em data
+pib['date'] = pib['date'].str[:-2] + pib['date'].str[-2:].replace({"01" : "03",
+                                                                  "02" : "06",
+                                                                  "03" : "09",
+                                                                  "04" : "12"})
+
+
+
+# Transforma em formato date a coluna de data e insere no índice
+pib.index = pd.to_datetime(pib['date'],
+                           format = "%Y%m")
+
+# Retira a coluna de data
+pib = pib.drop(columns = ['date'])
+
+pib
+```
+
+```{python}
+#Juntar as duas bases de dados para fazer o gráfico
+pib_df = pd.merge(pib, pib_sa,
+         left_index = True, 
+         right_index = True)
+         
+pib_df
+```
+
+```{python}
+# Transforma o data frame de wide para long
+pib_df_long = pd.melt(pib_df.reset_index(),
+            id_vars = 'date',
+            value_vars = ['pib', 'pib_sa'],
+            var_name = 'variable',
+            value_name = 'values')
+```
+
+```{python}
+# Configura o tema do gráfico
+theme = {'figure.figsize' : (15, 10),
+         'axes.facecolor' : 'white',
+         "axes.spines.right": False,
+         "axes.spines.top": False}
+
+# Cor das variáveis
+colors = ['#282f6b', '#b22200']
+
+# Adiciona as configurações
+sns.set_theme(style = 'white', 
+              palette = colors,
+              rc = theme)
+
+# Plota
+sns.lineplot(x = 'date', y = 'values', 
+            data = pib_df_long,
+            hue = 'variable',
+            linewidth = 2).set(xlabel = "",
+                               ylabel = "Número Índice",
+                               title = "Produto Interno Bruto - Índice (Base 1995 = 100)")
+
+ # Adiciona a fonte no gráfico           
+plt.annotate('Fonte: Sidra/IBGE',
+            xy = (1.0, -0.06),
+            xycoords='axes fraction',
+            ha='right',
+            va="center",
+            fontsize=10)
 ```
 
 
