@@ -17,11 +17,12 @@ format:
     embed-resources: true
     page-layout: full
     fig-asp: 0.618
-    fig-width: 8
-    fig-height: 5
+    fig-width: 6
+    fig-height: 3
     fig-dpi: 300
     fig-align: center
-    df-print: paged
+    df-print: tibble
+#    df-print: paged
     fontsize: 13pt
 theme:
   light: flatly
@@ -29,7 +30,7 @@ execute:
   echo: TRUE
   message: false
   warning: false
-jupyter: python3
+#jupyter: python3
 ---
 
 ## Visualizando dados com o Matplotlib e Seaborn
@@ -52,11 +53,19 @@ data
 ```
 
 ```{python}
+# Configura o tamanho do gráfico
+#plt.figure(figsize = (10,5))
+#plt.figure().set_figwidth(15)
+#plt.figure().set_figheight(10)
+plt.rcParams['figure.figsize'] = [7, 4]
 plt.plot(ipca)
 plt.style.use('default')
 ```
 
 ```{python}
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
+
 plt.plot(desemprego)
 plt.style.use('default')
 ```
@@ -64,6 +73,8 @@ plt.style.use('default')
 
 ```{python}
 # Fazendo um Histograma dos dados
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
 
 plt.hist(x=ipca['IPCA'],
           color = 'darkblue',
@@ -75,23 +86,82 @@ plt.style.use('ggplot')
 
 
 ```{python}
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
+
 plt.scatter(x=data['desemprego'], y = data['IPCA'])
 plt.title("Relação Desemprego x IPCA")
 plt.style.use('classic')
 ```
 
 ```{python}
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
+
 sns.set_theme()
 sns.lineplot(data=ipca)
 ```
 
 ```{python}
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
+
 sns.displot(data = ipca, x= 'IPCA', kde = True)
 ```
 
 ```{python}
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
+
 sns.regplot(data = data, x = 'desemprego', y = 'IPCA')
 ```
+
+```{python}
+#Entrada de Dados
+mpg_raw = pd.read_excel('dados/mpg.xlsx')
+mpg = mpg_raw[['mpg', 'weight', 'horsepower', 'origin', 'cylinders']]
+
+#Estatística Descritiva
+mpg.describe()
+
+# Escolhe o tema dos gráficos
+sns.set_theme()
+
+# Configura o tamanho do gráfico
+plt.figure(figsize = (15,10))
+
+# Gráfico de Histograma
+sns.histplot(data = mpg,
+             x = 'mpg')
+```
+
+```{python}             
+plt.figure(figsize = (15,10))
+
+# Histograma por grupo
+sns.displot(data = mpg,
+            x = 'mpg',
+            col = 'origin')
+```
+
+```{python}              
+plt.figure(figsize = (15,10))
+
+# Boxplot por grupo
+sns.boxplot(data = mpg, 
+            x = 'origin',
+            y = 'mpg')
+```
+
+
+```{python}  
+plt.figure(figsize = (15,10))
+
+# Correlação e densidade
+sns.pairplot(mpg[['mpg', 'weight', 'horsepower','origin']],
+             hue = 'origin')
+```             
+
 
 ## Exemplo Prático usando o Yahoo! Finance
 
@@ -134,7 +204,142 @@ petrobras.plot(figsize = (22,8))
 plt.title('Evolução do preço das ações da Petrobras')
 ```
 
+## Gráfico com o Plotnine
 
+Para criar um **gráfico** com o `plotnine` a ideia é a mesma do Ggplot2 no R:
+
+1. Gráficos são representações visuais de dados em **formas geométricas** (dispersão, linha, coluna, etc.) com **definições estéticas** (cor, posição, tamanho, etc.). 
+
+2. Gráficos são criados em **camadas**, combinando elementos visuais independentes.
+
+```{python}
+# Importa os dados do módulo data
+# Importar bibliotecas
+import pandas as pd
+import plotnine as p9 # !pip install plotnine 
+from plotnine.data import mtcars
+
+# Exibe o dataframe
+mtcars.head()
+```
+
+```{python}
+(p9.ggplot(mtcars) + 
+  p9.aes(x = "wt", y = "mpg") +
+  p9.geom_point()
+  )
+```
+
+
+```{python}
+(p9.ggplot(mtcars) + 
+  p9.aes(x = "wt", y = "mpg", color = "factor(gear)") +
+  p9.geom_point() +
+  p9.stat_smooth(method = "lm") +
+  p9.facet_wrap("gear") +
+  p9.theme_minimal() +
+  p9.labs(title = "Gráfico do dataset mtcars", 
+          subtitle = "Criado com o plotnine no Python")
+  )
+```
+
+Para criar um gráfico do `plotnine` é preciso especificar a camada inicial com a **função `ggplot()`**, que recebe como entrada a tabela de dados a serem plotados.
+
+Adicione uma camada de especificação dos eixos X e Y do gráfico com a **função `aes()`**.
+
+Use sempre o símbolo + para adicionar camadas e coloque a expressão entre parênteses `()` para escrever em múltiplas linhas.
+
+Para exibir as observações (dados) deve-se escolher uma ou mais geometrias, dentre as várias opções disponíveis (linha, coluna, dispersão, etc.), adicionando uma nova camada com a família de **funções `geom_*()`**.
+
+Para colorir e diferenciar as observações com base em categorias de uma coluna e inserir uma legenda basta especificar a **estética `color`** em `aes()`.
+
+Para alterar as escalas do gráfico (de eixos, de cores, de tamanhos, etc.) existe a família de **funções `scale_*_*()`**:
+
+Para inserir títulos do gráfico, eixo, legenda, texto de rodapé, etc., adicione camadas de elementos textuais com as **funções `ggtitle()`, `ylab()`, `xlab()` e `labs()`**.
+
+Para inserir um tema no gráfico existem algumas opções nativas do `plotnine`, bastando adicionar a camada com a família de **funções `theme_*()`**.
+
+Para alterar componentes visuais do tema individualmente basta usar a **função `theme()`**, que permite definir a estética de todos os componentes existentes no gráfico.
+
+A função é bastante extensa em opções (dezenas de argumentos) e recomenda-se consultar a documentação para detalhes de personalização de cada elemento.
+
+```{python}
+from plotnine.data import meat
+
+meat.head()
+
+meat_long = meat.melt(
+    id_vars="date",
+    value_vars=["beef", "veal", "pork", "lamb_and_mutton", "broilers", "turkey"],
+    var_name="animal",
+    value_name="weight"
+).dropna()
+
+meat_long.head()
+
+meat_long_monthly_agg = meat_long.groupby("date").agg({"weight": "sum"}).reset_index()
+meat_long_monthly_agg
+
+
+(
+    p9.ggplot(meat_long_monthly_agg, p9.aes(x="date", y="weight"))
+    + p9.geom_line()
+)
+```
+
+## Grafico de múltiplas séries
+
+```{python}
+(
+    p9.ggplot(meat_long, p9.aes(x="date", y="weight", group="animal"))
+    + p9.geom_line()
+    # Styling
+    + p9.scale_x_datetime(date_breaks="10 years", date_labels="%Y")
+    + p9.theme_538()
+)
+```
+
+## Gráfico com cores diferentes
+
+```{python}
+(
+   p9.ggplot(meat_long, p9.aes(x="date", y="weight", color="animal"))
+    + p9.geom_line()
+    # Styling
+    + p9.scale_x_datetime(date_breaks="10 years", date_labels="%Y")
+    + p9.theme_538()
+)
+```
+
+## Gráficos interativos no Python
+
+Os dados abaixo são séries temporais sobre a venda de veículos no Brasil, disponíveis no site do Banco Central.
+
+```{python}
+from bcb import sgs
+import plotly.express as px
+
+dados = sgs.get(
+    codes = {"Autos": 7384, "Leves": 7385, "Caminhões": 7386, "Ônibus": 7387}, 
+    start = "2002-01-01"
+    )
+dados.tail()
+```
+
+Para criar um gráfico de linha com o Plotly no Python utiliza-se a função `line()` do módulo `express`, conforme abaixo:
+
+```{python}
+# Gráfico de linha
+fig = px.line(
+    data_frame = dados, 
+    x = dados.index, 
+    y = dados.columns, 
+    title = "Vendas de Veículos nas Concessionárias do Brasil",
+    labels = {"value": "Unidades", "Date": "Período", "variable": "Tipo"}
+    )
+    
+fig.show()
+```
 
 ## Ambiente Controlado dentro do Python
 
@@ -181,4 +386,3 @@ def carac(x):
     
 carac(['comida', 'café', 'chocolate'])
 ```
-
