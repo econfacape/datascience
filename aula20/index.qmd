@@ -1,0 +1,212 @@
+---
+title: '**INTRODUÇÃO AO PYTHON - TABELAS**'
+author: "João Ricardo F. de Lima"
+date: "today"
+editor: source
+lang: pt
+language: 
+  toc-title-document: '<a href="https://www.facape.br/" target="_blank"><img src="https://github.com/econfacape/macroeconometria/blob/main/logofacape.jpg?raw=true" alt="Logotipo Facape" width="150"></a>'
+format: 
+  html:
+    toc: true
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    toc-location: left
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 6
+    fig-height: 3
+    fig-dpi: 300
+    fig-align: center
+    df-print: tibble
+#    df-print: paged
+    fontsize: 13pt
+theme:
+  light: flatly
+execute:
+  echo: TRUE
+  message: false
+  warning: false
+#jupyter: python3
+---
+
+# Introdução
+
+Com o Great Tables, qualquer pessoa pode criar belas tabelas em Python. O framework expressa uma tabela como uma combinação de seis componentes independentes. Com este framework, você pode estruturar a tabela, formatar os valores e estilizar a tabela. Acredita-se firmemente que os métodos oferecidos no pacote permitem que as pessoas construam uma ampla variedade de tabelas úteis que funcionam em muitas disciplinas.
+
+Você constrói com Great Tables iterativamente, começando com o corpo da sua tabela a partir do código, adicionando estilos, formatação e outros componentes. Aqui está um esquema que delineia a terminologia e representa como os diferentes componentes da tabela estão relacionados entre si:
+
+- Table Header: um lugar para o título, subtítulo e onde você pode descrever sucintamente o conteúdo da sua tabela.
+
+- Column Labels: os rótulos das colunas definem o conteúdo de cada coluna, e os spanners são cabeçalhos sobre os grupos de colunas.
+
+- Stub Head: a localização na esquerda superior, onde cada rótulo pode ser usado em uma variedade de formas.
+
+- Row Stub: para informação da linha, incluindo rótulos de linhas agrupados.
+
+- Table Body: contém células e onde os dados vivem.
+
+- Table Footer: um lugar para informação adicional pertencendo ao conteúdo da tabela.
+
+# Exemplo com o IPCA-15
+
+O código em Python realiza a importação dos dados, realiza a manipulação de dados e constrói das tabelas.
+
+```{python}
+# Carrega bibliotecas
+import pandas as pd
+from sidrapy import get_table
+from great_tables import GT, md, html, style, loc
+```
+
+```{python}
+# Busca série no SIDRA
+## Tabela 3065 - IPCA15 - Série histórica com número-índice, variação mensal e variações acumuladas em 3 meses, em 6 meses, no ano e em 12 meses (a partir de maio/2000)
+## API: https://apisidra.ibge.gov.br/values/t/3065/n1/all/v/355,356,1118,1119,1120/p/all/d/v355%202,v356%202,v1118%202,v1119%202,v1120%202
+ipca_3065_raw = get_table(
+    table_code = '3065',
+    territorial_level = '1',
+    ibge_territorial_code = 'all',
+    variable = '355,356,1118,1119,1120',
+    period = 'all',
+    header = 'n'
+)
+```
+
+```{python}
+# Realiza a limpeza do dataframe
+ipca_3065 = (ipca_3065_raw
+ .loc[:, ['D2N', 'D3N', 'V', 'D2C']]
+ .rename(columns = {'V': 'Taxa',
+                  'D2C': 'date',
+                  'D2N': 'Data',
+                  'D3N': 'Período'})
+ .assign(Período = lambda x: x['Período'].str.replace('IPCA15 - ', ''),
+         Data = lambda x: x['Data'].str.capitalize(),
+         date = lambda x: pd.to_datetime(x['date'], format = "%Y%m"),
+         Taxa = lambda x: x['Taxa'].astype(float))
+ .sort_values(by=['date', 'Período'], ascending=[False, True])
+)
+```
+
+```{python}
+# Cria o dataframe para a apresentação da tabela
+ipca_3065_table = (
+    pd.concat([
+        (ipca_3065
+        .query('Período == "Variação mensal"')
+        .assign(Período = lambda x: x.Data)
+        .iloc[[0, 1, 12]]
+        .sort_values('date', ascending = False)
+        ),
+        ipca_3065.head(4)
+    ])
+    .reset_index(drop=True)
+    .loc[:, ['Período', 'Taxa']]
+)
+```
+
+```{python}
+#| colab: {base_uri: 'https://localhost:8080/', height: 447}
+last_3065 = ipca_3065_table.loc[0, "Período"]
+
+(GT(ipca_3065_table, rowname_col = 'Período')
+ .tab_header(title = md(f'**IPCA-15** <br> {last_3065}'))
+ .tab_source_note(source_note = md("**Fonte: IBGE <br> Elaborado por: analisemacro.com.br**"))
+ .tab_stubhead(label="Período")
+ .fmt_percent(columns = 'Taxa', scale_values = False, dec_mark = ',', sep_mark = '.')
+ ).opt_all_caps(locations = 'column_labels')
+```
+
+```{python}
+# Busca série no SIDRA
+# Tabela 7062 - IPCA15 - Variação mensal, acumulada no ano, acumulada em 12 meses e peso mensal, para o índice geral, grupos, subgrupos, itens e subitens de produtos e serviços (a partir de fevereiro/2020)
+## API: https://apisidra.ibge.gov.br/values/t/7062/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v355%202,v356%202,v357%204,v1120%202
+ipca_7062_raw = get_table(table_code = '7062',
+                             territorial_level = '1',
+                             ibge_territorial_code = 'all',
+                             variable = 'all',
+                             period = 'all',
+                             classification = '315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786',
+                             header = 'n'
+                             )
+```
+
+```{python}
+#| colab: {base_uri: 'https://localhost:8080/', height: 423}
+# Realiza a limpeza do dataframe
+ipca_7062 =  (
+    ipca_7062_raw
+    .loc[1:,['D4N', 'D3N', 'D2C', 'D2N', 'V']]
+    .rename(columns = {'V': 'value',
+                       'D2C': 'date',
+                       'D3N': 'variable',
+                       'D4N': 'groups'})
+    .query('value != "..."')
+    .assign(variable = lambda x: x['variable'].str.replace('IPCA15 - ', '') + str(' (%)'),
+            date  = lambda x: pd.to_datetime(x['date'],
+                                              format = "%Y%m"),
+            value = lambda x: x['value'].astype(float),
+            groups = lambda x: x['groups']
+           )
+    .pipe(lambda x: x.loc[x.date > '2007-01-01'])
+        )
+```
+
+```{python}
+# Cria o dataframe para a apresentação da tabela
+ipca_7062_table = (
+  ipca_7062
+  .pivot_table(values='value', index=['groups', 'date'], columns='variable')
+  .reset_index()
+  .assign(contribuicao = lambda x: (x['Peso mensal (%)'] * x['Variação mensal (%)']) / 100)
+  .loc[lambda x : x['date'] == x['date'].max()]
+  .sort_values('groups', ascending=True)
+  .drop('date', axis = 1)
+  .reset_index(drop = True)
+)
+```
+
+```{python}
+#| colab: {base_uri: 'https://localhost:8080/', height: 567}
+# Cria a tabela
+table_7060 = (
+  GT(ipca_7062_table, rowname_col = 'groups')
+ .tab_stubhead(label="Grupos")
+ .tab_header(title = md(f'**IPCA-15** <br>'))
+ .tab_source_note(source_note = md("**Fonte: IBGE <br> Elaborado por: analisemacro.com.br**"))
+ .tab_spanner(
+     label = 'Variações',
+     columns = ['Variação acumulada em 12 meses (%)',
+                'Variação acumulada no ano (%)',
+                'Variação mensal (%)']
+ )
+ .tab_spanner(label = 'Impacto',
+              columns = ['Peso mensal (%)', 'contribuicao']
+              )
+ .cols_label(
+     contribuicao = 'Contribuição (p.p.)'
+ )
+ .fmt_percent(columns = ['Peso mensal (%)',
+                         'Variação acumulada em 12 meses (%)',
+                         'Variação acumulada no ano (%)',
+                         'Variação mensal (%)'],
+               scale_values = False, dec_mark = ',', sep_mark = '.')
+ .fmt_number(decimals = 3, dec_mark = ',', sep_mark = '.')
+  )
+
+# Define opções da tabela
+(table_7060
+.tab_style(
+    style= style.borders(sides="top", color="black", style="solid", weight="3px"),
+    locations=loc.body(rows=[9])
+  )
+.opt_all_caps()
+.opt_table_outline()
+.opt_horizontal_padding(scale=3))
+```
+
+
