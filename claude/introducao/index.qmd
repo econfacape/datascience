@@ -1,0 +1,1159 @@
+---
+title: "Claude Code: Guia Completo para Economistas"
+subtitle: "Da instalação à automação em produção"
+author: "Baseado nos artigos da Análise Macro — consolidado e aprofundado"
+date: today
+lang: pt-BR
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-title: "Sumário"
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-copy: true
+    code-tools: true
+    smooth-scroll: true
+    self-contained: true
+    highlight-style: github
+    fig-align: center
+    callout-appearance: simple
+execute:
+  eval: false
+  echo: true
+---
+
+# Prefácio {.unnumbered}
+
+Este guia consolida e aprofunda uma série de oito artigos sobre Claude Code produzidos pela Análise Macro. O objetivo é oferecer uma progressão lógica única — da compreensão do que o modelo faz internamente até a operação de pipelines automatizados em produção — eliminando repetições e preenchendo as lacunas que os artigos individuais deixaram abertas: custos reais, tratamento de falhas, trabalho em equipe e avaliação de qualidade.
+
+A estrutura segue a ordem natural de aprendizado, não a ordem de publicação dos artigos originais.
+
+---
+
+# PARTE I: Fundamentos
+
+## O que é Claude Code e onde ele se encaixa
+
+Claude Code é um agente de inteligência artificial criado pela Anthropic que opera diretamente no terminal e no editor de código. A diferença fundamental em relação a chatbots tradicionais é **o contexto e a capacidade de ação**: quando você conversa com um chatbot, você copia e cola trechos de código e descreve a estrutura do projeto. Com Claude Code, o agente já está dentro do seu projeto — ele vê seus arquivos, entende a estrutura de diretórios e pode fazer alterações diretamente.
+
+A analogia mais precisa é a de um pair-programmer experiente sentado ao seu lado, com acesso completo ao ambiente de trabalho.
+
+### Taxonomia de ferramentas de IA para programação
+
+Para entender onde o Claude Code se posiciona, considere esta escala:
+
+| Nível | Tipo | Exemplo | Capacidade |
+|-------|------|---------|------------|
+| 0 | Copy-paste manual | ChatGPT web | Você copia código e cola no editor |
+| 1 | Assistente inline | VS Code + Copilot | Completações e chat inline |
+| 2 | Agente no IDE | Cursor | Lê arquivos, executa testes |
+| 3 | Agente dedicado | Claude Code | Agente especializado em terminal |
+| 4 | Agente + ferramentas | Claude Code + MCP | Conectado a serviços externos |
+| 5 | Sistemas distribuídos | Claude Code + orquestração completa | Estado persistente, múltiplos agentes, infraestrutura |
+
+Claude Code opera principalmente nos níveis 3 e 4. O nível 5 é um estágio evolutivo ainda em desenvolvimento.
+
+### Por que importa para economistas
+
+Quem trabalha com dados econômicos e financeiros usa código em quase toda etapa do processo: coleta de dados, limpeza, modelagem econométrica, visualização, documentos em Quarto ou LaTeX. A barreira para adotar boas práticas — controle de versão, testes, documentação — é quase sempre o custo de aprendizado.
+
+Claude Code reduz esse custo drasticamente. Casos de uso diretos:
+
+- Construir pipelines de coleta do BCB, IBGE ou FRED
+- Depurar erros em código R ou Python que você não escreveu
+- Refatorar scripts longos em funções documentadas
+- Gerar visualizações com ggplot2 ou plotnine
+- Criar relatórios Quarto reproduzíveis
+- Configurar repositórios Git com boas práticas desde o início
+
+### Modelos disponíveis e quando usar cada um
+
+| Modelo | Velocidade | Custo | Quando usar |
+|--------|-----------|-------|-------------|
+| Claude Haiku | Rápido | Baixo | Coleta bruta, validação de formato, tarefas mecânicas |
+| Claude Sonnet | Moderada | Médio | Uso geral: análises, geração de scripts, debugging |
+| Claude Opus | Lento | Alto | Raciocínio econométrico profundo, refatorações grandes, síntese executiva |
+
+**Recomendação prática:** Sonnet é o ponto de equilíbrio para a maioria das tarefas. Reserve Opus para revisar um modelo econométrico completo ou planejar a arquitetura de um pipeline de dados. Use Haiku para tarefas mecânicas repetitivas dentro de pipelines automatizados.
+
+---
+
+## Como o modelo pensa: context engineering
+
+Antes de usar Claude Code com eficiência, é preciso entender o que acontece dentro do modelo — porque isso determina o que funciona, o que falha e por que.
+
+### Tokenização: o modelo não lê palavras
+
+Modelos de linguagem não processam texto diretamente. O texto é convertido em **tokens** — fragmentos que podem ser palavras inteiras, partes de palavras ou pontuação. A frase "inflação acumulada" pode virar 3 ou 4 tokens dependendo do tokenizador.
+
+Por que isso importa na prática:
+
+- **Janela de contexto** é medida em tokens, não em palavras. Os modelos Claude atuais suportam até 200.000 tokens — equivalente a cerca de 150.000 palavras
+- Código é mais denso em tokens que prosa. Um script R de 500 linhas ocupa aproximadamente 3.000–5.000 tokens
+- Uma sessão longa de debugging pode consumir 20.000–50.000 tokens
+- Projetos com muitos arquivos abertos via `@`-mentions esgotam o contexto mais rápido
+
+### As três fases de treinamento
+
+Para entender o comportamento do modelo, é útil conhecer como ele foi construído:
+
+1. **Pré-treinamento:** O modelo vê bilhões de textos e aprende a prever o próximo token. Ele absorve linguagem, código, raciocínio e fatos do mundo — mas tudo congelado na data de corte do treinamento.
+
+2. **Fine-tuning supervisionado (SFT):** O modelo é ajustado com exemplos de respostas desejadas, aprendendo o formato de conversação e como responder de forma útil.
+
+3. **RLHF (Reinforcement Learning from Human Feedback):** Avaliadores humanos comparam respostas e o modelo aprende a preferir respostas consideradas melhores. É aqui que o modelo adquire os valores e o tom.
+
+### Alucinação é estrutural, não ocasional
+
+Um ponto crítico para quem usa Claude Code para análise econômica: **modelos de linguagem alucinam por design, não por acidente**. O mecanismo de geração por previsão de próximo token produz texto fluente e coerente — mas não necessariamente verdadeiro. Quando o modelo não sabe algo, ele não retorna "não sei"; ele gera a resposta mais provável dado o contexto, que pode ser plausível mas incorreta.
+
+Implicações práticas:
+
+- Nunca aceite números citados pelo modelo sem verificar na fonte primária
+- O modelo pode inventar nomes de funções, parâmetros de API ou códigos de séries do BCB que parecem corretos mas não existem
+- O ciclo redator-checador em pipelines de agentes existe exatamente para lidar com esse comportamento estrutural
+- Em prompts de produção, instrua explicitamente: *"Nunca invente número. Toda mediana citada deve estar no arquivo de dados."*
+
+### Context engineering vs. prompt engineering
+
+Prompt engineering é a arte de escrever boas instruções em um único texto. **Context engineering** é mais amplo: é a escolha de *tudo* que entra na janela de contexto — o histórico da conversa, os arquivos referenciados, as instruções persistentes, as ferramentas disponíveis.
+
+A metáfora útil: prompt engineering é escrever uma boa pergunta; context engineering é escolher quem está na sala, quais documentos estão sobre a mesa e quais ferramentas estão disponíveis antes de a reunião começar.
+
+Os instrumentos de context engineering no Claude Code:
+
+| Instrumento | O que controla |
+|-------------|---------------|
+| `CLAUDE.md` | Instruções persistentes lidas no início de cada sessão |
+| `@`-mentions | Arquivos e pastas incluídos cirurgicamente no contexto |
+| `/compact` | Compacta o histórico quando a janela está enchendo |
+| `/clear` | Reinicia o contexto completamente |
+| Skills | Playbooks que o modelo decide quando usar |
+| MCP | Ferramentas e dados de serviços externos |
+
+### RAG: quando o modelo precisa de dados atuais
+
+RAG (Retrieval-Augmented Generation) é a técnica de buscar informação relevante em uma base de dados e injetá-la no contexto antes de o modelo responder. É a principal mitigação para alucinação em dados que não estavam no treinamento.
+
+**Trade-offs que os tutoriais raramente discutem:**
+
+- **Latência:** Cada busca adiciona tempo antes da resposta
+- **Custo:** Embeddings e buscas têm custo adicional
+- **Risco de recuperação errada:** Se o retriever busca o documento errado, o modelo responde fluentemente com informação incorreta — às vezes pior do que não ter RAG
+- **Fronteira de uso:** Para economistas, pipelines de agentes com dados do BCB/IBGE são um caso híbrido — parte dos dados vêm de APIs em tempo real (RAG implícito), parte vem de conhecimento de treinamento do modelo
+
+---
+
+## Instalação e primeiros passos
+
+### Pré-requisitos
+
+| Requisito | Detalhe |
+|-----------|---------|
+| Sistema Operacional | macOS 10.15+, Ubuntu 20.04+, Windows 10+ (nativo ou via WSL2) |
+| Conta Anthropic | Plano Pro, Max ou créditos de API em console.anthropic.com |
+| Editor (opcional) | VS Code para usar a extensão integrada |
+
+### As quatro interfaces disponíveis
+
+| Interface | Como funciona | Vantagens | Limitações |
+|-----------|--------------|-----------|------------|
+| Terminal (CLI) | Comando `claude` no terminal | Controle total, funciona via SSH | Curva de aprendizado maior |
+| Extensão VS Code | Painel lateral integrado | Contexto automático dos arquivos abertos | Requer VS Code |
+| Aplicativo Desktop | App nativo | Atalho global com `Opt+Space` | Lançamento recente |
+| Web (claude.ai) | Acesso via navegador | Sem instalação | Sem acesso ao filesystem local |
+
+### Instalação
+
+**macOS e Linux:**
+```bash
+curl -fsSL https://cli.anthropic.com/install.sh | sh
+```
+
+**Windows (PowerShell como administrador):**
+```powershell
+irm https://cli.anthropic.com/install.ps1 | iex
+```
+
+**Verificar instalação:**
+```bash
+claude --version
+```
+
+A autenticação é feita automaticamente: na primeira execução, o Claude Code abre o navegador para login via OAuth. O token fica guardado entre sessões.
+
+### Comandos essenciais do terminal
+
+| Comando | O que faz |
+|---------|-----------|
+| `claude` | Inicia modo interativo (REPL) |
+| `claude "sua pergunta"` | Faz uma pergunta e entra no modo interativo |
+| `claude -p "pergunta"` | Modo print: responde e encerra (ideal para scripts) |
+| `claude --model sonnet` | Seleciona o modelo |
+| `claude --resume` | Retoma a última conversa |
+| `claude update` | Atualiza para a versão mais recente |
+
+### Slash commands: controle dentro da sessão
+
+| Comando | Função |
+|---------|--------|
+| `/help` | Mostra ajuda e comandos disponíveis |
+| `/compact` | Compacta o histórico (janela de contexto cheia) |
+| `/clear` | Limpa o histórico e inicia conversa nova |
+| `/cost` | Mostra custo acumulado da sessão atual |
+| `/usage` | Exibe estatísticas de uso do mês |
+| `/model` | Alterna entre modelos |
+| `/memory` | Abre o arquivo `CLAUDE.md` para edição rápida |
+| `/permissions` | Gerencia permissões de ferramentas |
+| `/mcp` | Painel interativo de servidores MCP |
+| `/schedule` | Cria uma Routine agendada |
+| `/init` | Gera um `CLAUDE.md` inicial baseado no projeto |
+
+::: {.callout-tip}
+**Sobre custos:** Use `/cost` regularmente para acompanhar o consumo. O comando mostra tokens de entrada, saída e custo estimado em dólares. Com o plano Max, o uso é contabilizado contra a sua cota mensal.
+:::
+
+### @-mentions: contexto cirúrgico
+
+Ao digitar `@` no campo de prompt (VS Code), você pode referenciar recursos específicos:
+
+- `@arquivo.py` — inclui o conteúdo de um arquivo específico
+- `@pasta/` — inclui a estrutura de uma pasta
+- `@git` — inclui informações do repositório Git (diff, log, branch)
+- `@terminal` — inclui a saída recente do terminal
+- `@web` — permite buscar informações na web
+
+**Princípio:** Seja cirúrgico. Incluir apenas o necessário mantém o contexto limpo, as respostas mais precisas e o custo menor.
+
+### Modos de operação
+
+**Plan Mode:** O agente analisa a tarefa e apresenta um plano detalhado antes de executar qualquer coisa. Você revisa e aprova antes que qualquer arquivo seja modificado. Ideal para refatorações grandes ou tarefas onde um erro seria custoso reverter.
+
+**Auto-Approve Mode:** Suprime as confirmações para ações potencialmente destrutivas. Use apenas quando você já conhece bem o projeto e confia na tarefa.
+
+**Modo Interativo vs. Print:**
+
+| Modo | Comando | Comportamento |
+|------|---------|--------------|
+| Interativo (REPL) | `claude` | Sessão contínua com histórico |
+| Print | `claude -p "pergunta"` | Responde uma vez e encerra — ideal para automações |
+
+---
+
+## CLAUDE.md: a memória persistente do agente
+
+Claude Code não mantém memória entre sessões. Cada vez que você inicia uma nova conversa, o agente parte do zero. O arquivo `CLAUDE.md` resolve esse problema: ele é um documento Markdown na raiz do projeto que o Claude Code lê automaticamente no início de cada sessão.
+
+Pense no `CLAUDE.md` como o briefing que você entrega a um novo assistente no primeiro dia de trabalho.
+
+### O que incluir
+
+Um bom `CLAUDE.md` deve conter:
+
+- **Descrição do projeto** — o que faz e qual o objetivo
+- **Estrutura de diretórios** — onde ficam dados, scripts, saídas
+- **Tecnologias e dependências** — linguagens, pacotes, versões
+- **Convenções de código** — estilo, idioma de variáveis, padrões de nomenclatura
+- **Comandos frequentes** — como rodar, testar, compilar
+- **Regras e restrições** — o que o agente nunca deve fazer
+
+### Exemplo completo para análise econômica
+
+```markdown
+# CLAUDE.md — Projeto Análise IPCA
+
+## Contexto do projeto
+- Análise macroeconômica com dados públicos (BCB, IBGE)
+- Scripts R para coleta, tratamento e visualização
+- Saídas reproduzíveis salvas em `output/`
+
+## Tecnologias
+- Linguagem: R
+- Pacotes: tidyverse, ggplot2, rbcb, sidrar
+- Séries: SGS 433 (IPCA % mensal), 13521 (meta inflação), SIDRA 7060 (grupos)
+- Relatório: Quarto (.qmd)
+
+## Convenções
+- snake_case para funções e variáveis
+- Comentários e textos em português
+- Gráficos com título, subtítulo e fonte
+- Código organizado: coleta → transformação → visualização
+
+## Regras
+- Nunca sobrescrever dados brutos em `data/raw/`
+- Nunca inventar números — toda citação vem dos dados
+- Qualquer coleta que falhar deve registrar erro em `logs/erros.md`
+
+## Saída
+- Relatório principal: `output/ipca_relatorio.qmd`
+```
+
+::: {.callout-note}
+**CLAUDE.md hierárquico:** Você pode ter múltiplos arquivos `CLAUDE.md` em diferentes níveis do projeto. O da raiz se aplica a tudo; arquivos em subpastas adicionam instruções específicas para aquele contexto. Claude Code combina todas as instruções automaticamente.
+:::
+
+---
+
+# PARTE II: Trabalhando com projetos de economia
+
+## Fluxo de trabalho com R e Quarto
+
+Para um economista, o fluxo típico de uma análise reproduzível com Claude Code segue 7 etapas:
+
+1. **Ideação** — definir a pergunta e as fontes de dados
+2. **CLAUDE.md** — criar o briefing do projeto antes de qualquer código
+3. **Prompt inicial** — descrever o projeto inteiro ao agente para ele ter visão global
+4. **Plano** — pedir ao agente que proponha a arquitetura antes de executar
+5. **Execução** — construir coleta, tratamento, visualização e relatório
+6. **Revisão** — iterar sobre os resultados com o agente
+7. **Publicação** — renderizar Quarto e publicar no Posit Connect Cloud ou GitHub Pages
+
+### Estrutura de projeto recomendada
+
+```
+analise-ipca/
+├── CLAUDE.md                 # briefing do projeto
+├── R/
+│   ├── coleta.R              # download de dados
+│   ├── tratamento.R          # limpeza e transformação
+│   └── graficos.R            # visualizações
+├── data/
+│   ├── raw/                  # dados brutos (nunca sobrescrever)
+│   └── processed/            # dados tratados
+├── output/
+│   ├── ipca_relatorio.qmd    # relatório principal
+│   └── figures/              # gráficos exportados
+├── logs/
+│   └── erros.md              # registro de falhas
+└── .gitignore
+```
+
+### Padrões de prompt que funcionam
+
+**Coleta de dados:**
+```
+Estou trabalhando em uma análise do IPCA no Brasil. Usando o pacote rbcb,
+crie um script R que: (1) baixe a série 433 (IPCA % mensal) desde 2000 via
+rbcb::get_series(), (2) salve os dados brutos em data/raw/ipca_mensal.csv,
+(3) registre em logs/coleta.md a data de execução e o número de observações
+baixadas, (4) interrompa e registre o erro em logs/erros.md se a coleta falhar.
+```
+
+**Transformação econômica:**
+```
+A partir de data/raw/ipca_mensal.csv, crie R/tratamento.R que: (1) calcule
+a inflação acumulada em 12 meses usando prod(1 + x/100) - 1 com janela móvel,
+(2) calcule o acumulado no ano, (3) salve em data/processed/ipca_tratado.csv
+com colunas: data, ipca_mensal, acum_12m, acum_ano.
+```
+
+**Visualização:**
+```
+A partir de data/processed/ipca_tratado.csv, crie R/graficos.R com dois
+gráficos em ggplot2: (1) linha da variação mensal com faixas de meta desde 2018,
+(2) linha do acumulado em 12 meses. Use theme_minimal(), paleta de cores
+#1F4E79 e #C00000, título e subtítulo informativos, fonte "BCB/SGS". Salve
+em output/figures/ com ggsave() a 300 dpi.
+```
+
+**Relatório Quarto:**
+```
+Crie output/ipca_relatorio.qmd com: (1) YAML para HTML self-contained com
+tema cosmo, (2) chunk de setup que carrega os dados tratados, (3) três seções:
+panorama mensal, tendência de 12 meses, comparação com meta. Todos os números
+no texto via inline code — nunca hardcode. Inclua os gráficos de output/figures/.
+```
+
+::: {.callout-important}
+**Sobre APIs que mudam:** As APIs do BCB e do IBGE mudam de formato periodicamente. Sempre instrua o agente a registrar erros em vez de silenciar falhas. Inclua no `CLAUDE.md` os códigos exatos das séries que você usa — o modelo pode confundir códigos similares.
+:::
+
+---
+
+## Skills: padronizando e reutilizando seu trabalho
+
+Skills são playbooks reutilizáveis que o Claude Code aprende a acionar automaticamente. Diferente do `CLAUDE.md` (que o modelo sempre lê), skills são lidas apenas quando o modelo decide que são relevantes para a tarefa atual — isso é chamado de *progressive disclosure*.
+
+### Anatomia de uma skill
+
+Uma skill é um arquivo `SKILL.md` com dois componentes:
+
+```markdown
+---
+name: ipca-variacao
+description: >
+  Usar quando o usuário pedir um parágrafo interpretando a
+  variação do IPCA mensal. Requer coluna `ipca_mensal` no
+  dataframe atual.
+---
+
+## Como escrever a variação do IPCA
+
+1. Cite o valor do mês com uma casa decimal
+2. Compare com o mês anterior (acima/abaixo em X p.p.)
+3. Compare com o mesmo mês do ano anterior
+4. Mencione o grupo de maior contribuição se disponível
+5. Não use previsões ou opiniões — apenas o que os dados mostram
+
+## Checklist antes de finalizar
+- [ ] Número bate com a fonte (SGS 433)?
+- [ ] Unidade correta (% mensal, não acumulado)?
+- [ ] Sem vícios de linguagem ("surpreendeu", "disparou")?
+```
+
+A **descrição no frontmatter** é o que o modelo lê para decidir quando acionar a skill. Uma boa descrição tem: trigger preciso, condições de contexto necessárias, e o que a skill entrega.
+
+### Três locais de armazenamento
+
+| Local | Caminho | Escopo |
+|-------|---------|--------|
+| Projeto | `.claude/skills/<nome>/SKILL.md` | Só este projeto |
+| Pessoal | `~/.claude/skills/<nome>/SKILL.md` | Todos os projetos do usuário |
+| Plugin | Gerenciado pelo Claude Desktop | Compartilhado entre máquinas |
+
+### Construção iterativa: da v1 à v3
+
+**Versão 1 — mínima viável:**
+```markdown
+---
+name: paragrafo-ipca
+description: Parágrafo de interpretação do IPCA mensal
+---
+Escreva um parágrafo conciso sobre a variação do IPCA.
+```
+
+**Versão 2 — com regras:**
+```markdown
+---
+name: paragrafo-ipca
+description: Parágrafo de interpretação do IPCA mensal a partir dos dados tratados
+---
+Escreva um parágrafo sobre a variação do IPCA seguindo estas regras:
+- Máximo 4 linhas
+- Cite valor com uma casa decimal
+- Compare com mês anterior e mesmo mês do ano anterior
+- Sem previsões ou opiniões
+- Nunca use: "disparou", "surpreendeu", "preocupante"
+```
+
+**Versão 3 — com exemplo few-shot e trigger preciso:**
+```markdown
+---
+name: paragrafo-ipca
+description: >
+  Usar quando o usuário pedir "escreva o parágrafo do IPCA",
+  "interprete a variação" ou similar. Requer variável `ipca_atual`
+  (variação % mensal) e `ipca_anterior` (mês anterior) no escopo.
+  Entrega: parágrafo de 3-4 linhas em prosa econômica direta.
+---
+
+## Regras
+- Máximo 4 linhas
+- Primeira frase: valor atual e direção (alta/queda)
+- Segunda frase: comparação com mês anterior em p.p.
+- Terceira frase: comparação com mesmo mês do ano anterior
+- Quarta frase (opcional): grupo de maior contribuição
+- Nunca: previsões, "surpreendeu", "disparou", "preocupante"
+
+## Exemplo de saída esperada
+"O IPCA registrou alta de 0,38% em outubro, aceleração de 0,12 p.p.
+em relação ao mês anterior (0,26%). Na comparação com outubro de 2024
+(0,56%), o resultado foi inferior em 0,18 p.p. O grupo Alimentação no
+Domicílio respondeu pela maior contribuição positiva, com 0,11 p.p."
+```
+
+### Comparativo: quando usar cada mecanismo
+
+| Mecanismo | Quando usar | Quando não usar |
+|-----------|-------------|----------------|
+| `CLAUDE.md` | Contexto permanente do projeto — convenções, estrutura, regras | Instruções específicas de uma tarefa |
+| Skill | Padrão recorrente que o modelo deve reconhecer sozinho | Tarefa única ou fluxo muito específico |
+| Subagente | Tarefa isolada com entrada e saída claras, com grande consumo de contexto | Tarefa pequena que o agente principal resolve |
+| MCP | Conexão com serviço externo (Slack, GitHub, Notion) | Dados que já estão em arquivos locais |
+| Hook | Comportamento determinístico em evento específico (log, validação) | Raciocínio que depende do modelo |
+
+---
+
+# PARTE III: Automatizando com times de agentes
+
+## De um assistente para um time
+
+Com um único Claude Code, um prompt gigante tenta cobrir tudo: baixar dados, calcular, escrever, publicar. O contexto enche rápido, cada nova rodada precisa repetir o histórico, e paralelizar é inviável.
+
+Com um time de agentes, cada agente carrega só o que importa para o seu papel, contextos isolados não se contaminam, e tarefas independentes rodam em paralelo.
+
+| Dimensão | Um Claude generalista | Time de agentes |
+|----------|-----------------------|----------------|
+| Prompt | Longo, cobre tudo | Curto, focado no papel |
+| Contexto | Único, enche rápido | Um por agente, isolado |
+| Reuso | Você reexplica toda vez | Arquivos em `.claude/agents/` |
+| Paralelização | Difícil | Natural (ferramenta `Task`) |
+| Custo | Um modelo para tudo | Modelo por etapa (Haiku onde possível) |
+
+### O que é um agente no Claude Code
+
+Um agente é a combinação de quatro elementos em um único arquivo Markdown dentro de `.claude/agents/`:
+
+```markdown
+---
+name: pesquisador-dados
+description: >
+  Baixa séries macro (SGS/BCB) via rbcb e grava CSV padronizado
+  em output/dados/. Acionar sempre que o boletim precisa ser
+  atualizado com dados novos.
+tools: Read, Write, Bash
+model: haiku
+---
+
+Você é um pesquisador de dados macro. Ao receber nomes de séries,
+crie um script R que use rbcb::get_series(), valide se o retorno
+não está vazio, e grave CSV em output/dados/<nome>.csv com
+colunas data (Date) e valor (num).
+
+Se qualquer série falhar, grave em logs/erros.md e pare.
+```
+
+### Três perguntas para definir cada agente
+
+Antes de criar um agente, responda:
+
+1. **O que ele entrega?** — arquivo, tabela, resumo, número, parecer
+2. **De onde vem a entrada?** — pedido do usuário, saída de outro agente, arquivo do repositório
+3. **O que ele NÃO faz?** — o limite é tão importante quanto a função
+
+Sem limite claro, todo agente vira generalista: o revisor começa a reescrever o texto, o redator começa a fazer contas, e o time perde foco.
+
+### Quando criar um agente especialista
+
+Crie um subagente quando a tarefa:
+
+- Se repete — você vai pedir a mesma coisa muitas vezes
+- Tem entrada e saída claras — recebe X, devolve Y
+- Usa um subconjunto de ferramentas — dá para restringir com `tools:`
+- Pode rodar em paralelo com outras tarefas
+- Consome contexto que não precisa voltar ao agente principal
+
+Se a tarefa é única, linear e pequena, deixe o agente principal fazer. Criar subagente custa um arquivo a mais e um prompt a mais para manter. O padrão útil são **equipes de 3 a 6 agentes** cobrindo etapas bem definidas.
+
+### Como o agente principal coordena o time
+
+O agente principal (a sessão que você abre com `claude`) invoca subagentes via ferramenta `Task`, que cria um processo filho com contexto isolado. Os subagentes **não enxergam a conversa principal** — só recebem o objetivo passado pelo agente principal e devolvem um resumo do que fizeram.
+
+Isso é poderoso: um subagente pode consumir 50.000 tokens processando CSVs enormes e devolver ao chefe apenas 500 tokens com o resultado. O agente principal nunca vê o meio do trabalho — só o que importa para coordenar o próximo passo.
+
+### Escolhendo o modelo por etapa
+
+| Modelo | Usar em |
+|--------|---------|
+| Haiku | Coleta bruta, validação de formato, render, commit |
+| Sonnet | Tratamento de dados, análise, revisão, redação |
+| Opus | Síntese executiva, decisões editoriais sensíveis |
+
+Um pipeline com quatro coletores Haiku + um redator Sonnet custa uma fração do mesmo pipeline todo em Opus.
+
+---
+
+## Projetando um time: exemplo do boletim macro semanal
+
+### O problema
+
+Um economista que acompanha a conjuntura brasileira precisa, toda semana, consolidar os principais indicadores: IPCA mais recente, câmbio, Selic, atividade. O alvo é um relatório HTML de uma página, gerado por um único comando.
+
+### Os cinco agentes e seus limites
+
+**1. pesquisador-dados** `model: haiku`
+- Entrega: um CSV por série em `output/dados/`, validado
+- Entrada: lista de séries no `CLAUDE.md`
+- NÃO faz: cálculos, variações, gráficos
+
+**2. analista** `model: sonnet`
+- Entrega: `output/tabelas/resumo.csv` com valor atual, var_mês, var_ano, var_12m
+- Entrada: CSVs do pesquisador
+- NÃO faz: texto narrativo — só o CSV
+
+**3. redator** `model: sonnet`
+- Entrega: `boletim.qmd` com três parágrafos e inline code para todos os números
+- Entrada: `resumo.csv` + data de referência
+- NÃO faz: render, cálculos, previsão econômica própria
+
+**4. revisor** `model: sonnet`
+- Entrega: parecer em `logs/revisao.md` começando com "ok" ou lista de correções
+- Entrada: `boletim.qmd` e `resumo.csv`
+- NÃO faz: editar o texto — só aponta. O redator corrige.
+
+**5. publicador** `model: haiku`
+- Entrega: `boletim.html` renderizado + commit datado
+- Entrada: `boletim.qmd` aprovado e `logs/revisao.md` com "ok"
+- NÃO faz: publicar sem aprovação do revisor
+
+### Permissões: `.claude/settings.json`
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(Rscript:*)", "Bash(quarto:*)",
+      "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git status:*)", "Bash(git log:*)",
+      "Read(**)", "Write(**)", "Edit(**)",
+      "WebFetch"
+    ],
+    "ask": ["Bash(git push:*)", "Bash(gh:*)"],
+    "deny": ["Bash(rm:*)", "Bash(sudo:*)", "Bash(curl:*)"]
+  }
+}
+```
+
+::: {.callout-warning}
+**Atenção com o modo `ask` em automações:** O modo `ask` para a execução e espera uma resposta humana. Em tarefas agendadas via cron ou GitHub Actions, isso trava o pipeline indefinidamente. Antes de agendar, decida se você move `git push` para `allow` (confiando no revisor) ou mantém `ask` e revisa os commits manualmente.
+:::
+
+### Ciclo redator-checador: como limitar loops
+
+O ciclo entre redator e revisor é poderoso mas pode entrar em loop se o revisor sempre encontra problemas e o redator sempre produz texto que não passa. A solução é:
+
+1. Definir máximo de 2 ciclos no comando-raiz
+2. Após 2 ciclos sem "ok", parar e pedir intervenção humana
+3. Cada falha do revisor deve incluir o trecho exato problemático + motivo + sugestão — sem isso, o redator não tem informação suficiente para corrigir
+
+### Hook de observabilidade
+
+Adicione ao `settings.json` um hook que registra cada invocação de subagente:
+
+```json
+"hooks": {
+  "PostToolUse": [{
+    "matcher": "Task",
+    "hooks": [{
+      "type": "command",
+      "command": "jq -c '{ts: now, agent: .tool_input.subagent_type, prompt: .tool_input.prompt}' >> logs/execucao.jsonl"
+    }]
+  }]
+}
+```
+
+Após alguns dias de uso, `logs/execucao.jsonl` dá uma visão clara de quem trabalhou, quando e com qual instrução — fundamental para auditar e melhorar os prompts.
+
+### Agendando o time com cron
+
+```bash
+# crontab -e — toda segunda, 7h BRT
+0 7 * * 1 cd ~/boletim-macro && \
+  claude -p "/gerar-boletim" \
+  --allowedTools Bash,Read,Write,Edit,Task \
+  >> logs/cron.log 2>&1
+```
+
+---
+
+## MCP: conectando o Claude ao mundo externo
+
+Até aqui, todo o trabalho acontece dentro do projeto local. Em algum momento o trabalho transborda essa caixa: os dados estão numa planilha do Google Drive que a equipe atualiza, a discussão sobre o relatório está numa thread do Slack, o ticket do bug é uma issue no GitHub.
+
+### O problema N×N de integrações
+
+Antes do MCP, cada ferramenta que queria integrar com Claude precisava reimplementar o conector do zero. Três sistemas que conversam entre si já exigem três pares de conectores; vinte sistemas produzem 190 pares possíveis. Cada um com seus bugs, sua autenticação própria e seus campos com nomes diferentes.
+
+### O que MCP resolve
+
+O Model Context Protocol (lançado pela Anthropic em novembro de 2024) define um padrão comum: um serviço (Notion, GitHub, Drive) implementa **uma vez** um servidor MCP. Qualquer LLM compatível pode usar aquele servidor sem código específico.
+
+A analogia é o USB: antes dele, cada periférico vinha com seu cabo proprietário. Quando o USB pegou, virou conector único. O MCP cumpre esse papel para LLMs.
+
+### Os três papéis do protocolo
+
+- **Host:** o aplicativo que você usa — Claude Desktop, Claude Code, Cursor
+- **Cliente MCP:** componente dentro do host que fala o protocolo
+- **Servidor MCP:** o programa que expõe as capacidades de um serviço externo
+
+### O que um servidor MCP oferece
+
+- **Tools (ferramentas):** ações que o modelo pode executar — criar issue, mandar mensagem no Slack, ler célula de planilha, rodar query no banco
+- **Resources (recursos):** conteúdo que o modelo pode ler como contexto — texto de documento, resultado de consulta
+- **Prompts:** modelos de instrução prontos que o servidor sugere
+
+Para quem está começando, **tools** é o conceito principal.
+
+### Onde os servidores rodam
+
+**Local (stdio):** O servidor é um processo que roda na sua máquina. Serve para acessar coisas locais: sistema de arquivos, banco local, scripts seus. Roda no seu computador, usa suas credenciais.
+
+**Remoto (HTTP):** O servidor está hospedado pelo próprio provedor do serviço. Você só cola a URL e autoriza via OAuth. A maioria dos grandes serviços (Notion, GitHub, Linear, Asana) já oferece versão remota.
+
+### Instalando um servidor MCP no Claude Code
+
+```bash
+# Servidor remoto (HTTP)
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# Servidor remoto com escopo de usuário (todos os projetos)
+claude mcp add --scope user --transport http github https://api.githubcopilot.com/mcp
+
+# Servidor local (stdio) — sistema de arquivos
+claude mcp add filesystem -- npx -y @modelcontextprotocol/server-filesystem /caminho/da/pasta
+```
+
+### O arquivo `.mcp.json` para projetos compartilhados
+
+Quando você usa `--scope project`, o Claude Code cria `.mcp.json` na raiz do repositório:
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "transport": "http",
+      "url": "https://api.githubcopilot.com/mcp"
+    }
+  }
+}
+```
+
+O `.mcp.json` é seguro para commitar — ele só descreve URLs e nomes, sem credenciais. As autorizações OAuth ficam por usuário.
+
+::: {.callout-warning}
+**Nunca coloque tokens de API no `.mcp.json`.** Servidores que dependem de chave própria oferecem variáveis de ambiente ou prompt na primeira execução.
+:::
+
+### Quando MCP vale a pena (e quando não)
+
+| Faz sentido usar MCP quando... | É exagero quando... |
+|--------------------------------|---------------------|
+| Você precisa de dado vivo de um serviço externo | O dado já está num CSV ou arquivo do projeto |
+| A tarefa exige ação no mundo (criar PR, mandar mensagem) | Você quer que o Claude só explique código ou faça refactor local |
+| A integração será reutilizada em vários projetos | É uma consulta única que você faz uma vez |
+| Há servidor oficial mantido pelo provedor | Você teria que escrever o servidor do zero com ganho marginal |
+
+Para fluxos de análise dentro de um projeto local — ler CSVs, rodar R, gerar Quarto, fazer commits — o Claude Code já entrega tudo nativamente. MCP entra quando o trabalho cruza a fronteira do projeto e envolve outras pessoas, outros sistemas e outros dados.
+
+### Cuidados práticos de segurança
+
+1. **Comece pelos servidores oficiais.** Notion, GitHub, Linear e Asana têm servidores mantidos pelos próprios provedores com OAuth nativo. Servidores de terceiros exigem que você confie no autor — leia o código antes de instalar.
+
+2. **Use escopos mínimos no OAuth.** Prefira permissões só de leitura ao experimentar. Suba para escrita quando precisar.
+
+3. **Confirme a primeira chamada de cada ferramenta.** O Claude Code mostra exatamente o que será enviado ao servidor antes de executar — vale ler nas primeiras invocações.
+
+4. **Revogue acesso quando trocar de máquina ou sair de um time.** O token continua válido até você apagar no painel do serviço.
+
+::: {.callout-note}
+MCP é um protocolo aberto lançado em novembro de 2024 — ainda jovem e evoluindo rápido. Quando algo não funciona como descrito, verifique a documentação do servidor específico antes de procurar bug no Claude.
+:::
+
+---
+
+## Routines: o agente trabalhando sem você
+
+Uma Routine é uma configuração salva do Claude Code: um prompt, um repositório e um conjunto de conectores, empacotados uma vez e executados automaticamente na infraestrutura da Anthropic. A rotina segue funcionando mesmo com seu notebook desligado.
+
+### Escolhendo a ferramenta certa para automação
+
+| Alternativa | Agenda? | Lê texto livre? | Precisa de você? |
+|-------------|---------|-----------------|------------------|
+| Script + cron | ✅ | ❌ | Só se quebrar |
+| Chatbot no navegador | ❌ | ✅ | Presente todo dia |
+| n8n / Zapier + LLM | ✅ | ✅ | Configurar visualmente |
+| Routine (Claude Code) | ✅ | ✅ | Revisar PR depois |
+
+**Quando usar cada um:**
+
+- **Script + cron:** dado estruturado, API bem formada, lógica determinística. Imbatível em velocidade e custo.
+- **Chatbot:** trabalho pontual, interpretação de texto livre, sem necessidade de agendamento.
+- **n8n/Zapier:** orquestração de serviços externos sem código próprio.
+- **Routine:** quando o output precisa virar arquivo versionado no Git e o agente precisa raciocinar sobre conteúdo não estruturado.
+
+### Classificando tarefas antes de automatizar
+
+| Regime | Quando se aplica | Ferramenta |
+|--------|-----------------|------------|
+| Código puro | Dado estruturado, regra fixa, sem texto livre | Script Python/R + cron |
+| LLM puro | Resumir documento, classificar texto, redigir e-mail | Chatbot ou nó Anthropic no n8n |
+| Híbrido (Routine) | Interpretar texto + rodar análise + versionar resultado | GitHub Action (determinístico) + Routine (LLM) |
+
+### Anatomia de uma Routine
+
+Toda Routine se define por quatro decisões:
+
+1. **Ponto de partida:** prompt puro, prompt + repositório existente, ou prompt + repositório que a Routine vai criar
+2. **Conectores:** GitHub (obrigatório quando há repositório), MCPs (Slack, Notion, Drive)
+3. **Trigger:** schedule (cron), API (POST autenticado), GitHub event
+4. **Entrega:** PR no GitHub, e-mail, Slack, Notion
+
+### Três formas de criar uma Routine
+
+- `claude.ai/code/routines` — formulário completo com suporte a todos os triggers
+- Aplicativo desktop — seção Routines na barra lateral
+- CLI com `/schedule` dentro da pasta do projeto (apenas trigger do tipo schedule)
+
+### Como os triggers funcionam
+
+| Trigger | Quando dispara | Caso típico |
+|---------|---------------|-------------|
+| Schedule | Cron recorrente ou data única | Resumo do Focus toda segunda às 10h |
+| API | POST autenticado num endpoint da Routine | Alerta do Sentry chama Claude para investigar |
+| GitHub event | Eventos do repositório (PR aberto, release publicada) | Revisão automática de PR com checklist |
+
+### Projeto completo: resumo semanal do Focus
+
+O Focus é a pesquisa semanal do BCB com expectativas de mercado para IPCA, PIB, Selic e câmbio. Publicado toda segunda às 8h30 BRT.
+
+**Por que duas peças, não uma:**
+
+A primeira tentativa intuitiva é colocar tudo dentro da Routine: baixar o PDF, extrair o texto e resumir. Não funciona — **o BCB bloqueia IPs de cloud** (AWS, GCP, infraestrutura da Anthropic). A saída é separar o pipeline:
+
+```
+GitHub Action (9h15 BRT, IPs do GitHub que o BCB não bloqueia)
+→ baixar_focus.py: encontra a URL do PDF da semana, baixa, valida
+→ extrair_texto.py: extrai texto com pdfplumber, salva como .txt
+→ commit: data/focus_AAAA-MM-DD.{pdf,txt} em main
+
+Routine do Claude Code (10h BRT, 45 min depois)
+→ lê o .txt mais recente
+→ gera resumo executivo + três principais revisões
+→ abre PR na branch claude/focus-AAAA-MM-DD
+```
+
+A folga de 45 minutos garante que o `.txt` já esteja em `main` quando a Routine começar.
+
+**Script de download (roda no Action, não na Routine):**
+
+```python
+from datetime import date, timedelta
+from pathlib import Path
+import requests
+
+URL = "https://www.bcb.gov.br/content/focus/focus/R{ymd}.pdf"
+UA  = "Mozilla/5.0 (compatible; routine-focus/1.0)"
+
+def ultima_segunda(hoje: date) -> date:
+    # weekday() or 7 garante que segunda retorna a segunda ANTERIOR,
+    # não o próprio dia (antes do PDF estar publicado)
+    return hoje - timedelta(days=(hoje.weekday() or 7))
+
+def baixar(dest: Path) -> tuple[date, Path]:
+    dest.mkdir(parents=True, exist_ok=True)
+    candidato = ultima_segunda(date.today())
+    for _ in range(7):
+        ymd = candidato.strftime("%Y%m%d")
+        url = URL.format(ymd=ymd)
+        resp = requests.get(url, headers={"User-Agent": UA}, timeout=30)
+        if resp.status_code == 200 and resp.content[:4] == b"%PDF":
+            arq = dest / f"focus_{candidato}.pdf"
+            arq.write_bytes(resp.content)
+            return candidato, arq
+        candidato -= timedelta(days=1)
+    raise RuntimeError("Nenhum PDF do Focus nos últimos 7 dias.")
+```
+
+**Prompt da Routine (o que o agente executa toda segunda):**
+
+```markdown
+## Passos
+
+1. **Localize o `.txt` mais recente.** Liste `data/focus_*.txt` e pegue o de data
+   mais alta. Se não houver nenhum, pare — o Action não rodou.
+
+2. **Verifique frescor.** Extraia a data do nome e compare com hoje:
+   - 0 a 3 dias: está fresco, siga.
+   - 4 a 7 dias: marque o PR como `[REVISAR]`.
+   - Mais de 7 dias: pare sem abrir PR.
+
+3. **Sanity check.** Confirme: pelo menos 2.000 caracteres e presença de
+   `IPCA`, `Selic`, `PIB`. Se falhar, pare — o layout do PDF pode ter mudado.
+
+4. **Gere o markdown** com:
+   - Resumo executivo em até 200 palavras em prosa corrida
+   - Três principais revisões em bullets: `- **Variável (ano):** anterior → atual. *Hipótese:* motivo.`
+   - Nunca invente número. Se não houver hipótese sólida: "sem hipótese clara — pode ser ruído amostral"
+
+5. **Salve** em `output/focus/focus_AAAA-MM-DD.md`
+
+6. **Abra PR** na branch `claude/focus-AAAA-MM-DD`
+```
+
+::: {.callout-tip}
+**O sanity check nos passos 2 e 3 é defensive programming essencial** para agentes desassistidos. Sem ele, o agente pode tentar resumir um PDF de outra semana ou um HTML de erro, gerando lixo de forma silenciosa.
+:::
+
+---
+
+# PARTE IV: Operação em produção
+
+## Custos: o que os tutoriais não contam
+
+Nenhum dos artigos da série estima custos reais. Esta seção preenche essa lacuna com ordens de grandeza úteis para tomada de decisão.
+
+### Referência de preços (verifique sempre em console.anthropic.com)
+
+| Modelo | Input (por 1M tokens) | Output (por 1M tokens) |
+|--------|----------------------|------------------------|
+| Claude Haiku | ~$0,25 | ~$1,25 |
+| Claude Sonnet | ~$3,00 | ~$15,00 |
+| Claude Opus | ~$15,00 | ~$75,00 |
+
+*Preços indicativos — consulte a página oficial para valores atuais.*
+
+### Estimativas por cenário
+
+**Script simples (coleta + gráfico):**
+- Prompt inicial com contexto do projeto: ~2.000 tokens input
+- Geração do script: ~1.000 tokens output
+- **Custo em Sonnet: ~$0,02 — praticamente gratuito**
+
+**Sessão de debugging (30 min, arquivos abertos):**
+- Input acumulado: ~30.000 tokens
+- Output acumulado: ~10.000 tokens
+- **Custo em Sonnet: ~$0,24**
+
+**Pipeline de boletim macro (5 agentes):**
+- pesquisador (Haiku): ~5.000 tokens input + 2.000 output → ~$0,004
+- analista (Sonnet): ~10.000 input + 3.000 output → ~$0,075
+- redator (Sonnet): ~8.000 input + 4.000 output → ~$0,084
+- revisor (Sonnet): ~10.000 input + 2.000 output → ~$0,060
+- publicador (Haiku): ~3.000 input + 1.000 output → ~$0,002
+- **Custo total por rodada: ~$0,23 — menos de R$1,30 por boletim semanal**
+
+**Resumo do Focus com Routine (Sonnet):**
+- Leitura do `.txt` (~15.000 caracteres = ~5.000 tokens) + geração do resumo
+- **Custo por rodada: ~$0,10**
+
+**Conclusão prática:** Para economistas usando Claude Code em análises e pipelines de dados, o custo mensal raramente ultrapassa $20–50 com uso regular — muito abaixo do valor do tempo economizado. A variável de custo relevante é o modelo escolhido, não o volume de uso.
+
+### Planos vs. API
+
+| Opção | Custo | Quando usar |
+|-------|-------|-------------|
+| Plano Pro/Max | Mensalidade fixa | Uso interativo diário, sessões longas |
+| Créditos de API | Pay-per-use | Pipelines automatizados, cron, GitHub Actions |
+
+Para Routines e agentes automatizados, créditos de API são mais previsíveis — você controla o gasto por rodada.
+
+---
+
+## Tratamento de falhas: o que acontece quando algo quebra
+
+Pipelines de agentes falham. A questão não é se, mas quando — e se você tem visibilidade e recuperação preparadas.
+
+### Categorias de falha
+
+**Falha de fonte de dados:**
+- API do BCB fora do ar ou retornando erro 5xx
+- Série do SGS com código errado ou descontinuada
+- Formato do PDF do Focus mudou (layout)
+- *Solução:* Registro explícito em `logs/erros.md` + parada imediata do pipeline
+
+**Falha de agente:**
+- Subagente inventa número (alucinação)
+- Redator cita valor que não está em `resumo.csv`
+- Ciclo revisor-redator não converge
+- *Solução:* Revisor com critérios explícitos + cap de ciclos + intervenção humana
+
+**Falha de infraestrutura:**
+- Cron dispara mas o repositório está em estado inconsistente
+- Action do GitHub não commitou o `.txt` antes da Routine rodar
+- Token OAuth expirou durante execução longa
+- *Solução:* Sanity checks no início de cada etapa + folga de tempo entre peças do pipeline
+
+### Padrão de registro de erros
+
+Todo agente deve seguir o mesmo padrão de log:
+
+```markdown
+# logs/erros.md
+
+## 2026-06-09 07:32 — pesquisador-dados
+**Falha:** série SGS 433 retornou erro 404
+**Ação:** pipeline interrompido, nenhum CSV gerado
+**Próximo passo:** verificar se o código da série mudou em bcb.gov.br/sgspub
+```
+
+### Notificações: saiba quando algo quebrou
+
+Uma Routine que trabalha sem supervisão precisa deixar rastro ativo — não apenas logs passivos. Configure:
+
+1. **E-mail quando o GitHub Action falhar:** `Settings → Notifications` no repositório
+2. **Hook Stop no Claude Code** que envia resumo da rodada por e-mail ou Slack:
+
+```json
+"hooks": {
+  "Stop": [{
+    "hooks": [{
+      "type": "command",
+      "command": "echo 'Boletim gerado em $(date)' | mail -s 'Focus OK' voce@embrapa.br"
+    }]
+  }]
+}
+```
+
+Sem notificação ativa, você só descobre o problema quando alguém pergunta "por que o boletim não saiu?".
+
+### Estratégia de retry
+
+Para pipelines automatizados, defina explicitamente a política de retry no prompt da Routine ou do agente-chefe:
+
+```markdown
+## Regras de retry
+- Falha de coleta: tentar 3 vezes com intervalo de 30s antes de parar
+- Falha de parsing: parar imediatamente e registrar em logs/erros.md
+- Falha de ciclo redator-revisor: máximo 2 ciclos, depois pedir intervenção humana
+- Falha de autenticação: parar e notificar — não tentar novamente
+```
+
+---
+
+## Trabalho em equipe: o que muda quando somos vários
+
+Todos os exemplos da série são para um único usuário. Na prática, times de economistas precisam compartilhar a mesma infraestrutura de agentes.
+
+### Versionando prompts como código
+
+Trate os arquivos de configuração de agentes como código de produção:
+
+```
+.claude/
+├── agents/           # submetido ao Git
+│   ├── pesquisador-dados.md
+│   ├── analista.md
+│   └── redator.md
+├── commands/         # submetido ao Git
+│   └── gerar-boletim.md
+├── settings.json     # submetido ao Git
+└── skills/           # submetido ao Git
+    └── paragrafo-ipca/
+        └── SKILL.md
+CLAUDE.md             # submetido ao Git
+.mcp.json             # submetido ao Git (sem credenciais)
+```
+
+**Tudo acima entra no Git.** Mudanças em prompts passam por pull request — com revisão humana, histórico de alterações e possibilidade de reverter.
+
+### Gerenciando credenciais em equipe
+
+Cada membro do time tem suas próprias credenciais OAuth por usuário — nunca compartilhadas. Para APIs com chave própria (não OAuth):
+
+```bash
+# .env (nunca commitar — adicione ao .gitignore)
+BCB_API_KEY=xxx
+ANTHROPIC_API_KEY=xxx
+
+# Referencie no CLAUDE.md:
+# Credenciais via variáveis de ambiente — nunca hardcode
+```
+
+Para GitHub Actions, use `Settings → Secrets → Actions` no repositório.
+
+### Governança de prompts
+
+Para equipes maiores, defina:
+
+1. **Quem pode alterar o prompt de produção?** (recomendado: só via PR aprovado)
+2. **Como testar um prompt antes de ir para produção?** (branch de staging + rodada manual)
+3. **Como documentar mudanças?** (changelog no `CLAUDE.md` ou em `docs/`)
+
+---
+
+## Evals: como saber se o output é bom
+
+A série original não discute avaliação de qualidade. Esta é a lacuna mais importante para quem usa Claude Code em análises que vão para publicação.
+
+### O que avaliar
+
+Para relatórios econômicos automatizados, três dimensões importam:
+
+1. **Correção factual:** Os números citados batem com a fonte? (verificável automaticamente)
+2. **Qualidade narrativa:** O texto é fluente, preciso e sem vícios? (requer julgamento humano)
+3. **Aderência às regras:** O agente seguiu todas as restrições do `CLAUDE.md`? (parcialmente automatizável)
+
+### Eval automático: o revisor como checador de regras
+
+O agente revisor já faz uma forma de eval automatizado. Para torná-lo mais sistemático:
+
+```markdown
+# Prompt do revisor — com checklist explícita
+
+Para cada item abaixo, responda SIM ou NÃO com evidência:
+
+1. [ ] Todos os números citados estão em resumo.csv?
+2. [ ] Unidades estão corretas (% mensal, não acumulado)?
+3. [ ] Nenhum dos vícios proibidos aparece no texto?
+4. [ ] O texto tem no máximo 4 linhas por seção?
+5. [ ] Há pelo menos uma comparação temporal (mês anterior ou mesmo mês ano anterior)?
+
+Se qualquer item for NÃO, o parecer começa com "recusado" + lista de correções.
+Se todos forem SIM, o parecer começa com "ok".
+```
+
+### Eval humano: o merge como aprovação editorial
+
+Para pipelines que produzem conteúdo publicável, o fluxo PR → revisão humana → merge é o eval final. Trate o merge como assinatura editorial — ele significa que você leu, verificou os números e aprova o conteúdo.
+
+### Acompanhando qualidade ao longo do tempo
+
+Depois de algumas semanas, analise `logs/revisao.md` historicamente:
+
+- Quantas rodadas precisaram de ciclo redator-revisor?
+- Quais são os erros mais frequentes do redator?
+- O revisor está pedindo correções demais (prompt muito restritivo) ou de menos (prompt frouxo)?
+
+Cada padrão observado deve virar uma linha nova no prompt do agente problemático.
+
+---
+
+# PARTE V: Referência rápida
+
+## Tabela de decisão: qual mecanismo usar
+
+| Situação | Mecanismo recomendado |
+|----------|----------------------|
+| Contexto permanente do projeto | `CLAUDE.md` |
+| Tarefa pontual e simples | Prompt direto no chat |
+| Padrão recorrente que o modelo deve reconhecer | Skill |
+| Etapa isolada com grande consumo de contexto | Subagente |
+| Ação sobre serviço externo (Slack, GitHub, Notion) | MCP |
+| Pipeline repetitivo que roda sem você | Routine |
+| Comportamento determinístico em evento específico | Hook |
+| Atalho que você dispara manualmente | Slash command customizado |
+
+## Slash commands de referência rápida
+
+| Comando | Função |
+|---------|--------|
+| `/help` | Ajuda e lista de comandos |
+| `/compact` | Compacta histórico |
+| `/clear` | Reinicia contexto |
+| `/cost` | Custo acumulado da sessão |
+| `/usage` | Estatísticas de uso do mês |
+| `/model` | Alterna modelo |
+| `/memory` | Edita `CLAUDE.md` |
+| `/permissions` | Gerencia permissões |
+| `/mcp` | Painel de servidores MCP |
+| `/schedule` | Cria Routine agendada |
+| `/init` | Gera `CLAUDE.md` inicial |
+| `/nome` | Executa slash command customizado |
+
+## Checklist para colocar um pipeline em produção
+
+- [ ] Pipeline testado manualmente pelo menos 3 vezes com sucesso
+- [ ] Todos os cenários de falha mapeados no prompt
+- [ ] Registro de erros configurado em `logs/erros.md`
+- [ ] Notificação ativa quando algo quebrar
+- [ ] Credenciais em variáveis de ambiente, nunca hardcode
+- [ ] Modo `ask` removido de comandos que rodam sem supervisão
+- [ ] Custo por rodada estimado e aceito
+- [ ] Alguém responsável por revisar os outputs periodicamente
+
+## Pitfalls das APIs brasileiras
+
+| API | Pitfall conhecido |
+|-----|------------------|
+| SGS/BCB (série 433 e outras) | Códigos de série mudam sem aviso — confirme em bcb.gov.br/sgspub |
+| API Olinda/Focus | Requer encoding `%20` em nomes de variáveis com espaço na URL |
+| API de Atas do BCB | Parâmetro `filtro=` é obrigatório, mesmo quando vazio |
+| SIDRA/IBGE | Tabelas 7060 e 1737 têm estrutura diferente — checar se o endpoint retornou JSON ou HTML de erro |
+| PDF do Focus | BCB bloqueia IPs de cloud — baixar via GitHub Action (IPs do GitHub não são bloqueados) |
+
+---
+
+*Guia consolidado e aprofundado a partir dos artigos originais da Análise Macro (série Claude Code, abril–junho de 2026). Mantido como documento vivo — atualize conforme o Claude Code evolui.*
