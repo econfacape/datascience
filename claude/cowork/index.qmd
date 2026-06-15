@@ -1,0 +1,641 @@
+---
+title: "Claude Cowork: Guia Completo"
+subtitle: "O coworker de IA para profissionais de conhecimento"
+author: "Consolidado com base na documentação Anthropic e experiência prática"
+date: today
+lang: pt-BR
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-title: "Sumário"
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-copy: true
+    smooth-scroll: true
+    self-contained: true
+    highlight-style: github
+    fig-align: center
+    callout-appearance: simple
+execute:
+  eval: false
+  echo: true
+---
+
+# Prefácio {.unnumbered}
+
+Este guia apresenta o Claude Cowork — o que é, como funciona, o que consegue fazer e onde tem limites. Está escrito para profissionais de conhecimento (economistas, analistas, pesquisadores, equipes de operações) que querem ir além do chat e começar a **delegar trabalho de verdade** para a IA.
+
+A principal fonte é a documentação oficial da Anthropic, complementada por experiência direta de uso da ferramenta.
+
+---
+
+# PARTE I: O que é o Cowork e onde ele se encaixa
+
+## A diferença fundamental: chat versus trabalho
+
+A maioria das ferramentas de IA é construída em torno do **prompt** — você faz uma pergunta, recebe uma resposta, copia e usa. O Claude Cowork é construído em torno do **resultado**: você descreve o que quer que aconteça, e o Cowork cuida das etapas.
+
+A definição oficial da Anthropic é direta:
+
+> *"Claude Cowork executa trabalho de conhecimento multietapas em nome do usuário, incluindo síntese de pesquisa, preparação de documentos e gerenciamento de arquivos. Não é um assistente de chat."*
+
+A distinção importa porque muda a forma de trabalhar. No chat, você coordena cada passo. No Cowork, você entrega o objetivo e recebe o entregável.
+
+### O que o Cowork consegue fazer que o chat não consegue
+
+| Capacidade | Chat (claude.ai) | Cowork |
+|-----------|-----------------|--------|
+| Acesso a arquivos locais | Não (só upload manual) | Sim — lê, cria e edita na pasta autorizada |
+| Tarefas recorrentes | Não | Sim — agenda e executa sem você presente |
+| Trabalho em múltiplos arquivos | Limitado | Sim — percorre pastas, cruza fontes |
+| Controle de aplicativos | Não | Sim (computer use / Dispatch) |
+| Conectores com serviços externos | Não | Sim (MCP: Slack, Gmail, Notion, Drive…) |
+| Artifacts que atualizam sozinhos | Não | Sim (Live Artifacts) |
+| Instruções persistentes por projeto | Não | Sim (CLAUDE.md) |
+
+### O ecossistema Claude em três produtos
+
+É fácil confundir os três produtos da Anthropic que aparecem juntos:
+
+- **Claude** — o modelo de linguagem em si (Opus, Sonnet, Haiku). A inteligência base.
+- **Claude Code** — ferramenta de linha de comando para desenvolvedores. Opera no terminal, escreve e executa código, integra com Git.
+- **Claude Cowork** — aba dentro do Claude Desktop para trabalho de conhecimento não técnico. Opera com arquivos locais, documentos, agendamentos, conectores.
+
+Os três usam o mesmo modelo, mas têm superfícies e públicos diferentes. **Cowork não requer nenhum conhecimento técnico.**
+
+### Para quem é o Cowork
+
+O Cowork foi criado porque equipes não técnicas da própria Anthropic (Marketing, Dados, Operações) estavam abandonando o chat e adotando o Claude Code — atraídas pela capacidade de executar trabalho multietapas. O Cowork surgiu como a resposta: **o mesmo poder, com uma experiência simplificada, projetada para onde o trabalho de conhecimento acontece de fato.**
+
+Perfis que se beneficiam mais:
+
+- Pesquisadores e analistas que trabalham com grandes volumes de documentos
+- Economistas que geram relatórios periódicos a partir de dados públicos
+- Equipes de operações que têm rotinas repetitivas de alto esforço
+- Profissionais jurídicos que revisam contratos e preparam minutas
+- Equipes de marketing que produzem e adaptam conteúdo sistematicamente
+
+O denominador comum: **trabalho com documentos, dados e arquivos que é demorado mas não tecnicamente complexo.**
+
+---
+
+## Linha do tempo: de beta a produto
+
+| Data | Marco |
+|------|-------|
+| Janeiro 2026 | Beta público no macOS (~15% dos usuários Pro) |
+| Fevereiro 2026 | Beta público no Windows |
+| 9 de abril 2026 | **GA — disponível em todos os planos pagos** |
+| 21 de abril 2026 | Live Artifacts chegam |
+| 7 de maio 2026 | Add-ins M365 (Excel, PowerPoint, Word) em GA |
+| 11 de maio 2026 | Managed Agents anunciado (multi-agente, webhooks) |
+| 12 de maio 2026 | Bundle Legal lança (12 plugins, 20+ conectores) |
+| 13 de maio 2026 | Bundle Small Business lança |
+| 18 de maio 2026 | Bundle Marketing Ops lança |
+
+O Cowork está em **research preview** — evolui rápido, e limites e comportamentos podem mudar.
+
+---
+
+# PARTE II: Instalação e primeiros passos
+
+## Como acessar o Cowork
+
+O Cowork não é um produto separado — é uma aba dentro do **Claude Desktop**. Para acessar:
+
+1. Baixe o Claude Desktop em [claude.com/download](https://claude.com/download)
+2. Instale no macOS ou Windows (Linux ainda não disponível)
+3. Faça login com sua conta Anthropic (plano pago necessário)
+4. Na interface, você verá três abas no topo: **Chat**, **Cowork**, **Code**
+
+::: {.callout-important}
+**Plano gratuito não inclui Cowork.** É necessário plano Pro ($20/mês), Team ($25/seat) ou Enterprise. Se você tem acesso ao claude.ai pago, o Cowork já está disponível no app desktop — sem custo adicional.
+:::
+
+## A interface em três abas
+
+**Chat** — a conversa tradicional. Você pergunta, o modelo responde. Sem acesso ao sistema de arquivos local, sem agendamentos.
+
+**Cowork** — a aba nova. Aqui o Claude tem acesso à pasta que você autorizar, pode criar arquivos, executar tarefas agendadas e usar conectores MCP. É onde este guia vive.
+
+**Code** — a interface gráfica do Claude Code, voltada para desenvolvedores. Tem acesso ao terminal, executa código, integra com Git.
+
+## Autorizando uma pasta
+
+A primeira coisa que o Cowork pede é permissão para uma pasta. Esse é o modelo de segurança central:
+
+- O Cowork **não** tem acesso ao seu disco inteiro
+- Você autoriza pasta por pasta
+- Pode revogar o acesso a qualquer momento em Configurações
+- Dentro da pasta autorizada, o Cowork lê, cria e edita arquivos livremente
+
+::: {.callout-tip}
+**Estratégia recomendada:** Crie uma pasta de projeto específica para cada trabalho (ex: `~/Documents/analise-ipca/`) em vez de autorizar pastas amplas como `~/Documents/`. Isso mantém o escopo claro e evita que o Cowork acesse arquivos não relacionados.
+:::
+
+## O espaço de trabalho
+
+Uma vez que a pasta está autorizada, três coisas mudam:
+
+**1. Arquivos viram contexto automático.** Coloque um PDF na pasta, peça um resumo — sem precisar fazer upload. Coloque um CSV, peça uma análise — o Cowork lê diretamente.
+
+**2. Instruções ficam persistentes.** Crie um arquivo `CLAUDE.md` na raiz da pasta e o Cowork lê esse arquivo no início de cada sessão. Suas preferências, convenções e regras ficam ativas sem você repetir.
+
+**3. Tarefas sobrevivem entre sessões.** "Toda segunda às 9h, gere o relatório semanal e salve nesta pasta." Feche o app, vá para uma reunião — quando você abrir segunda-feira, o relatório estará lá.
+
+---
+
+# PARTE III: CLAUDE.md — as instruções persistentes
+
+O `CLAUDE.md` é o mecanismo mais importante para quem usa o Cowork com frequência. Sem ele, você repete o contexto do projeto toda vez. Com ele, o Cowork começa cada sessão já sabendo o que precisa saber.
+
+## O que é e onde fica
+
+`CLAUDE.md` é um arquivo de texto em formato Markdown colocado na raiz da pasta autorizada. O Cowork lê esse arquivo automaticamente ao iniciar qualquer sessão naquela pasta.
+
+Estrutura hierárquica: se você tiver um `CLAUDE.md` na raiz e outro em uma subpasta, o Cowork usa os dois — o da raiz como contexto global, o da subpasta como instrução específica para aquele contexto.
+
+## O que incluir
+
+Um bom `CLAUDE.md` contém:
+
+- **Objetivo do projeto** — para que serve e o que deve produzir
+- **Fontes de dados** — onde estão os arquivos, qual formato, qual convenção de nomes
+- **Convenções** — idioma, estilo, nomenclatura de arquivos
+- **Regras inegociáveis** — o que o Cowork nunca deve fazer (sobrescrever dados brutos, inventar números, etc.)
+- **Saídas esperadas** — onde os resultados devem ser salvos, em que formato
+
+## Exemplo para um projeto de análise econômica
+
+```markdown
+# CLAUDE.md — Análise Conjuntural Embrapa
+
+## Objetivo
+Relatório mensal de conjuntura com indicadores macroeconômicos
+relevantes para o setor agropecuário brasileiro.
+
+## Fontes de dados
+- IPCA: dados/ipca_mensal.csv (coluna: data, variacao_pct)
+- Câmbio: dados/cambio_diario.csv (coluna: data, brl_usd)
+- Selic: dados/selic_meta.csv (coluna: data, taxa_pct)
+- Exportações do agro: dados/exportacoes_agro.csv
+
+## Convenções
+- Idioma: português do Brasil
+- Datas: formato YYYY-MM-DD
+- Arquivos de saída: output/relatorio_YYYY-MM.md
+- Números com separador decimal vírgula nos textos,
+  ponto nos dados
+
+## Regras
+- Nunca sobrescrever arquivos em dados/ — são fontes primárias
+- Nunca inventar número — toda citação deve vir dos CSVs
+- Se qualquer dado estiver desatualizado (> 45 dias),
+  avisar antes de gerar o relatório
+- Comparações temporais sempre com o mesmo período do ano anterior
+
+## Estrutura esperada do relatório
+1. Panorama macro (IPCA, Selic, câmbio)
+2. Impacto no setor agropecuário
+3. Exportações: volume e receita
+4. Perspectivas (sem previsões próprias — só citar consenso de mercado)
+```
+
+---
+
+# PARTE IV: Skills — capacidades especializadas
+
+Skills são procedimentos reutilizáveis que ensinam o Cowork a executar tarefas específicas de forma padronizada. A Anthropic fornece skills de base; você pode criar as suas.
+
+## Skills de base fornecidas pela Anthropic
+
+| Skill | O que faz |
+|-------|-----------|
+| `docx` | Cria, lê e edita documentos Word (.docx) com formatação, índice, estilos |
+| `xlsx` | Cria e manipula planilhas Excel com fórmulas, tabelas, gráficos |
+| `pptx` | Cria e edita apresentações PowerPoint |
+| `pdf` | Extrai texto de PDFs, cria PDFs, mescla e divide documentos |
+| `schedule` | Cria e edita tarefas agendadas |
+
+## Como o Cowork aciona uma skill
+
+Skills são acionadas automaticamente — o Cowork decide quando usar com base no que você pede. Se você diz "crie um relatório Word", o Cowork lê a skill `docx` e segue o procedimento. Você não precisa invocar a skill pelo nome.
+
+Esse mecanismo se chama **progressive disclosure**: a skill só é carregada no contexto quando relevante, economizando espaço na janela de contexto.
+
+## Anatomia de uma skill
+
+Uma skill é um arquivo `SKILL.md` com dois componentes:
+
+```markdown
+---
+name: relatorio-conjuntural
+description: >
+  Usar quando o usuário pedir um relatório de conjuntura
+  macroeconômica. Requer CSVs de IPCA, câmbio e Selic em dados/.
+  Produz um .md estruturado em output/.
+---
+
+## Procedimento
+
+1. Ler os três arquivos em dados/ e verificar a data mais recente
+2. Calcular variações mensais e acumuladas no ano
+3. Gerar output/relatorio_YYYY-MM.md com as seções:
+   - Panorama (tabela resumo)
+   - IPCA (parágrafo com variação e comparação)
+   - Câmbio (parágrafo com média do mês)
+   - Selic (parágrafo com meta vigente)
+4. Nunca citar número que não esteja nos CSVs
+
+## Checklist antes de finalizar
+- [ ] Data mais recente nos dados é do mês atual?
+- [ ] Todos os números têm fonte explícita?
+- [ ] Arquivo salvo no caminho correto?
+```
+
+## Onde colocar skills
+
+| Local | Caminho | Escopo |
+|-------|---------|--------|
+| Projeto | `.claude/skills/<nome>/SKILL.md` | Só esta pasta de projeto |
+| Usuário | `~/.claude/skills/<nome>/SKILL.md` | Todos os projetos do usuário |
+| Plugin | Instalado via marketplace | Compartilhado entre projetos |
+
+## Plugins: skills empacotadas pela comunidade
+
+O marketplace de plugins da Anthropic distribui skills pré-construídas para casos de uso específicos. Plugins são instaláveis diretamente do Cowork em Settings → Plugins.
+
+Os bundles verticais que a Anthropic lançou (Legal, Marketing Ops, Small Business) são conjuntos de plugins + skills + conectores MCP empacotados para um setor inteiro.
+
+---
+
+# PARTE V: Artifacts — painéis que persistem e atualizam
+
+Artifacts são páginas HTML interativas que o Cowork cria e que persistem entre sessões. Diferente de uma resposta no chat (que desaparece quando você fecha), um artifact continua existindo e pode ser reaberto.
+
+## A diferença entre artifact estático e Live Artifact
+
+**Artifact estático** (geração anterior): o Cowork gera um gráfico ou tabela como HTML. Você abre, vê os dados — mas os dados são do momento em que o artifact foi criado. Reabrir amanhã não atualiza nada.
+
+**Live Artifact** (a partir de abril 2026): o artifact re-executa seu código quando você o abre. Se ele busca dados de uma planilha no Google Drive, ele rebusca. Se calcula uma tendência, recalcula com os números atuais. A metáfora certa é **uma célula de notebook que roda toda vez que você clica nela**.
+
+## Para que servem
+
+- Dashboards de indicadores que você quer ver sempre atualizados
+- Relatórios periódicos que se regeneram sem você fazer nada
+- Painéis de acompanhamento de projetos conectados a fontes externas via MCP
+- Visualizações interativas de dados que você compartilha com a equipe
+
+## Exemplo de caso de uso
+
+Você cria um artifact uma vez com o prompt:
+
+> "Crie um dashboard HTML que, quando aberto, leia o arquivo `dados/ipca_mensal.csv` desta pasta e mostre: o último valor disponível, a variação em relação ao mês anterior e um gráfico de linha dos últimos 24 meses. Atualize os dados toda vez que o dashboard for aberto."
+
+A partir daí, toda vez que você abrir esse artifact, ele lê o CSV mais recente e reconstrói os gráficos. Se o CSV foi atualizado com dados novos, o dashboard reflete isso automaticamente.
+
+## Limitações dos artifacts
+
+- Dependem de dados que o Cowork consegue acessar (pasta autorizada ou conectores MCP ativos)
+- Código complexo pode ser lento para re-executar
+- Não são compartilháveis como links públicos (ficam na sua sessão do Cowork)
+
+---
+
+# PARTE VI: Tarefas agendadas (Scheduled Tasks)
+
+Tarefas agendadas são o mecanismo que torna o Cowork um trabalhador autônomo — ele executa o trabalho mesmo quando você não está na frente do computador.
+
+## Como funcionam
+
+Uma tarefa agendada tem três componentes:
+
+1. **Quando disparar** — um horário recorrente ("toda segunda às 9h") ou uma data específica no futuro
+2. **O que fazer** — o prompt com as instruções da tarefa
+3. **Para onde entregar** — pasta de saída, e-mail, Slack, ou outro destino via conector MCP
+
+As tarefas disparam automaticamente enquanto **o computador estiver ligado e o Claude Desktop estiver aberto**. Diferente das Routines do Claude Code (que rodam na nuvem da Anthropic), as tarefas agendadas do Cowork dependem do seu desktop estar ativo.
+
+::: {.callout-warning}
+**Importante:** Se o computador estiver desligado ou o Claude Desktop fechado no horário agendado, a tarefa não roda. Para automações que precisam funcionar sem seu computador, use as **Routines** do Claude Code, que rodam na infraestrutura da Anthropic.
+:::
+
+## Criando uma tarefa agendada
+
+Via interface: Settings → Scheduled Tasks → Nova tarefa
+
+Via skill: dentro de qualquer conversa no Cowork, você pode dizer:
+
+> "Crie uma tarefa que toda segunda às 8h leia o arquivo `dados/focus_mais_recente.txt` desta pasta e gere um resumo de 3 parágrafos em `output/resumo_focus_YYYY-MM-DD.md`."
+
+O Cowork usa a skill `schedule` para configurar a tarefa e confirma os detalhes antes de salvar.
+
+## Exemplos de tarefas recorrentes para economistas
+
+**Resumo semanal de indicadores:**
+> "Toda segunda às 9h, leia os CSVs em dados/ e gere output/panorama_semana_YYYY-MM-DD.md com os valores mais recentes de IPCA, Selic e câmbio, comparando com a semana anterior."
+
+**Verificação de atualização de dados:**
+> "Todo dia útil às 7h, verifique se os arquivos em dados/ têm dados de ontem. Se não, registre em logs/dados_atrasados.md com a data e o arquivo faltante."
+
+**Consolidação mensal:**
+> "Todo primeiro dia útil do mês às 8h, consolide os arquivos de output/ do mês anterior em um único relatório mensal em output/relatorio_mensal_YYYY-MM.md."
+
+## Observabilidade: saber o que aconteceu
+
+Depois que as tarefas rodam, você pode ver o histórico em Settings → Scheduled Tasks → Histórico. O transcript de cada execução mostra exatamente o que o Cowork fez, passo a passo.
+
+Configure também um destino de notificação — e-mail ou Slack via conector MCP — para ser avisado quando uma tarefa for concluída ou falhar.
+
+---
+
+# PARTE VII: Conectores MCP — o Cowork no mundo externo
+
+O Cowork sem conectores opera dentro da sua pasta local. Com conectores MCP, ele passa a operar sobre o estado atual dos seus serviços externos: lê e-mails, consulta o calendário, cria issues no GitHub, atualiza planilhas no Drive.
+
+## O que é MCP
+
+MCP (Model Context Protocol) é um protocolo aberto publicado pela Anthropic em novembro de 2024. Define um padrão comum para qualquer LLM conversar com ferramentas externas. Um serviço (Notion, GitHub, Google Drive) implementa uma vez um servidor MCP, e qualquer cliente compatível — incluindo o Cowork — consegue usar sem código específico.
+
+A analogia é o USB: antes dele, cada periférico tinha seu cabo proprietário. O MCP é o USB dos conectores de IA.
+
+## Conectores disponíveis (38+ em junho 2026)
+
+**Produtividade e comunicação:**
+Gmail, Google Calendar, Google Drive, Slack, Microsoft Outlook (beta), Microsoft Teams, Notion, Confluence
+
+**Gestão de projetos:**
+Linear, Asana, Jira, GitHub, GitLab, Trello
+
+**Negócios e operações:**
+Salesforce, HubSpot Marketing, QuickBooks, Stripe, Gusto, Zendesk, Front
+
+**Específicos por vertical:**
+Clio (jurídico), iManage (jurídico), Westlaw (jurídico), Filevine (jurídico)
+
+::: {.callout-note}
+A lista cresce rapidamente. Consulte [claude.com/connectors](https://claude.com/connectors) para a lista atualizada.
+:::
+
+## Conectando um serviço
+
+No Cowork, vá em Settings → Connectors → Add Connector:
+
+1. Escolha o serviço na lista ou cole a URL do servidor MCP
+2. Clique em Conectar — uma nova aba abre no serviço para autorização OAuth
+3. Você aprova os escopos de acesso no serviço (não no Claude)
+4. O conector aparece ativo — o Cowork já pode usá-lo
+
+**Você nunca cola token ou senha no Cowork.** A autenticação é feita diretamente pelo serviço via OAuth — o Cowork recebe um token temporário, e você pode revogar o acesso a qualquer momento no painel do serviço.
+
+## Usando conectores em conversas
+
+Depois de conectado, o uso é natural — você fala em português sobre o que precisa:
+
+> "Liste os e-mails com assunto 'IPCA' recebidos esta semana e resuma os principais pontos de cada um."
+
+> "Verifique se há tasks atrasadas no Linear com label 'urgente' e crie um resumo em output/tasks_atrasadas.md."
+
+> "Abra o arquivo 'Dados_Exportacoes_2026.xlsx' no Google Drive e extraia os dados da aba 'Mensal' para dados/exportacoes_2026.csv."
+
+## Quando MCP vale a pena (e quando não)
+
+| Use MCP quando... | Não precisa de MCP quando... |
+|-------------------|------------------------------|
+| O dado está em um serviço externo (Drive, Gmail, Notion) | O dado já está em arquivo local na pasta autorizada |
+| A tarefa exige uma ação no serviço (criar issue, mandar mensagem) | Você quer só processar arquivos locais |
+| A integração será reutilizada frequentemente | É uma consulta única que você faz raramente |
+| Há um conector oficial do provedor | Você teria que construir a integração do zero com ganho marginal |
+
+---
+
+# PARTE VIII: Computer use (Dispatch)
+
+O Dispatch é o modo em que o Cowork controla diretamente o seu computador — abre aplicativos, clica em botões, preenche formulários, navega em interfaces gráficas. É o mecanismo para casos onde não existe API.
+
+## Quando usar
+
+Use Dispatch quando:
+
+- O serviço que você precisa não tem API nem conector MCP
+- A tarefa envolve uma interface gráfica de desktop que não tem alternativa programática
+- Você precisa interagir com softwares legados, ERPs internos ou sistemas corporativos antigos
+
+## Como funciona
+
+Quando o Dispatch é ativado, o Cowork:
+
+1. Tira um screenshot da tela
+2. Identifica os elementos relevantes (botões, campos, menus)
+3. Clica, digita e navega como um usuário humano faria
+4. Verifica o resultado e continua até completar a tarefa
+
+Você pode acompanhar cada passo em tempo real e interromper a qualquer momento.
+
+## Limitações importantes
+
+- **É lento.** Dispatch é significativamente mais lento que operações via API ou MCP. Reserve para casos onde realmente não há alternativa.
+- **Pode errar.** Se a interface mudar (atualização de software, mudança de layout), o Dispatch pode não encontrar o elemento esperado.
+- **Requer supervisão inicial.** Nas primeiras execuções de uma tarefa via Dispatch, acompanhe de perto para verificar se o comportamento está correto.
+- **Não funciona com apps privilegiados.** Task Manager, instaladores com UAC elevado e prompts de administrador do Windows não podem ser controlados pelo Dispatch por razões de segurança do sistema operacional.
+
+## Exemplo de uso
+
+> "Abra o sistema SIGEF no navegador, faça login com as credenciais salvas, navegue até Relatórios → Mensal, selecione o mês atual e baixe o arquivo PDF para a pasta downloads/."
+
+O Cowork pedirá confirmação antes de realizar cada ação sensível (login, submit de formulário).
+
+---
+
+# PARTE IX: Managed Agents — o futuro próximo
+
+Anunciado em maio de 2026 e ainda em rollout, o Managed Agents é a evolução mais significativa do Cowork — transforma o modelo de "um agente fazendo uma tarefa" para "times de agentes coordenados fazendo trabalho complexo".
+
+## Os quatro primitivos
+
+**Dreaming (raciocínio em segundo plano):**
+O Claude raciocina sobre um problema em aberto enquanto você dorme — sem esperar uma pergunta. Você acorda com ideias, conexões e rascunhos já preparados.
+
+**Multi-agent orchestration (Claude chamando Claude):**
+Um agente principal decompõe uma tarefa complexa, cria subagentes especializados para cada parte, e consolida os resultados. O mesmo padrão que funciona no Claude Code, agora disponível na superfície do Cowork.
+
+**Outcomes (especifique o resultado, não os passos):**
+Em vez de descrever o procedimento, você descreve o que sucesso parece. "Quero um relatório de conjuntura pronto para publicação toda segunda às 10h" — o agente descobre os passos por conta própria.
+
+**Webhooks (sistemas externos disparam agentes):**
+Um evento externo aciona o Cowork automaticamente. Nova nota fiscal no QuickBooks → o agente roda a skill de reconciliação → registra o resultado no Notion. Sem você tocar em nada.
+
+## Por que isso importa
+
+Com Managed Agents, o Cowork deixa de ser uma ferramenta que você usa e passa a ser uma infraestrutura que trabalha para você. A diferença prática:
+
+| Hoje (sem Managed Agents) | Com Managed Agents |
+|--------------------------|-------------------|
+| Você pede uma tarefa, o Cowork faz | Você define um resultado, o time de agentes resolve |
+| Uma tarefa por vez | Múltiplas tarefas em paralelo (contextos isolados) |
+| Você inicia a execução | Webhooks iniciam automaticamente |
+| O agente não pensa entre sessões | Dreaming: raciocina em segundo plano |
+
+---
+
+# PARTE X: Casos de uso práticos para economistas e analistas
+
+## Organizar e processar documentos
+
+**O problema recorrente:** Pastas com dezenas de PDFs de relatórios, notas técnicas e artigos — sem organização, sem resumos, sem índice.
+
+**O que o Cowork faz:**
+
+> "Leia todos os PDFs em documentos/relatorios_bcb/. Para cada um: (1) extraia o título, data e principais conclusões; (2) salve um resumo de meia página em resumos/; (3) crie um arquivo index.md com a lista de todos os documentos, organizados por data, com link para o resumo."
+
+O Cowork percorre os arquivos, extrai o conteúdo, organiza e entrega o índice — trabalho que levaria horas manualmente.
+
+## Produzir relatórios a partir de múltiplas fontes
+
+**O problema recorrente:** Relatório mensal que exige consolidar dados de três sistemas diferentes, calcular variações e escrever a análise.
+
+**O que o Cowork faz:**
+
+> "Leia os CSVs em dados/ (IPCA, câmbio, selic, exportações). Calcule as variações mensais e acumuladas. Gere output/relatorio_conjuntural_YYYY-MM.md com as quatro seções padrão definidas no CLAUDE.md. Todos os números devem vir dos dados — sem inventar."
+
+Com o `CLAUDE.md` configurado corretamente, esse prompt de uma linha produz o relatório completo.
+
+## Extrair dados estruturados de documentos não estruturados
+
+**O problema recorrente:** Contratos, relatórios de auditoria, atas de reunião — documentos densos com informação que você precisa em tabela.
+
+**O que o Cowork faz:**
+
+> "Leia os 12 contratos em contratos/2026/. Para cada um, extraia: nome da contraparte, valor total, data de vencimento, cláusula de reajuste e penalidade por rescisão. Salve em output/resumo_contratos.xlsx com uma linha por contrato."
+
+## Monitoramento periódico com alertas
+
+**O problema recorrente:** Você precisa verificar algo toda semana, mas sempre esquece ou não tem tempo.
+
+**Tarefa agendada:**
+> "Toda segunda às 8h, verifique o arquivo dados/indicadores_semanais.csv. Se qualquer indicador variar mais de 2% em relação à semana anterior, registre em logs/alertas.md com o indicador, o valor atual e a variação. Se não houver alerta, registre 'Nenhuma variação significativa — semana de [data].'"
+
+## Síntese de pesquisa bibliográfica
+
+**O problema recorrente:** 20 artigos para ler, cada um com 30 páginas. Você tem 2 horas.
+
+**O que o Cowork faz:**
+
+> "Leia todos os PDFs em literatura/revisao_ipca/. Para cada artigo: identifique a pergunta de pesquisa, a metodologia, os dados utilizados e as principais conclusões. Gere output/sintese_literatura.md com uma tabela comparativa e um texto de síntese de 2 páginas identificando convergências e divergências entre os estudos."
+
+## Preparação de apresentações
+
+**O problema recorrente:** Você tem os dados e a análise, mas montar o PowerPoint leva mais tempo do que a análise em si.
+
+**O que o Cowork faz:**
+
+> "Com base no relatório output/relatorio_conjuntural_2026-06.md e nos gráficos em output/figures/, crie uma apresentação PowerPoint em output/apresentacao_conjuntura_junho_2026.pptx com: slide de título, slide de panorama com tabela resumo, três slides de análise (um por indicador) e slide de conclusões. Use o template em templates/embrapa_template.pptx."
+
+---
+
+# PARTE XI: Limites honestos
+
+## O que o Cowork não faz bem
+
+**Alucinação em números e citações.** O modelo é confiável, mas ainda inventa estatísticas e misattribui citações em aproximadamente 1% das respostas. Para documentos de alta consequência (relatórios oficiais, análises que embasam decisões), a revisão humana não é opcional.
+
+**Tarefas que requerem julgamento econômico.** O Cowork escreve "o IPCA subiu para 4,5%" — mas quem decide se isso representa mudança de regime ou ruído amostral é você. O julgamento interpretativo é humano.
+
+**Residência de dados.** A infraestrutura padrão é nos Estados Unidos. Para dados com exigência de residência na UE ou em território nacional específico, verifique se o plano Enterprise atende antes de adotar.
+
+**Conectores que ainda não existem.** Shopify, Amazon Seller, Square, Toast, NetSuite, Zoho — se você opera nessas plataformas, vai precisar esperar por conectores nativos ou construir um servidor MCP customizado.
+
+**Dispatch em interfaces complexas.** Computer use funciona bem para tarefas lineares em interfaces estáveis. Formulários com lógica condicional complexa, interfaces que mudam frequentemente ou sistemas com CAPTCHA são problemáticos.
+
+**Tarefas agendadas sem desktop ativo.** Diferente das Routines do Claude Code (que rodam na nuvem), as tarefas agendadas do Cowork precisam do seu computador ligado e do app aberto.
+
+## Quando o chat ainda é a ferramenta certa
+
+O Cowork não substitui o chat para tudo. Use o Chat quando:
+
+- Você quer explorar uma ideia, pensar em voz alta, brainstormar
+- A tarefa é uma única pergunta com uma única resposta
+- Você não tem arquivos locais envolvidos
+- A tarefa é rápida e não recorrente
+
+O Cowork é a escolha certa quando há arquivos, múltiplas etapas, recorrência ou conexão com serviços externos.
+
+---
+
+# PARTE XII: Preços e planos
+
+## O que cada plano inclui
+
+| Plano | Preço | Cowork incluído? | Obs |
+|-------|-------|-----------------|-----|
+| Gratuito | $0 | Não | Sem acesso ao Cowork |
+| Pro | $20/mês | Sim | Acesso individual completo |
+| Team | $25/seat/mês (mín. 5 seats) | Sim | Workspaces compartilhados, SSO, controles de admin |
+| Enterprise | Preço negociado | Sim | Residência de dados UE, HIPAA BAA, auditoria, Managed Agents API |
+
+**Não existe "SKU do Cowork".** Se você tem plano pago, o Cowork já está incluído — sem custo adicional.
+
+## Estimando o valor
+
+O cálculo simples: se você usa o Cowork **30 minutos por dia** em tarefas que levariam 60 minutos manualmente (relatórios recorrentes, extração de dados, organização de documentos), você economiza **10 horas por mês** por $20.
+
+Para equipes, o impacto se multiplica — especialmente em tarefas que hoje consomem tempo de analistas qualificados em trabalho mecânico de baixo valor.
+
+## Plano Pro vs. acesso via API
+
+Para uso interativo diário, o plano Pro/Team é mais previsível (mensalidade fixa). Para automações pesadas e tarefas agendadas de alto volume, a API da Anthropic com cobrança por token pode ser mais econômica — verifique com `/cost` dentro de uma sessão para ter noção do consumo.
+
+---
+
+# PARTE XIII: Referência rápida
+
+## Checklist para começar
+
+- [ ] Baixar Claude Desktop em claude.com/download
+- [ ] Fazer login com conta paga (Pro, Team ou Enterprise)
+- [ ] Clicar na aba **Cowork**
+- [ ] Autorizar a pasta do projeto
+- [ ] Criar `CLAUDE.md` na raiz da pasta com contexto do projeto
+- [ ] Testar um prompt simples: "Liste os arquivos desta pasta e descreva cada um em uma linha"
+- [ ] Configurar o primeiro conector MCP que for útil (Gmail, Drive ou Slack)
+- [ ] Criar a primeira tarefa agendada recorrente
+
+## Anatomia de um bom prompt para o Cowork
+
+```
+[O que você quer que aconteça]
++ [Onde estão os insumos]
++ [Formato e destino do resultado]
++ [Regras ou restrições]
+```
+
+**Exemplo:**
+> "Leia os PDFs em documentos/atas_copom/ [insumos], extraia as decisões de taxa Selic e as principais justificativas de cada reunião [o que fazer], salve em output/historico_copom.xlsx com uma linha por reunião e colunas: data, taxa_decidida, taxa_anterior, principais_argumentos [formato], e nunca invente dados — se não encontrar a informação claramente no documento, deixe a célula vazia [restrição]."
+
+## Tabela de decisão: qual ferramenta usar
+
+| Situação | Ferramenta |
+|----------|-----------|
+| Conversa, exploração, brainstorm | Chat |
+| Arquivos locais, múltiplas etapas | Cowork |
+| Tarefa recorrente com desktop disponível | Cowork + Scheduled Task |
+| Tarefa recorrente sem desktop (roda na nuvem) | Claude Code Routine |
+| Conexão com serviço externo (Slack, Drive, Notion) | Cowork + Conector MCP |
+| Interface sem API (sistema legado) | Cowork + Dispatch |
+| Desenvolvimento de código, Git, terminal | Claude Code |
+| Trabalho colaborativo de equipe com pastas compartilhadas | Cowork (plano Team) |
+
+## Boas práticas de segurança
+
+1. **Autorize pastas específicas**, nunca pastas amplas como a raiz do sistema ou `~/Documents` inteiro
+2. **Use escopos mínimos no OAuth** — comece com permissão de leitura e adicione escrita quando necessário
+3. **Nunca coloque credenciais em arquivos** que estão na pasta autorizada — o Cowork pode lê-las e incluí-las inadvertidamente no contexto
+4. **Revogue conectores** quando trocar de projeto, máquina ou sair de uma equipe
+5. **Revise antes de publicar** qualquer output de alta consequência — a revisão humana não é dispensável para relatórios oficiais
+
+---
+
+*Este guia reflete o estado do Claude Cowork em junho de 2026. Como o produto está em evolução acelerada, algumas funcionalidades podem ter mudado. Consulte sempre [claude.com/product/cowork](https://claude.com/product/cowork) e [docs.anthropic.com](https://docs.anthropic.com) para informações atualizadas.*
