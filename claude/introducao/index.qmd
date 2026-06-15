@@ -31,6 +31,10 @@ Este guia consolida e aprofunda uma série de oito artigos sobre Claude Code pro
 
 A estrutura segue a ordem natural de aprendizado, não a ordem de publicação dos artigos originais.
 
+::: {.callout-note appearance="simple"}
+**Validade deste material:** comandos, preços e URLs foram verificados em junho de 2026 contra a documentação oficial (code.claude.com/docs). O Claude Code evolui rápido — confirme detalhes operacionais na fonte antes de automatizar.
+:::
+
 ---
 
 # PARTE I: Fundamentos
@@ -91,7 +95,7 @@ Modelos de linguagem não processam texto diretamente. O texto é convertido em 
 
 Por que isso importa na prática:
 
-- **Janela de contexto** é medida em tokens, não em palavras. Os modelos Claude atuais suportam até 200.000 tokens — equivalente a cerca de 150.000 palavras
+- **Janela de contexto** é medida em tokens, não em palavras. Os modelos Claude atuais suportam de 200.000 até 1.000.000 de tokens, dependendo do modelo — 200.000 equivalem a cerca de 150.000 palavras
 - Código é mais denso em tokens que prosa. Um script R de 500 linhas ocupa aproximadamente 3.000–5.000 tokens
 - Uma sessão longa de debugging pode consumir 20.000–50.000 tokens
 - Projetos com muitos arquivos abertos via `@`-mentions esgotam o contexto mais rápido
@@ -168,15 +172,22 @@ RAG (Retrieval-Augmented Generation) é a técnica de buscar informação releva
 
 ### Instalação
 
-**macOS e Linux:**
+**macOS, Linux e WSL:**
 ```bash
-curl -fsSL https://cli.anthropic.com/install.sh | sh
+curl -fsSL https://claude.ai/install.sh | bash
 ```
 
-**Windows (PowerShell como administrador):**
+**Windows (PowerShell):**
 ```powershell
-irm https://cli.anthropic.com/install.ps1 | iex
+irm https://claude.ai/install.ps1 | iex
 ```
+
+**Alternativa multiplataforma (via npm, requer Node.js 18+):**
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Não é necessário rodar como administrador. No Windows também existem instaladores via WinGet (`winget install Anthropic.ClaudeCode`) e, no macOS, via Homebrew (`brew install --cask claude-code`).
 
 **Verificar instalação:**
 ```bash
@@ -218,13 +229,12 @@ A autenticação é feita automaticamente: na primeira execução, o Claude Code
 
 ### @-mentions: contexto cirúrgico
 
-Ao digitar `@` no campo de prompt (VS Code), você pode referenciar recursos específicos:
+Ao digitar `@` no campo de prompt, você referencia **arquivos e pastas** para incluir no contexto:
 
 - `@arquivo.py` — inclui o conteúdo de um arquivo específico
 - `@pasta/` — inclui a estrutura de uma pasta
-- `@git` — inclui informações do repositório Git (diff, log, branch)
-- `@terminal` — inclui a saída recente do terminal
-- `@web` — permite buscar informações na web
+
+O `@` serve para arquivos e diretórios. Outros tipos de contexto vêm por caminhos próprios: o agente lê o estado do Git e roda comandos do terminal pelas suas ferramentas nativas (Bash, Read), e a busca na web é feita pelas ferramentas WebSearch/WebFetch — não por menções `@`.
 
 **Princípio:** Seja cirúrgico. Incluir apenas o necessário mantém o contexto limpo, as respostas mais precisas e o custo menor.
 
@@ -889,11 +899,11 @@ Nenhum dos artigos da série estima custos reais. Esta seção preenche essa lac
 
 | Modelo | Input (por 1M tokens) | Output (por 1M tokens) |
 |--------|----------------------|------------------------|
-| Claude Haiku | ~$0,25 | ~$1,25 |
+| Claude Haiku | ~$1,00 | ~$5,00 |
 | Claude Sonnet | ~$3,00 | ~$15,00 |
-| Claude Opus | ~$15,00 | ~$75,00 |
+| Claude Opus | ~$5,00 | ~$25,00 |
 
-*Preços indicativos — consulte a página oficial para valores atuais.*
+*Valores da geração atual (Haiku 4.5, Sonnet 4.6, Opus 4.x) em junho de 2026 — preços indicativos, consulte console.anthropic.com para os valores vigentes.*
 
 ### Estimativas por cenário
 
@@ -908,12 +918,12 @@ Nenhum dos artigos da série estima custos reais. Esta seção preenche essa lac
 - **Custo em Sonnet: ~$0,24**
 
 **Pipeline de boletim macro (5 agentes):**
-- pesquisador (Haiku): ~5.000 tokens input + 2.000 output → ~$0,004
+- pesquisador (Haiku): ~5.000 tokens input + 2.000 output → ~$0,015
 - analista (Sonnet): ~10.000 input + 3.000 output → ~$0,075
 - redator (Sonnet): ~8.000 input + 4.000 output → ~$0,084
 - revisor (Sonnet): ~10.000 input + 2.000 output → ~$0,060
-- publicador (Haiku): ~3.000 input + 1.000 output → ~$0,002
-- **Custo total por rodada: ~$0,23 — menos de R$1,30 por boletim semanal**
+- publicador (Haiku): ~3.000 input + 1.000 output → ~$0,008
+- **Custo total por rodada: ~$0,24 — cerca de R$1,30 por boletim semanal**
 
 **Resumo do Focus com Routine (Sonnet):**
 - Leitura do `.txt` (~15.000 caracteres = ~5.000 tokens) + geração do resumo
