@@ -749,6 +749,10 @@ Após alguns dias de uso, `logs/execucao.jsonl` dá uma visão clara de quem tra
 
 A Análise Macro publicou em junho de 2026 um projeto concreto: um time de três agentes que lê a ata do Copom na API do Banco Central, mede o tom do comitê e devolve um resumo com a Selic exata. Esta seção desconstrói o projeto inteiro — da instalação ao código — para que você possa replicar sem depender de nenhum curso pago.
 
+::: {.callout-important}
+**Mudança de abordagem nesta seção.** Até aqui, "agente" significou um arquivo Markdown em `.claude/agents/` que o **Claude Code** executa por você. Agora vamos **construir nosso próprio sistema de agentes em Python**, chamando a API da Anthropic diretamente e orquestrando tudo com a biblioteca **LangGraph**. É uma abordagem diferente e complementar: você a escolhe quando quer uma aplicação independente — com interface web, agendamento e hospedagem próprios — que **não dependa do Claude Code instalado**. O conceito de "papéis especializados que dividem o trabalho" é exatamente o mesmo; muda só a tecnologia que os conecta. Daqui para frente, **"agente" = uma função Python** com um prompt próprio.
+:::
+
 ### O problema que o agente resolve
 
 Toda reunião do Copom gera uma ata longa. Ler o documento para achar a Selic decidida e entender o tom do comitê (mais duro = hawkish, mais brando = dovish) consome tempo a cada decisão. Um chatbot comum não resolve: ele "chuta" a Selic com base no que aprendeu no treinamento, que pode estar desatualizado. Um agente busca o número na fonte oficial a cada execução — nunca inventa.
@@ -788,6 +792,10 @@ O agente lê a ata completa, sem cortar. Cortar o texto para economizar tokens p
 ```bash
 # Crie a pasta do projeto
 mkdir copom-agent && cd copom-agent
+
+# Crie e ative um ambiente virtual isolado (evita poluir o Python global)
+python -m venv .venv
+source .venv/bin/activate        # Windows (PowerShell): .venv\Scripts\Activate.ps1
 
 # Instale as dependências
 pip install anthropic langgraph pdfplumber requests streamlit python-dotenv
@@ -883,7 +891,7 @@ class EstadoCopom(TypedDict):
 
 ### Passo 4: os três agentes (`agents.py`)
 
-Cada agente é uma função Python. Ela recebe o estado atual, chama o modelo Claude com um prompt específico para seu papel, e retorna apenas os campos que lhe cabem atualizar:
+Cada agente é uma função Python. Ela recebe o estado (o mural) atual, chama o modelo Claude com um prompt específico para seu papel, e **retorna apenas os campos que lhe cabem atualizar** — o LangGraph mescla esse dicionário parcial de volta no mural compartilhado. O recorte `[:80000]` no texto da ata limita o envio a cerca de 80 mil caracteres (~20 mil tokens): cabe a ata inteira sem estourar a janela de contexto nem o custo.
 
 ```python
 # agents.py
@@ -969,7 +977,10 @@ JUSTIFICATIVA: [uma frase explicando o score]
 TRECHO: [citação literal da ata que melhor evidencia o tom]
 
 PONTOS-CHAVE:
-{estado['pontos_chave']}"""
+{estado['pontos_chave']}
+
+ATA (use para extrair o TRECHO literal):
+{estado['ata_texto'][:60000]}"""
         }]
     )
 
@@ -1024,7 +1035,7 @@ JUSTIFICATIVA DO TOM:
 
 ### Passo 5: montar o grafo com LangGraph (`graph.py`)
 
-O LangGraph conecta os três agentes em sequência, passando o estado de um para o outro. Pense nele como o gerente que define quem trabalha em que ordem:
+O LangGraph conecta os três agentes em sequência, passando o estado (o mural) de um para o outro. Pense nele como o gerente que define quem trabalha em que ordem. Para um fluxo linear como este, você poderia apenas chamar as três funções em ordem — o LangGraph compensa o esforço quando o fluxo ganha ramificações, repetições ou re-tentativas (por exemplo, voltar ao leitor se a Selic não foi encontrada), que é o caminho natural de evolução do projeto:
 
 ```python
 # graph.py
@@ -1062,7 +1073,7 @@ if __name__ == "__main__":
         print("Nenhuma reunião encontrada. Verifique a API do BCB.")
         exit(1)
 
-    ultima = reunioes[0]
+    ultima = reunioes[0]   # assume a mais recente; confira a ordem do retorno da API
     print(f"Analisando: {ultima['descricao']}\n")
 
     grafo = construir_grafo()
@@ -1103,6 +1114,10 @@ st.caption(
 def carregar_reunioes():
     return listar_reunioes_copom()
 
+@st.cache_resource         # compila o grafo uma vez e reaproveita entre cliques
+def obter_grafo():
+    return construir_grafo()
+
 reunioes = carregar_reunioes()
 if not reunioes:
     st.error("Não foi possível carregar as reuniões. Verifique a API do BCB.")
@@ -1115,7 +1130,7 @@ if st.button("Analisar ata", type="primary"):
     reuniao = opcoes[escolha]
 
     with st.spinner("Leitor buscando a ata no BCB..."):
-        grafo = construir_grafo()
+        grafo = obter_grafo()
         try:
             resultado = grafo.invoke({
                 "reuniao_id": reuniao["id"],
@@ -1174,6 +1189,21 @@ python graph.py
 
 # Interface web — abre em http://localhost:8501
 streamlit run app.py
+```
+
+Ao rodar `python graph.py`, a saída no terminal será parecida com esta (os valores variam conforme a ata):
+
+```
+Buscando reuniões disponíveis...
+Analisando: 273ª Reunião — 17 e 18/06/2026
+
+Selic: 14,75% ao ano
+Tom:   Hawkish (score: 0.55)
+
+Resumo:
+O Copom manteve a Selic em 14,75% ao ano, em decisão unânime. O comitê
+sinalizou cautela com a inflação de serviços e indicou que manterá os juros
+elevados pelo tempo necessário. O tom foi predominantemente hawkish.
 ```
 
 ### Estrutura final do projeto
