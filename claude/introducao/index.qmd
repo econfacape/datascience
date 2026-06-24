@@ -489,6 +489,92 @@ Domicílio respondeu pela maior contribuição positiva, com 0,11 p.p."
 
 # PARTE III: Automatizando com times de agentes
 
+## O que é um agente de IA — do zero
+
+### Três níveis: modelo, chatbot e agente
+
+Um **modelo de linguagem** como o Claude sabe fazer uma coisa: dado um texto de entrada, ele gera uma continuação provável, token a token. Sozinho, é poderoso mas estático — responde e para.
+
+Um **chatbot** adiciona histórico: cada mensagem nova inclui toda a conversa anterior, e o modelo age como se se "lembrasse" do que foi dito. O claude.ai e o ChatGPT funcionam assim. Mas o modelo ainda só responde — ele não age no mundo.
+
+Um **agente** adiciona duas coisas que mudam tudo: **ferramentas** (o modelo pode executar ações reais — ler arquivos, rodar código, buscar URLs, chamar APIs) e um **ciclo de raciocínio** (depois de executar uma ação, o resultado volta para o modelo, que decide o próximo passo). O agente não só responde — ele age, observa o resultado e continua trabalhando.
+
+| Tipo | Raciocina | Age no mundo | Ciclo contínuo |
+|------|-----------|--------------|----------------|
+| Modelo puro | ✅ | ❌ | ❌ |
+| Chatbot | ✅ | ❌ | ❌ |
+| Agente | ✅ | ✅ | ✅ |
+
+### O que são ferramentas
+
+Ferramentas são funções que o modelo pode chamar durante a geração de uma resposta. Quando o Claude Code tem acesso à ferramenta `Bash`, por exemplo, ele pode decidir rodar um comando no terminal, receber o output e continuar o raciocínio com base no resultado — tudo sem que você precise instruir cada passo.
+
+Ferramentas nativas do Claude Code:
+
+| Ferramenta | O que faz |
+|------------|-----------|
+| `Read` | Lê o conteúdo de um arquivo |
+| `Write` | Cria ou sobrescreve um arquivo |
+| `Edit` | Modifica uma seção de um arquivo |
+| `Bash` | Executa qualquer comando no terminal |
+| `WebFetch` | Busca o conteúdo de uma URL |
+| `Task` | Cria um subagente com contexto isolado |
+
+O modelo **decide** quando e qual ferramenta usar. Você descreve o objetivo — o agente traça o caminho.
+
+### O ciclo do agente: quatro fases
+
+Todo agente opera em ciclo. Cada volta tem quatro fases:
+
+**Percepção** — O modelo lê o pedido e tudo que já está no contexto: histórico da conversa, resultados de ferramentas anteriores, arquivos carregados.
+
+**Planejamento** — O modelo decide o próximo passo: responder diretamente ao usuário, ou chamar uma ferramenta.
+
+**Ação** — Se decidiu chamar uma ferramenta, ele a executa. O resultado (output do comando, conteúdo do arquivo, resposta da API) é adicionado ao contexto.
+
+**Reflexão** — O modelo lê o resultado e volta para a fase de Percepção. O ciclo continua até a tarefa ser concluída ou até precisar de intervenção humana.
+
+**Exemplo concreto com dados econômicos:**
+
+Pedido: *"Baixe o IPCA de setembro de 2026 do BCB e salve em ipca_set26.csv"*
+
+```
+Ciclo 1
+  Percepção: lê o pedido
+  Planejamento: preciso buscar dados na API do BCB
+  Ação: WebFetch → https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/...
+  Reflexão: recebi o JSON com os dados; agora preciso salvar em CSV
+
+Ciclo 2
+  Percepção: tenho o JSON no contexto
+  Planejamento: preciso converter para CSV e salvar
+  Ação: Write → cria ipca_set26.csv com os dados formatados
+  Reflexão: arquivo criado; tarefa concluída
+
+Ciclo 3
+  Percepção: tarefa concluída
+  Ação: responde "Arquivo ipca_set26.csv criado com 12 observações"
+  (fim)
+```
+
+Isso é exatamente o que acontece quando você pede ao Claude Code uma tarefa com múltiplos passos. Ele não executa uma sequência pré-programada — ele raciocina em tempo real a cada ciclo.
+
+### O Claude Code já é um agente
+
+Quando você abre o terminal e digita `claude`, você está falando com um agente. O Claude Code tem acesso nativo a Read, Write, Edit, Bash, WebFetch e Task. Ele usa essas ferramentas automaticamente — você não precisa configurar nada para o ciclo começar.
+
+Para ver o ciclo em ação, peça algo que exige múltiplas ações:
+
+```bash
+claude "Crie um script R que baixe o IPCA mensal dos últimos 5 anos do BCB,
+calcule o acumulado em 12 meses e salve em data/ipca.csv.
+Teste o script depois de criar."
+```
+
+O Claude Code vai: escrever o arquivo R → executar `Rscript` → verificar o resultado → corrigir erros se houver → confirmar a entrega. Tudo em ciclos automáticos, sem que você precise supervisionar cada passo.
+
+---
+
 ## De um assistente para um time
 
 Com um único Claude Code, um prompt gigante tenta cobrir tudo: baixar dados, calcular, escrever, publicar. O contexto enche rápido, cada nova rodada precisa repetir o histórico, e paralelizar é inviável.
@@ -656,6 +742,464 @@ Após alguns dias de uso, `logs/execucao.jsonl` dá uma visão clara de quem tra
   --allowedTools Bash,Read,Write,Edit,Task \
   >> logs/cron.log 2>&1
 ```
+
+---
+
+## Caso real: construindo o agente das atas do Copom do zero
+
+A Análise Macro publicou em junho de 2026 um projeto concreto: um time de três agentes que lê a ata do Copom na API do Banco Central, mede o tom do comitê e devolve um resumo com a Selic exata. Esta seção desconstrói o projeto inteiro — da instalação ao código — para que você possa replicar sem depender de nenhum curso pago.
+
+### O problema que o agente resolve
+
+Toda reunião do Copom gera uma ata longa. Ler o documento para achar a Selic decidida e entender o tom do comitê (mais duro = hawkish, mais brando = dovish) consome tempo a cada decisão. Um chatbot comum não resolve: ele "chuta" a Selic com base no que aprendeu no treinamento, que pode estar desatualizado. Um agente busca o número na fonte oficial a cada execução — nunca inventa.
+
+### Os três agentes e o mural compartilhado
+
+Em vez de um agente fazer tudo, o trabalho é dividido entre especialistas. Eles não conversam entre si diretamente — cada um lê e escreve num **mural compartilhado** (o "estado" do sistema):
+
+```
+Leitor   → busca a ata na API do BCB, extrai a Selic e os pontos-chave
+             ↓ (escreve no mural: ata_texto, pontos_chave, selic_encontrada)
+Analista → lê o mural, avalia o tom (dovish ↔ hawkish)
+             ↓ (escreve no mural: tom_label, tom_score, justificativa)
+Redator  → lê o mural completo, escreve o resumo final em português claro
+             ↓ (escreve no mural: resposta_final)
+```
+
+A modularidade é a força do design: trocar o redator não quebra o leitor. Testar cada agente isoladamente é simples. Melhorar um não afeta os outros.
+
+::: {.callout-note}
+**Mural vs. sistema de arquivos no Claude Code:** No Claude Code nativo, o equivalente ao mural é o sistema de arquivos. Cada subagente lê e escreve em arquivos padronizados — o analista lê `output/dados/` e escreve em `output/tabelas/resumo.csv`. O princípio é o mesmo: estado compartilhado sem comunicação direta entre agentes.
+:::
+
+### Por que ler o documento inteiro é essencial
+
+O agente lê a ata completa, sem cortar. Cortar o texto para economizar tokens parece eficiente mas destrói a confiabilidade: a frase com a decisão da Selic frequentemente está no meio ou no final do documento. Ler tudo garante que o número extraído é o da ata real, não uma aproximação que o modelo inventou.
+
+### Pré-requisitos para replicar
+
+- Python 3.10 ou superior (`python --version` no terminal para verificar)
+- Uma chave de API da Anthropic (crie em `console.anthropic.com → API Keys`)
+- Terminal/prompt de comando
+- Sem necessidade de saber LangGraph antes de começar — cada conceito é explicado no momento de uso
+
+### Passo 1: criar o ambiente
+
+```bash
+# Crie a pasta do projeto
+mkdir copom-agent && cd copom-agent
+
+# Instale as dependências
+pip install anthropic langgraph pdfplumber requests streamlit python-dotenv
+```
+
+Crie o arquivo `.env` na raiz do projeto com sua chave:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Passo 2: as ferramentas (`tools.py`)
+
+Ferramentas são funções Python comuns que os agentes chamam para agir no mundo — neste caso, buscar dados no BCB e extrair texto de PDF:
+
+```python
+# tools.py
+import requests
+import pdfplumber
+import io
+
+# A API pública do BCB lista as atas disponíveis.
+# Acesse a URL no navegador para inspecionar o schema JSON atual.
+BCB_ATAS_URL = "https://www.bcb.gov.br/api/servico/sitebcb/atas-copom"
+
+def listar_reunioes_copom() -> list[dict]:
+    """Retorna a lista de reuniões do Copom com id, data e URL do PDF."""
+    resp = requests.get(BCB_ATAS_URL, timeout=30)
+    resp.raise_for_status()
+    dados = resp.json()
+    reunioes = []
+    # O schema do BCB pode mudar — inspecione o JSON retornado e ajuste as chaves abaixo
+    for item in dados.get("conteudo", dados if isinstance(dados, list) else []):
+        reunioes.append({
+            "id":       item.get("Protocolo") or item.get("id", ""),
+            "data":     item.get("DataReferencia") or item.get("data", ""),
+            "descricao": item.get("Titulo") or item.get("descricao", ""),
+            "url_pdf":  item.get("Url") or item.get("url", ""),
+        })
+    return reunioes
+
+def baixar_e_extrair_ata(url_pdf: str) -> str:
+    """Baixa o PDF da ata e extrai o texto completo."""
+    resp = requests.get(
+        url_pdf, timeout=60,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; copom-agent/1.0)"}
+    )
+    resp.raise_for_status()
+    with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
+        texto = "\n".join(pagina.extract_text() or "" for pagina in pdf.pages)
+    if len(texto) < 500:
+        raise ValueError(
+            "Texto extraído muito curto — pode ser PDF de imagem ou erro de layout. "
+            "Verifique a URL manualmente."
+        )
+    return texto
+```
+
+::: {.callout-warning}
+**O BCB muda o schema da API sem aviso.** Se `listar_reunioes_copom()` retornar lista vazia ou campos em branco, abra `BCB_ATAS_URL` no navegador, inspecione o JSON e ajuste as chaves (`Protocolo`, `DataReferencia`, etc.) conforme o retorno atual.
+:::
+
+### Passo 3: o mural compartilhado (`state.py`)
+
+O mural é um dicionário Python com campos tipados. Cada agente preenche os campos de sua responsabilidade:
+
+```python
+# state.py
+from typing import TypedDict, Optional
+
+class EstadoCopom(TypedDict):
+    # Entrada fornecida pelo usuário
+    reuniao_id: str
+    url_pdf: str
+
+    # Preenchido pelo Leitor
+    ata_texto: str
+    pontos_chave: str
+    selic_encontrada: str
+
+    # Preenchido pelo Analista
+    tom_score: float          # -1.0 (muito dovish) a +1.0 (muito hawkish)
+    tom_label: str            # "Muito Dovish" / "Dovish" / "Neutro" / "Hawkish" / "Muito Hawkish"
+    justificativa_tom: str
+    trechos_evidencia: list[str]
+
+    # Preenchido pelo Redator
+    resposta_final: str
+
+    # Controle de erros
+    erro: Optional[str]
+```
+
+### Passo 4: os três agentes (`agents.py`)
+
+Cada agente é uma função Python. Ela recebe o estado atual, chama o modelo Claude com um prompt específico para seu papel, e retorna apenas os campos que lhe cabem atualizar:
+
+```python
+# agents.py
+import os
+import anthropic
+from state import EstadoCopom
+from tools import baixar_e_extrair_ata
+
+cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+# ── Agente 1: Leitor ────────────────────────────────────────────────────────
+def leitor(estado: EstadoCopom) -> dict:
+    """Baixa a ata e extrai a Selic e os pontos-chave."""
+    try:
+        texto = baixar_e_extrair_ata(estado["url_pdf"])
+    except Exception as e:
+        return {"erro": f"Falha ao baixar ata: {e}", "ata_texto": "",
+                "pontos_chave": "", "selic_encontrada": "não encontrada"}
+
+    resposta = cliente.messages.create(
+        model="claude-haiku-4-5-20251001",   # Haiku: rápido e barato para leitura
+        max_tokens=1024,
+        messages=[{
+            "role": "user",
+            "content": f"""Você é um leitor especializado em atas do Copom.
+
+Leia a ata abaixo e extraia:
+1. A taxa Selic decidida (ex: "14,50% ao ano")
+2. Os três principais pontos da decisão em bullets concisos
+
+Responda EXATAMENTE neste formato — sem texto adicional:
+SELIC: [valor exato]
+PONTOS:
+- [ponto 1]
+- [ponto 2]
+- [ponto 3]
+
+Se não encontrar a Selic, escreva: SELIC: não encontrada
+
+ATA:
+{texto[:80000]}"""
+        }]
+    )
+
+    conteudo = resposta.content[0].text
+    selic = "não encontrada"
+    for linha in conteudo.split("\n"):
+        if linha.startswith("SELIC:"):
+            selic = linha.replace("SELIC:", "").strip()
+            break
+
+    return {
+        "ata_texto": texto,
+        "pontos_chave": conteudo,
+        "selic_encontrada": selic,
+    }
+
+# ── Agente 2: Analista ──────────────────────────────────────────────────────
+def analista(estado: EstadoCopom) -> dict:
+    """Avalia o tom da reunião no espectro dovish–hawkish."""
+    if estado.get("erro"):
+        return {"tom_score": 0.0, "tom_label": "Neutro",
+                "justificativa_tom": "", "trechos_evidencia": []}
+
+    resposta = cliente.messages.create(
+        model="claude-sonnet-4-6",   # Sonnet: raciocínio mais profundo para análise
+        max_tokens=512,
+        messages=[{
+            "role": "user",
+            "content": f"""Você é um analista de política monetária.
+
+Glossário necessário:
+- Dovish: o comitê prefere juros mais baixos, preocupado com crescimento/emprego
+- Hawkish: o comitê prefere juros mais altos, preocupado com inflação
+- O espectro vai de "Muito Dovish" (-1.0) a "Muito Hawkish" (+1.0)
+
+Com base nos pontos-chave abaixo, avalie o tom do Copom.
+
+Responda EXATAMENTE neste formato:
+SCORE: [número de -1.0 a +1.0]
+LABEL: [um de: Muito Dovish / Dovish / Neutro / Hawkish / Muito Hawkish]
+JUSTIFICATIVA: [uma frase explicando o score]
+TRECHO: [citação literal da ata que melhor evidencia o tom]
+
+PONTOS-CHAVE:
+{estado['pontos_chave']}"""
+        }]
+    )
+
+    linhas = {}
+    for linha in resposta.content[0].text.strip().split("\n"):
+        if ":" in linha:
+            chave, *valor = linha.split(":")
+            linhas[chave.strip()] = ":".join(valor).strip()
+
+    try:
+        score = float(linhas.get("SCORE", "0"))
+    except ValueError:
+        score = 0.0
+
+    return {
+        "tom_score": max(-1.0, min(1.0, score)),   # garante que fica no intervalo
+        "tom_label": linhas.get("LABEL", "Neutro"),
+        "justificativa_tom": linhas.get("JUSTIFICATIVA", ""),
+        "trechos_evidencia": [linhas.get("TRECHO", "")],
+    }
+
+# ── Agente 3: Redator ───────────────────────────────────────────────────────
+def redator(estado: EstadoCopom) -> dict:
+    """Escreve o resumo final em linguagem clara para o economista."""
+    if estado.get("erro"):
+        return {"resposta_final": f"Não foi possível processar a ata: {estado['erro']}"}
+
+    resposta = cliente.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=512,
+        messages=[{
+            "role": "user",
+            "content": f"""Você é um redator econômico. Escreva um resumo objetivo da reunião do Copom.
+
+Regras:
+- Máximo 4 frases
+- Mencione a Selic exata: {estado['selic_encontrada']}
+- Mencione o tom: {estado['tom_label']}
+- Use linguagem direta e acessível
+- Nunca invente informações além do que está abaixo
+
+PONTOS-CHAVE:
+{estado['pontos_chave']}
+
+JUSTIFICATIVA DO TOM:
+{estado['justificativa_tom']}"""
+        }]
+    )
+
+    return {"resposta_final": resposta.content[0].text.strip()}
+```
+
+### Passo 5: montar o grafo com LangGraph (`graph.py`)
+
+O LangGraph conecta os três agentes em sequência, passando o estado de um para o outro. Pense nele como o gerente que define quem trabalha em que ordem:
+
+```python
+# graph.py
+from langgraph.graph import StateGraph, END
+from state import EstadoCopom
+from agents import leitor, analista, redator
+
+def construir_grafo():
+    # Cria o grafo declarando o tipo de estado que vai circular entre os agentes
+    workflow = StateGraph(EstadoCopom)
+
+    # Registra os três agentes como nós do grafo
+    workflow.add_node("leitor", leitor)
+    workflow.add_node("analista", analista)
+    workflow.add_node("redator", redator)
+
+    # Define a sequência: leitor → analista → redator → fim
+    workflow.set_entry_point("leitor")
+    workflow.add_edge("leitor", "analista")
+    workflow.add_edge("analista", "redator")
+    workflow.add_edge("redator", END)
+
+    return workflow.compile()
+
+
+# Para testar direto no terminal (sem interface web):
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    from tools import listar_reunioes_copom
+    load_dotenv()
+
+    print("Buscando reuniões disponíveis...")
+    reunioes = listar_reunioes_copom()
+    if not reunioes:
+        print("Nenhuma reunião encontrada. Verifique a API do BCB.")
+        exit(1)
+
+    ultima = reunioes[0]
+    print(f"Analisando: {ultima['descricao']}\n")
+
+    grafo = construir_grafo()
+    resultado = grafo.invoke({
+        "reuniao_id": ultima["id"],
+        "url_pdf": ultima["url_pdf"],
+    })
+
+    print(f"Selic: {resultado['selic_encontrada']}")
+    print(f"Tom:   {resultado['tom_label']} (score: {resultado['tom_score']:.2f})")
+    print(f"\nResumo:\n{resultado['resposta_final']}")
+    if resultado.get("erro"):
+        print(f"\nErro registrado: {resultado['erro']}")
+```
+
+### Passo 6: interface web com Streamlit (`app.py`)
+
+O Streamlit transforma o agente numa página web que qualquer pessoa pode usar — sem terminal, sem código:
+
+```python
+# app.py
+import streamlit as st
+from dotenv import load_dotenv
+from tools import listar_reunioes_copom
+from graph import construir_grafo
+import anthropic, os
+
+load_dotenv()
+
+st.set_page_config(page_title="Análise de Atas do Copom", page_icon="🏦")
+st.title("🏦 Análise de Atas do Copom")
+st.caption(
+    "Um time de três agentes (leitor → analista → redator) lê a ata do Copom "
+    "na API do Banco Central, mede o tom e responde em linguagem simples."
+)
+
+@st.cache_data(ttl=3600)   # cache por 1 hora para não sobrecarregar a API do BCB
+def carregar_reunioes():
+    return listar_reunioes_copom()
+
+reunioes = carregar_reunioes()
+if not reunioes:
+    st.error("Não foi possível carregar as reuniões. Verifique a API do BCB.")
+    st.stop()
+
+opcoes = {r["descricao"]: r for r in reunioes}
+escolha = st.selectbox("Escolha a reunião:", list(opcoes.keys()))
+
+if st.button("Analisar ata", type="primary"):
+    reuniao = opcoes[escolha]
+
+    with st.spinner("Leitor buscando a ata no BCB..."):
+        grafo = construir_grafo()
+        try:
+            resultado = grafo.invoke({
+                "reuniao_id": reuniao["id"],
+                "url_pdf":    reuniao["url_pdf"],
+            })
+        except Exception as e:
+            st.error(f"Erro ao processar: {e}")
+            st.stop()
+
+    # Índice de sentimento visual
+    st.subheader("Índice de sentimento")
+    LABELS = ["Muito Dovish", "Dovish", "Neutro", "Hawkish", "Muito Hawkish"]
+    tom_atual = resultado.get("tom_label", "Neutro")
+    cols = st.columns(5)
+    for col, label in zip(cols, LABELS):
+        with col:
+            st.markdown(f"**{'●' if label == tom_atual else '○'} {label}**"
+                        if label == tom_atual else f"○ {label}")
+
+    st.caption(resultado.get("justificativa_tom", ""))
+
+    # Resumo principal
+    st.subheader("Resposta")
+    st.info(resultado.get("resposta_final", ""))
+
+    # Trechos de evidência
+    with st.expander("Ver trechos que sustentam o índice"):
+        for trecho in resultado.get("trechos_evidencia", []):
+            if trecho:
+                st.markdown(f"> *{trecho}*")
+
+    # Chat livre sobre a ata
+    st.subheader("Pergunte sobre a ata")
+    pergunta = st.text_input("Sua pergunta:")
+    if pergunta and resultado.get("ata_texto"):
+        cliente = anthropic.Anthropic()
+        resposta = cliente.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=512,
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"Com base na ata do Copom abaixo, responda de forma direta: {pergunta}\n\n"
+                    f"ATA:\n{resultado['ata_texto'][:40000]}"
+                )
+            }]
+        )
+        st.write(resposta.content[0].text)
+```
+
+### Como rodar
+
+```bash
+# Teste no terminal (sem interface web)
+python graph.py
+
+# Interface web — abre em http://localhost:8501
+streamlit run app.py
+```
+
+### Estrutura final do projeto
+
+```
+copom-agent/
+├── .env          # ANTHROPIC_API_KEY=sk-ant-...  (nunca commitar)
+├── tools.py      # funções que acessam a API do BCB e extraem texto do PDF
+├── state.py      # definição do mural compartilhado (TypedDict)
+├── agents.py     # os três agentes: leitor, analista, redator
+├── graph.py      # orquestração com LangGraph + teste no terminal
+└── app.py        # interface web com Streamlit
+```
+
+### Lições aprendidas na construção
+
+| Lição | O que evitar |
+|-------|-------------|
+| Ler o documento inteiro | Cortar a ata para economizar tokens faz o agente perder a linha com a Selic |
+| Responder "não encontrei" quando não há dado | Nunca retornar número de outra ata ou inventar um valor próximo |
+| Separar leitura de redação | Um agente que lê e um que escreve produzem resultado melhor que um só fazendo os dois |
+| Testar cada agente isoladamente | Chamar `leitor({...})` direto no Python antes de montar o grafo |
+
+### Estendendo para outros indicadores
+
+A mesma estrutura serve para IPCA, câmbio, PIB e outros indicadores — troque a ferramenta de coleta e ajuste os prompts de cada agente. O grafo, o mural e a arquitetura em três papéis permanecem iguais.
 
 ---
 
