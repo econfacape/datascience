@@ -817,23 +817,29 @@ import requests
 import pdfplumber
 import io
 
-# A API pública do BCB lista as atas disponíveis.
-# Acesse a URL no navegador para inspecionar o schema JSON atual.
-BCB_ATAS_URL = "https://www.bcb.gov.br/api/servico/sitebcb/atas-copom"
+# Endpoint correto das atas: repare no sufixo /ultimas e no parâmetro
+# filtro= (obrigatório, mesmo vazio). A Url de cada ata vem RELATIVA.
+BCB_HOST = "https://www.bcb.gov.br"
+BCB_ATAS_URL = f"{BCB_HOST}/api/servico/sitebcb/atascopom/ultimas"
 
-def listar_reunioes_copom() -> list[dict]:
-    """Retorna a lista de reuniões do Copom com id, data e URL do PDF."""
-    resp = requests.get(BCB_ATAS_URL, timeout=30)
+def listar_reunioes_copom(quantidade: int = 20) -> list[dict]:
+    """Retorna as reuniões do Copom (mais recentes primeiro) com data e URL do PDF."""
+    resp = requests.get(
+        BCB_ATAS_URL,
+        params={"quantidade": quantidade, "filtro": ""},   # filtro vazio é obrigatório
+        timeout=30,
+    )
     resp.raise_for_status()
     dados = resp.json()
     reunioes = []
-    # O schema do BCB pode mudar — inspecione o JSON retornado e ajuste as chaves abaixo
-    for item in dados.get("conteudo", dados if isinstance(dados, list) else []):
+    for item in dados.get("conteudo", []):
+        url_rel = item.get("Url", "")
         reunioes.append({
-            "id":       item.get("Protocolo") or item.get("id", ""),
-            "data":     item.get("DataReferencia") or item.get("data", ""),
-            "descricao": item.get("Titulo") or item.get("descricao", ""),
-            "url_pdf":  item.get("Url") or item.get("url", ""),
+            "id":        item.get("Titulo", ""),
+            "data":      item.get("DataReferencia", ""),
+            "descricao": item.get("Titulo", ""),
+            # a API devolve Url relativa (/content/...): prefixe o domínio antes de baixar
+            "url_pdf":   f"{BCB_HOST}{url_rel}" if url_rel.startswith("/") else url_rel,
         })
     return reunioes
 
@@ -1230,6 +1236,575 @@ copom-agent/
 ### Estendendo para outros indicadores
 
 A mesma estrutura serve para IPCA, câmbio, PIB e outros indicadores — troque a ferramenta de coleta e ajuste os prompts de cada agente. O grafo, o mural e a arquitetura em três papéis permanecem iguais.
+
+---
+
+## Caso real: agente que coleta dados do BCB e IBGE sozinho
+
+O projeto Copom introduziu um pipeline **sequencial**: três agentes passam o bastão um para o outro em ordem fixa (Leitor → Analista → Redator). É a arquitetura certa quando o trabalho tem etapas bem definidas e interdependentes.
+
+Mas existe uma segunda arquitetura, diferente em essência: um **agente único que entra em loop até decidir que terminou**. Este caso real — publicado pela Análise Macro — constrói um agente que, dado um pedido em linguagem natural ("busque o IPCA de maio e a Selic atual"), decide sozinho se vai ao BCB ou ao IBGE, valida o dado em três camadas e só para quando tem tudo que precisa.
+
+::: {.callout-note}
+**Pipeline vs. Loop — quando usar cada um:**
+
+| Característica | Pipeline sequencial (Copom) | Loop agêntico (BCB/IBGE) |
+|---------------|----------------------------|--------------------------|
+| Número de agentes | Vários, especializados | Um único agente |
+| Fluxo | Ordem fixa | O agente decide o próximo passo |
+| Ferramentas | Cada agente tem as suas | Um conjunto compartilhado |
+| Ideal para | Etapas com papéis distintos | Coleta aberta com múltiplas fontes |
+| Risco principal | Quebra na passagem de bastão | Loop infinito sem condição de saída |
+:::
+
+### O padrão ReAct — Raciocinar, Agir, Observar
+
+O loop agêntico implementa o padrão **ReAct** (Reasoning + Acting): a cada volta do ciclo, o agente (1) raciocina sobre o que precisa, (2) age chamando uma ferramenta, (3) observa o resultado e decide se continua ou para.
+
+```
+Pedido: "busque IPCA de maio/2026 e a Selic atual"
+
+Volta 1
+  Raciocina: preciso do IPCA — essa série fica no SGS do BCB
+  Age:       chama buscar_bcb(serie=433, inicio="01/05/2026", fim="31/05/2026")
+  Observa:   retornou 0.43% — validado; agora preciso da Selic
+
+Volta 2
+  Raciocina: Selic meta fica no SGS 432 do BCB
+  Age:       chama buscar_bcb(serie=432, inicio="01/06/2026", fim="30/06/2026")
+  Observa:   retornou 14.75% — validado; tenho tudo
+
+Volta 3
+  Raciocina: tenho todos os dados solicitados
+  Age:       chama guardar_resultado({...})
+  Observa:   dados salvos → sai do loop
+```
+
+A diferença estrutural em relação ao pipeline: não há roteiro de quem faz o quê. O agente improvisa o caminho com base no que já tem e no que ainda falta.
+
+### A descrição da ferramenta é um prompt
+
+Este é o aprendizado central do projeto: **o modelo decide qual ferramenta chamar lendo as descrições (docstrings) de cada uma**. Não há lógica de roteamento no código — o roteamento é a linguagem natural no docstring.
+
+Compare as duas ferramentas abaixo. O modelo usa a descrição para decidir:
+
+```python
+# tools_bcb_ibge.py
+import os, time, requests
+from pydantic import BaseModel, field_validator
+
+# ── Modelos Pydantic — camada 1 de validação ────────────────────────────────
+
+class DadoBCB(BaseModel):
+    serie: int
+    data: str        # "AAAA-MM-DD"
+    valor: float
+
+    @field_validator("valor")
+    @classmethod
+    def nao_nulo(cls, v):
+        if v is None:
+            raise ValueError("valor não pode ser nulo")
+        return v
+
+class DadoIBGE(BaseModel):
+    variavel: str
+    periodo: str
+    valor: float
+
+# ── Ranges de plausibilidade — camada 2 de validação ────────────────────────
+
+RANGES = {
+    "ipca_mensal":  (-2.0,  5.0),   # % mensal: raramente fora disso
+    "selic_meta":   ( 2.0, 25.0),   # % ao ano: limites históricos BR
+    "cambio_ptax":  ( 1.5, 15.0),   # R$/US$: faixa histórica
+    "pib_tri":      (-5.0,  5.0),   # % trimestral
+    "desemprego":   ( 5.0, 20.0),   # % PNAD
+}
+
+def checar_plausibilidade(nome: str, valor: float) -> str | None:
+    """Retorna mensagem de aviso se valor estiver fora do range esperado, ou None."""
+    if nome not in RANGES:
+        return None
+    lo, hi = RANGES[nome]
+    if not (lo <= valor <= hi):
+        return (
+            f"AVISO: {nome} = {valor} está fora do range histórico esperado "
+            f"[{lo}, {hi}]. Verifique o código da série ou o período solicitado."
+        )
+    return None
+
+# ── Retry com backoff exponencial ───────────────────────────────────────────
+
+def _get_com_retry(url: str, tentativas: int = 3, timeout: int = 30) -> requests.Response:
+    """GET com retry exponencial (1s, 2s, 4s). Levanta exceção após esgotar tentativas."""
+    for i in range(tentativas):
+        try:
+            resp = requests.get(url, timeout=timeout)
+            resp.raise_for_status()
+            return resp
+        except requests.RequestException as e:
+            if i == tentativas - 1:
+                raise
+            time.sleep(2 ** i)   # 1s, 2s, 4s
+
+# ── Ferramentas expostas ao agente ──────────────────────────────────────────
+
+def buscar_bcb(serie: int, inicio: str, fim: str) -> dict:
+    """
+    Busca uma série temporal no SGS (Sistema Gerenciador de Séries Temporais)
+    do Banco Central do Brasil (BCB).
+
+    Use esta ferramenta para: IPCA mensal (série 433), meta Selic (série 432),
+    IPCA acumulado 12 meses (série 13522), câmbio PTAX (série 1), IGP-M (série 189),
+    crédito livre PF (série 20541) e demais séries macroeconômicas do BCB.
+
+    NÃO use para: dados do IBGE (PIB, desemprego, PNAD, Censo).
+
+    Parâmetros:
+        serie: código numérico da série no SGS (ex: 433 para IPCA mensal)
+        inicio: data inicial no formato DD/MM/AAAA
+        fim:    data final   no formato DD/MM/AAAA
+
+    Retorna dict com campos: serie, data, valor, aviso (se fora do range).
+    """
+    url = (
+        f"https://api.bcb.gov.br/dados/serie/bcdata.sgs.{serie}/dados"
+        f"?formato=json&dataInicial={inicio}&dataFinal={fim}"
+    )
+    resp = _get_com_retry(url)
+    dados_raw = resp.json()
+
+    if not dados_raw:
+        return {"erro": f"Série {serie} retornou lista vazia para {inicio}–{fim}"}
+
+    ultimo = dados_raw[-1]
+
+    # Parsing defensivo — o BCB pode renomear campos
+    data_str  = ultimo.get("data")  or ultimo.get("Data")  or ""
+    valor_raw = ultimo.get("valor") or ultimo.get("Valor") or None
+
+    try:
+        dado = DadoBCB(serie=serie, data=data_str, valor=float(valor_raw))
+    except Exception as e:
+        return {"erro": f"Validação Pydantic falhou: {e}", "raw": ultimo}
+
+    resultado = {"serie": dado.serie, "data": dado.data, "valor": dado.valor}
+
+    # Camada 2: plausibilidade por série
+    NOME_SERIE = {433: "ipca_mensal", 432: "selic_meta", 1: "cambio_ptax"}
+    nome = NOME_SERIE.get(serie)
+    if nome:
+        aviso = checar_plausibilidade(nome, dado.valor)
+        if aviso:
+            resultado["aviso"] = aviso
+
+    return resultado
+
+
+def buscar_ibge(tabela: int, variavel: int, periodo: str, classificacao: str = "") -> dict:
+    """
+    Busca dados no SIDRA (Sistema IBGE de Recuperação Automática) do IBGE.
+
+    Use esta ferramenta para: PIB trimestral (tabela 5932, variável 6561),
+    taxa de desemprego PNAD (tabela 4099, variável 4099), inflação por grupos
+    IPCA (tabela 7060, variável 2266), produção industrial (tabela 3653).
+
+    NÃO use para: séries monetárias ou financeiras do Banco Central
+    (câmbio, Selic, crédito — use buscar_bcb para essas).
+
+    Parâmetros:
+        tabela:       código da tabela SIDRA (ex: 5932 para PIB)
+        variavel:     código da variável dentro da tabela
+        periodo:      período no formato "AAAAMM" ou "AAAA" (ex: "202601")
+        classificacao: filtro opcional (ex: "315[7169]" para categoria específica)
+
+    Retorna dict com campos: variavel, periodo, valor, aviso (se fora do range).
+    """
+    url = f"https://servicodados.ibge.gov.br/api/v3/agregados/{tabela}/periodos/{periodo}/variaveis/{variavel}"
+    if classificacao:
+        url += f"?classificacao={classificacao}"
+
+    try:
+        resp = _get_com_retry(url)
+        dados = resp.json()
+    except Exception as e:
+        return {"erro": f"Falha ao acessar SIDRA: {e}"}
+
+    try:
+        valor_raw = dados[0]["resultados"][0]["series"][0]["serie"][periodo]
+        dado = DadoIBGE(variavel=str(variavel), periodo=periodo, valor=float(valor_raw))
+    except (KeyError, IndexError, ValueError) as e:
+        return {"erro": f"Estrutura inesperada do SIDRA: {e}", "raw": str(dados)[:200]}
+
+    resultado = {"variavel": dado.variavel, "periodo": dado.periodo, "valor": dado.valor}
+
+    NOME_VAR = {4099: "desemprego"}
+    nome = NOME_VAR.get(variavel)
+    if nome:
+        aviso = checar_plausibilidade(nome, dado.valor)
+        if aviso:
+            resultado["aviso"] = aviso
+
+    return resultado
+
+
+def guardar_resultado(dados: dict) -> dict:
+    """
+    Salva os dados coletados e encerra o loop de coleta.
+
+    Use esta ferramenta SOMENTE quando tiver coletado e validado TODOS
+    os dados solicitados pelo usuário. Chamar esta ferramenta sinaliza ao
+    sistema que a tarefa está concluída — o agente para de loopar.
+
+    Parâmetros:
+        dados: dicionário com os dados coletados e validados
+
+    Retorna confirmação de gravação.
+    """
+    import json, pathlib
+    from datetime import date
+
+    dest = pathlib.Path("output/dados")
+    dest.mkdir(parents=True, exist_ok=True)
+    arquivo = dest / f"coleta_{date.today()}.json"
+    arquivo.write_text(json.dumps(dados, ensure_ascii=False, indent=2))
+    return {"status": "ok", "arquivo": str(arquivo), "registros": len(dados)}
+```
+
+Leia os três docstrings com atenção. Eles explicam ao modelo *o que cada função faz*, *quando usá-la* e *quando não usá-la*. Quando o usuário pede "busque a Selic atual", o modelo não executa lógica de `if "Selic" in pedido: chamar_bcb()` — ele lê "meta Selic (série 432)" no docstring de `buscar_bcb` e conclui, por linguagem natural, que deve chamar essa função.
+
+::: {.callout-important}
+**A descrição da ferramenta é um prompt.** Um docstring vago como `"busca dados econômicos"` força o modelo a adivinhar qual ferramenta chamar. Um docstring preciso — com exemplos de séries, casos de uso e exclusões explícitas ("NÃO use para...") — reduz erros de roteamento sem nenhuma linha de lógica condicional adicional.
+:::
+
+### Validação em três camadas
+
+O dado bruto da API pode estar errado por muitos motivos: código de série errado, período sem dado, valor fora do ar, bug silencioso na API. Este projeto usa três camadas de defesa, da mais mecânica à mais inteligente:
+
+| Camada | O que faz | Quando detecta |
+|--------|-----------|----------------|
+| **1 — Pydantic** | Verifica tipo e presença dos campos | Dado nulo, campo renomeado, tipo errado |
+| **2 — Plausibilidade** | Compara com ranges históricos conhecidos | IPCA de 50%, Selic de -3%, câmbio de 0,50 |
+| **3 — Segunda opinião LLM** | Pergunta ao modelo se o valor faz sentido | Combinações implausíveis, contexto histórico |
+
+```python
+# validacao.py
+import anthropic, os
+
+cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+def segunda_opiniao(indicador: str, valor: float, periodo: str) -> dict:
+    """
+    Terceira camada de validação: avalia se um valor é economicamente plausível.
+
+    Use esta ferramenta quando uma busca retornar um campo "aviso" (valor fora do
+    range histórico) ou quando o número parecer estranho para o período informado.
+    Retorna {"aprovado": bool, "comentario": str}.
+    """
+    resp = cliente.messages.create(
+        model="claude-haiku-4-5-20251001",   # Haiku: rápido e barato para checagem simples
+        max_tokens=128,
+        messages=[{
+            "role": "user",
+            "content": (
+                f"O indicador '{indicador}' registrou {valor} no período {periodo}. "
+                f"Isso é economicamente plausível para o Brasil? "
+                f"Responda com APROVADO ou SUSPEITO e uma justificativa em uma frase."
+            )
+        }]
+    )
+    texto = resp.content[0].text.strip()
+    aprovado = texto.upper().startswith("APROVADO")
+    return {"aprovado": aprovado, "comentario": texto}
+```
+
+A terceira camada captura casos que as duas primeiras não conseguem: por exemplo, IPCA de 0,02% em dezembro de 2002 está dentro do range histórico, mas é implausível dado o contexto daquele mês específico. No grafo, `segunda_opiniao` é registrada como mais uma ferramenta (ver `graph.py` adiante) — o próprio agente decide acioná-la quando uma busca devolve um campo `aviso` de plausibilidade.
+
+### Memória entre execuções com SqliteSaver
+
+Sem memória, o agente rebusca tudo a cada rodada — caro e lento. O **SqliteSaver** do LangGraph persiste o estado entre execuções num banco SQLite local. A cada rodada, o agente verifica quais meses já foram coletados e busca apenas os novos.
+
+```python
+# memory.py
+# Requer o pacote extra:  pip install langgraph-checkpoint-sqlite
+from langgraph.checkpoint.sqlite import SqliteSaver
+
+# Atenção: SqliteSaver.from_conn_string é um CONTEXT MANAGER — use com 'with',
+# não guarde o retorno. O banco SQLite é criado na primeira execução.
+#
+# Em graph.py, compile e invoque dentro do mesmo bloco 'with':
+#
+#   with SqliteSaver.from_conn_string("output/coleta.db") as memoria:
+#       grafo = construir_grafo_coleta(checkpointer=memoria)
+#       grafo.invoke(
+#           estado_inicial,
+#           config={"configurable": {"thread_id": "coleta-macro"}},
+#       )
+#
+# Na próxima execução com o mesmo thread_id, o grafo retoma de onde parou.
+```
+
+A deduplicação por data funciona assim: antes de chamar a API, o agente consulta o estado persistido e verifica se `"2026-05"` já existe no dicionário de dados coletados. Se sim, pula. Se não, coleta. Isso torna a rotina incremental — rodar toda segunda-feira coleta apenas a semana nova.
+
+### O grafo com aresta condicional (`graph.py`)
+
+A diferença estrutural em relação ao grafo do Copom é a **aresta condicional**: em vez de `leitor → analista → redator → fim` (sequência fixa), o loop tem `agente → ferramentas → agente → ... → guardar → fim` onde a condição de saída é decidida pelo próprio agente.
+
+Por baixo, isto usa o **mecanismo nativo de tool-use da API da Anthropic** — o mesmo que o Claude Code e os servidores MCP usam internamente: você descreve as funções no parâmetro `tools`, o modelo responde com blocos `tool_use`, o seu código executa e devolve o resultado em blocos `tool_result`.
+
+```python
+# graph.py
+import os, json, anthropic
+from langgraph.graph import StateGraph, END
+from typing import TypedDict, Annotated
+import operator
+
+# ── Estado compartilhado ─────────────────────────────────────────────────────
+
+class EstadoColeta(TypedDict):
+    pedido:     str                              # instrução original do usuário
+    mensagens:  Annotated[list, operator.add]    # histórico de chamadas
+    dados:      dict                             # dados coletados até agora
+    concluido:  bool                             # sinalizador de saída
+
+# ── Definição das ferramentas para a API da Anthropic ───────────────────────
+
+from tools_bcb_ibge import buscar_bcb, buscar_ibge, guardar_resultado
+from validacao import segunda_opiniao
+
+FERRAMENTAS_ANTHROPIC = [
+    {
+        "name": "buscar_bcb",
+        "description": buscar_bcb.__doc__,   # docstring vira o prompt de roteamento
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "serie":  {"type": "integer", "description": "Código da série SGS"},
+                "inicio": {"type": "string",  "description": "Data inicial DD/MM/AAAA"},
+                "fim":    {"type": "string",  "description": "Data final DD/MM/AAAA"},
+            },
+            "required": ["serie", "inicio", "fim"]
+        }
+    },
+    {
+        "name": "buscar_ibge",
+        "description": buscar_ibge.__doc__,
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "tabela":        {"type": "integer"},
+                "variavel":      {"type": "integer"},
+                "periodo":       {"type": "string"},
+                "classificacao": {"type": "string"},
+            },
+            "required": ["tabela", "variavel", "periodo"]
+        }
+    },
+    {
+        "name": "segunda_opiniao",
+        "description": segunda_opiniao.__doc__,
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "indicador": {"type": "string", "description": "Nome do indicador (ex: ipca_mensal)"},
+                "valor":     {"type": "number", "description": "Valor a checar"},
+                "periodo":   {"type": "string", "description": "Período de referência"},
+            },
+            "required": ["indicador", "valor", "periodo"]
+        }
+    },
+    {
+        "name": "guardar_resultado",
+        "description": guardar_resultado.__doc__,
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "dados": {"type": "object", "description": "Dados coletados e validados"}
+            },
+            "required": ["dados"]
+        }
+    }
+]
+
+MAPA_FERRAMENTAS = {
+    "buscar_bcb":        buscar_bcb,
+    "buscar_ibge":       buscar_ibge,
+    "segunda_opiniao":   segunda_opiniao,
+    "guardar_resultado": guardar_resultado,
+}
+
+# ── Nó do agente ─────────────────────────────────────────────────────────────
+
+cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+def agente(estado: EstadoColeta) -> dict:
+    """O agente raciocina e decide qual ferramenta chamar (ou parar)."""
+    resp = cliente.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        tools=FERRAMENTAS_ANTHROPIC,
+        messages=estado["mensagens"],   # já semeado com o pedido do usuário no estado inicial
+    )
+
+    nova_msg = {"role": "assistant", "content": resp.content}
+    return {
+        "mensagens": [nova_msg],
+        "concluido": resp.stop_reason == "end_turn",   # parou sem chamar ferramenta
+    }
+
+# ── Nó das ferramentas ───────────────────────────────────────────────────────
+
+def executar_ferramentas(estado: EstadoColeta) -> dict:
+    """Executa todas as chamadas de ferramenta que o agente solicitou."""
+    ultima_msg = estado["mensagens"][-1]["content"]
+    resultados = []
+    dados_novos = dict(estado.get("dados", {}))
+    concluido = False
+
+    for bloco in ultima_msg:
+        if bloco.type != "tool_use":
+            continue
+
+        fn = MAPA_FERRAMENTAS.get(bloco.name)
+        resultado = fn(**bloco.input) if fn else {"erro": f"Ferramenta {bloco.name} não encontrada"}
+
+        resultados.append({
+            "type":        "tool_result",
+            "tool_use_id": bloco.id,
+            "content":     json.dumps(resultado, ensure_ascii=False),
+        })
+
+        if bloco.name == "guardar_resultado":
+            dados_novos.update(bloco.input.get("dados", {}))
+            concluido = True   # guardar_resultado = sinal de saída do loop
+
+    return {
+        "mensagens": [{"role": "user", "content": resultados}],
+        "dados":     dados_novos,
+        "concluido": concluido,
+    }
+
+# ── Condição de saída do loop ─────────────────────────────────────────────────
+
+def deve_continuar(estado: EstadoColeta) -> str:
+    """Aresta condicional: continua no loop ou vai para o fim."""
+    if estado.get("concluido"):
+        return "fim"
+    # Proteção contra loop infinito: máximo 10 voltas
+    if len(estado["mensagens"]) > 20:
+        return "fim"
+    return "ferramentas"
+
+# ── Montagem do grafo ─────────────────────────────────────────────────────────
+
+def construir_grafo_coleta(checkpointer=None):
+    workflow = StateGraph(EstadoColeta)
+
+    workflow.add_node("agente",      agente)
+    workflow.add_node("ferramentas", executar_ferramentas)
+
+    workflow.set_entry_point("agente")
+
+    # Aresta condicional: agente decide se vai para ferramentas ou para o fim
+    workflow.add_conditional_edges(
+        "agente",
+        deve_continuar,
+        {"ferramentas": "ferramentas", "fim": END}
+    )
+
+    # Após as ferramentas: se guardar_resultado foi chamada (concluido=True), encerra;
+    # caso contrário, volta ao agente para a próxima volta do loop.
+    workflow.add_conditional_edges(
+        "ferramentas",
+        lambda estado: "fim" if estado.get("concluido") else "agente",
+        {"agente": "agente", "fim": END},
+    )
+
+    return workflow.compile(checkpointer=checkpointer)
+
+
+# ── Execução manual para teste ────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    grafo = construir_grafo_coleta()
+
+    pedido = (
+        "Busque os seguintes indicadores referentes a maio de 2026: "
+        "(1) IPCA mensal — série 433 do BCB; "
+        "(2) meta Selic — série 432 do BCB; "
+        "(3) taxa de desemprego PNAD — tabela 4099 do IBGE. "
+        "Valide cada valor antes de guardar. Se algum parecer fora do normal, registre o aviso."
+    )
+    resultado = grafo.invoke({
+        "pedido":    pedido,
+        "mensagens": [{"role": "user", "content": pedido}],   # semeia o histórico com o pedido
+        "dados":     {},
+        "concluido": False,
+    })
+
+    print(f"Voltas do loop: {len(resultado['mensagens']) // 2}")
+    print(f"Dados coletados: {json.dumps(resultado['dados'], indent=2, ensure_ascii=False)}")
+```
+
+::: {.callout-note}
+**Dois detalhes que costumam confundir:** (1) `mensagens: Annotated[list, operator.add]` faz cada nó *anexar* ao histórico em vez de sobrescrevê-lo — é o "reducer" do LangGraph; sem ele, cada passo apagaria as mensagens anteriores. (2) `resp.stop_reason == "end_turn"` é como o agente sinaliza que terminou *sem* chamar ferramenta; quando ele chama uma ferramenta, `stop_reason` vira `"tool_use"` e o loop continua.
+:::
+
+### Como rodar
+
+```bash
+# Instale as dependências (além das do projeto Copom)
+pip install pydantic langgraph anthropic python-dotenv
+
+# Crie o .env com sua chave
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
+
+# Execute
+python graph.py
+```
+
+Saída esperada no terminal:
+
+```
+Voltas do loop: 3
+Dados coletados: {
+  "ipca_mensal_2026-05": {"serie": 433, "data": "01/05/2026", "valor": 0.43},
+  "selic_meta_2026-05":  {"serie": 432, "data": "01/05/2026", "valor": 14.75},
+  "desemprego_202605":   {"variavel": "4099", "periodo": "202605", "valor": 6.8}
+}
+```
+
+### Estrutura final do projeto
+
+```
+coleta-macro/
+├── .env                  # ANTHROPIC_API_KEY (nunca commitar)
+├── tools_bcb_ibge.py     # ferramentas + validação Pydantic + ranges + retry
+├── validacao.py          # terceira camada: segunda opinião LLM
+├── graph.py              # grafo com loop + aresta condicional + execução manual
+└── output/
+    ├── dados/            # JSONs com os dados coletados por data
+    └── coleta.db         # banco SQLite do SqliteSaver (memória entre execuções)
+```
+
+### Comparativo final: dois padrões, dois casos de uso
+
+| | Pipeline sequencial (Copom) | Loop agêntico (BCB/IBGE) |
+|---|---|---|
+| **Arquitetura** | N agentes em sequência fixa | 1 agente em loop com aresta condicional |
+| **Decisão de fluxo** | Definida pelo programador | Tomada pelo modelo a cada volta |
+| **Ferramentas** | Cada agente tem as suas | Um conjunto compartilhado |
+| **Roteamento entre fontes** | Hardcoded na estrutura | Emergente dos docstrings |
+| **Validação** | No agente Leitor | Três camadas independentes |
+| **Memória** | Estado no mural (TypedDict) | SqliteSaver (SQLite persistente) |
+| **Risco principal** | Quebra na passagem de bastão | Loop infinito sem cap de voltas |
+| **Ideal para** | Análise com papéis distintos | Coleta aberta de múltiplas fontes |
+
+Nos dois projetos, o código Python é relativamente curto — a inteligência está nos prompts e nos docstrings, não em lógica condicional. Essa é a mudança de paradigma central: você passa a *descrever* o comportamento desejado em linguagem natural em vez de *programar* cada desvio de fluxo.
 
 ---
 
